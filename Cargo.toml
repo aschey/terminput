@@ -1,0 +1,15 @@
+[package]
+name = "terminput"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bitflags = "2"
+crossterm = { version = "0.27", optional = true }
+termion = { version = "4", optional = true }
+termwiz = { version = "0.22", optional = true }
+
+[features]
+crossterm = ["dep:crossterm"]
+termion = ["dep:termion"]
+termwiz = ["dep:termwiz"]
