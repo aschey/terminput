@@ -24,6 +24,6 @@ fn print_events() {
 fn main() {
     // setup terminal
     let stdout = io::stdout().into_raw_mode().unwrap();
-    let stdout = MouseTerminal::from(stdout);
+    let _stdout = MouseTerminal::from(stdout);
     print_events();
 }
