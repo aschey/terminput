@@ -20,11 +20,9 @@ fn print_events(mut terminal: BufferedTerminal<SystemTerminal>) {
         if let Ok(Some(event)) = terminal.terminal().poll_input(Some(Duration::ZERO)) {
             let event: Result<Event, UnsupportedEvent> = event.try_into();
             println!("Event: {:?}\r", event);
-            if let Ok(event) = event {
-                if let Event::Key(key_event) = event {
-                    if key_event.code == KeyCode::Esc {
-                        break;
-                    }
+            if let Ok(Event::Key(key_event)) = event {
+                if key_event.code == KeyCode::Esc {
+                    break;
                 }
             }
         } else {

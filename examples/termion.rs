@@ -9,11 +9,9 @@ fn print_events() {
     for event in stdin.events() {
         let event: Result<Event, UnsupportedEvent> = event.unwrap().try_into();
         println!("Event: {:?}\r", event);
-        if let Ok(event) = event {
-            if let Event::Key(key_event) = event {
-                if key_event.code == KeyCode::Esc {
-                    break;
-                }
+        if let Ok(Event::Key(key_event)) = event {
+            if key_event.code == KeyCode::Esc {
+                break;
             }
         }
     }

@@ -15,6 +15,18 @@ impl TryFrom<termion::event::Event> for Event {
     }
 }
 
+impl TryFrom<Event> for termion::event::Event {
+    type Error = UnsupportedEvent;
+
+    fn try_from(value: Event) -> Result<Self, Self::Error> {
+        Ok(match value {
+            Event::Key(key_event) => termion::event::Event::Key(key_event.try_into()?),
+            Event::Mouse(mouse_event) => termion::event::Event::Mouse(mouse_event.try_into()?),
+            _ => Err(UnsupportedEvent)?,
+        })
+    }
+}
+
 impl TryFrom<termion::event::Key> for KeyEvent {
     type Error = UnsupportedEvent;
 
@@ -253,6 +265,66 @@ impl TryFrom<termion::event::Key> for KeyEvent {
     }
 }
 
+impl TryFrom<KeyEvent> for termion::event::Key {
+    type Error = UnsupportedEvent;
+
+    fn try_from(value: KeyEvent) -> Result<Self, Self::Error> {
+        if value.kind != KeyEventKind::Press {
+            return Err(UnsupportedEvent);
+        }
+        if value.modifiers.intersects(KeyModifiers::CONTROL) {
+            match value.code {
+                KeyCode::Char(c) => return Ok(termion::event::Key::Ctrl(c)),
+                KeyCode::Left => return Ok(termion::event::Key::CtrlLeft),
+                KeyCode::Right => return Ok(termion::event::Key::CtrlRight),
+                KeyCode::Up => return Ok(termion::event::Key::CtrlUp),
+                KeyCode::Down => return Ok(termion::event::Key::CtrlDown),
+                _ => {}
+            }
+        }
+        if value.modifiers.intersects(KeyModifiers::ALT) {
+            match value.code {
+                KeyCode::Char(c) => return Ok(termion::event::Key::Alt(c)),
+                KeyCode::Left => return Ok(termion::event::Key::AltLeft),
+                KeyCode::Right => return Ok(termion::event::Key::AltRight),
+                KeyCode::Up => return Ok(termion::event::Key::AltUp),
+                KeyCode::Down => return Ok(termion::event::Key::AltDown),
+                _ => {}
+            }
+        }
+        if value.modifiers.intersects(KeyModifiers::SHIFT) {
+            match value.code {
+                KeyCode::Left => return Ok(termion::event::Key::ShiftLeft),
+                KeyCode::Right => return Ok(termion::event::Key::ShiftRight),
+                KeyCode::Up => return Ok(termion::event::Key::ShiftUp),
+                KeyCode::Down => return Ok(termion::event::Key::ShiftDown),
+                _ => {}
+            }
+        }
+        Ok(match value.code {
+            KeyCode::Backspace => termion::event::Key::Backspace,
+            KeyCode::Enter => termion::event::Key::Char('\n'),
+            KeyCode::Left => termion::event::Key::Left,
+            KeyCode::Right => termion::event::Key::Right,
+            KeyCode::Up => termion::event::Key::Up,
+            KeyCode::Down => termion::event::Key::Down,
+            KeyCode::Home => termion::event::Key::Home,
+            KeyCode::End => termion::event::Key::End,
+            KeyCode::PageUp => termion::event::Key::PageUp,
+            KeyCode::PageDown => termion::event::Key::PageDown,
+            KeyCode::Tab => termion::event::Key::Char('\t'),
+            KeyCode::BackTab => termion::event::Key::BackTab,
+            KeyCode::Delete => termion::event::Key::Delete,
+            KeyCode::Insert => termion::event::Key::Insert,
+            KeyCode::F(f) => termion::event::Key::F(f),
+            KeyCode::Char(c) => termion::event::Key::Char(c),
+            KeyCode::Null => termion::event::Key::Null,
+            KeyCode::Esc => termion::event::Key::Esc,
+            _ => Err(UnsupportedEvent)?,
+        })
+    }
+}
+
 impl TryFrom<termion::event::MouseEvent> for MouseEvent {
     type Error = UnsupportedEvent;
 
@@ -334,6 +406,48 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 column: column - 1,
                 modifiers: KeyModifiers::NONE,
             },
+        })
+    }
+}
+
+impl TryFrom<MouseEvent> for termion::event::MouseEvent {
+    type Error = UnsupportedEvent;
+
+    fn try_from(value: MouseEvent) -> Result<Self, Self::Error> {
+        let column = value.column + 1;
+        let row = value.row + 1;
+        Ok(match value.kind {
+            MouseEventKind::Down(MouseButton::Left) => {
+                termion::event::MouseEvent::Press(termion::event::MouseButton::Left, column, row)
+            }
+            MouseEventKind::Down(MouseButton::Right) => {
+                termion::event::MouseEvent::Press(termion::event::MouseButton::Right, column, row)
+            }
+            MouseEventKind::Down(MouseButton::Middle) => {
+                termion::event::MouseEvent::Press(termion::event::MouseButton::Middle, column, row)
+            }
+            MouseEventKind::Down(MouseButton::Unknown) => Err(UnsupportedEvent)?,
+            MouseEventKind::Up(_) => termion::event::MouseEvent::Release(column, row),
+            MouseEventKind::Drag(_) => termion::event::MouseEvent::Hold(column, row),
+            MouseEventKind::Moved => Err(UnsupportedEvent)?,
+            MouseEventKind::ScrollDown => termion::event::MouseEvent::Press(
+                termion::event::MouseButton::WheelDown,
+                column,
+                row,
+            ),
+            MouseEventKind::ScrollUp => {
+                termion::event::MouseEvent::Press(termion::event::MouseButton::WheelUp, column, row)
+            }
+            MouseEventKind::ScrollLeft => termion::event::MouseEvent::Press(
+                termion::event::MouseButton::WheelLeft,
+                column,
+                row,
+            ),
+            MouseEventKind::ScrollRight => termion::event::MouseEvent::Press(
+                termion::event::MouseButton::WheelRight,
+                column,
+                row,
+            ),
         })
     }
 }
