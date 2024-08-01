@@ -7,18 +7,6 @@ use crate::{
 
 // This is a lightly modified version of crossterm's ansi escape sequence parser: https://github.com/crossterm-rs/crossterm/blob/master/src/event/sys/unix/parse.rs
 
-// Event parsing
-//
-// This code (& previous one) are kind of ugly. We have to think about this,
-// because it's really not maintainable, no tests, etc.
-//
-// Every fn returns Result<Option<InputEvent>>
-//
-// Ok(None) -> wait for more bytes
-// Err(_) -> failed to parse event, clear the buffer
-// Ok(Some(event)) -> we have event, clear the buffer
-//
-
 fn could_not_parse_event_error() -> io::Error {
     io::Error::new(io::ErrorKind::Other, "Could not parse an event.")
 }
@@ -269,68 +257,6 @@ fn modifier_and_kind_parsed(iter: &mut dyn Iterator<Item = &str>) -> io::Result<
     }
 }
 
-// pub(crate) fn parse_csi_cursor_position(buffer: &[u8]) -> io::Result<Option<InternalEvent>> {
-//     // ESC [ Cy ; Cx R
-//     //   Cy - cursor row number (starting from 1)
-//     //   Cx - cursor column number (starting from 1)
-//     assert!(buffer.starts_with(&[b'\x1B', b'['])); // ESC [
-//     assert!(buffer.ends_with(&[b'R']));
-
-//     let s = std::str::from_utf8(&buffer[2..buffer.len() - 1])
-//         .map_err(|_| could_not_parse_event_error())?;
-
-//     let mut split = s.split(';');
-
-//     let y = next_parsed::<u16>(&mut split)? - 1;
-//     let x = next_parsed::<u16>(&mut split)? - 1;
-
-//     Ok(Some(InternalEvent::CursorPosition(x, y)))
-// }
-
-// fn parse_csi_keyboard_enhancement_flags(buffer: &[u8]) -> io::Result<Option<Event>> {
-//     // ESC [ ? flags u
-//     assert!(buffer.starts_with(&[b'\x1B', b'[', b'?'])); // ESC [ ?
-//     assert!(buffer.ends_with(&[b'u']));
-
-//     if buffer.len() < 5 {
-//         return Ok(None);
-//     }
-
-//     let bits = buffer[3];
-//     let mut flags = KeyboardEnhancementFlags::empty();
-
-//     if bits & 1 != 0 {
-//         flags |= KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES;
-//     }
-//     if bits & 2 != 0 {
-//         flags |= KeyboardEnhancementFlags::REPORT_EVENT_TYPES;
-//     }
-//     if bits & 4 != 0 {
-//         flags |= KeyboardEnhancementFlags::REPORT_ALTERNATE_KEYS;
-//     }
-//     if bits & 8 != 0 {
-//         flags |= KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES;
-//     }
-//     // *Note*: this is not yet supported by crossterm.
-//     // if bits & 16 != 0 {
-//     //     flags |= KeyboardEnhancementFlags::REPORT_ASSOCIATED_TEXT;
-//     // }
-
-//     Ok(Some(InternalEvent::KeyboardEnhancementFlags(flags)))
-// }
-
-// fn parse_csi_primary_device_attributes(buffer: &[u8]) -> io::Result<Option<InternalEvent>> {
-//     // ESC [ 64 ; attr1 ; attr2 ; ... ; attrn ; c
-//     assert!(buffer.starts_with(&[b'\x1B', b'[', b'?']));
-//     assert!(buffer.ends_with(&[b'c']));
-
-//     // This is a stub for parsing the primary device attributes. This response is not
-//     // exposed in the crossterm API so we don't need to parse the individual attributes yet.
-//     // See <https://vt100.net/docs/vt510-rm/DA1.html>
-
-//     Ok(Some(InternalEvent::PrimaryDeviceAttributes))
-// }
-
 fn parse_modifiers(mask: u8) -> KeyModifiers {
     let modifier_mask = mask.saturating_sub(1);
     let mut modifiers = KeyModifiers::empty();
@@ -378,7 +304,7 @@ fn parse_key_event_kind(kind: u8) -> KeyEventKind {
 
 pub(crate) fn parse_csi_modifier_key_code(buffer: &[u8]) -> io::Result<Option<Event>> {
     assert!(buffer.starts_with(&[b'\x1B', b'['])); // ESC [
-                                                   //
+    //
     let s = std::str::from_utf8(&buffer[2..buffer.len() - 1])
         .map_err(|_| could_not_parse_event_error())?;
     let mut split = s.split(';');
@@ -576,9 +502,10 @@ pub(crate) fn parse_csi_u_encoded_key_code(buffer: &[u8]) -> io::Result<Option<E
                 match c {
                     '\x1B' => KeyCode::Esc,
                     '\r' => KeyCode::Enter,
-                    // Issue #371: \n = 0xA, which is also the keycode for Ctrl+J. The only reason we get
-                    // newlines as input is because the terminal converts \r into \n for us. When we
-                    // enter raw mode, we disable that, so \n no longer has any meaning - it's better to
+                    // Issue #371: \n = 0xA, which is also the keycode for Ctrl+J. The only reason
+                    // we get newlines as input is because the terminal converts
+                    // \r into \n for us. When we enter raw mode, we disable
+                    // that, so \n no longer has any meaning - it's better to
                     // use Ctrl+J. Waiting to handle it here means it gets picked up later
                     // '\n' if !crate::terminal::sys::is_raw_mode_enabled() => KeyCode::Enter,
                     '\t' => {
@@ -1057,7 +984,6 @@ mod tests {
         );
 
         // parse_csi_bracketed_paste
-        #[cfg(feature = "bracketed-paste")]
         assert_eq!(
             parse_event(b"\x1B[200~on and on and on\x1B[201~").unwrap(),
             Some(Event::Paste("on and on and on".to_string())),
@@ -1130,14 +1056,6 @@ mod tests {
         );
     }
 
-    //     #[test]
-    //     fn test_parse_csi_cursor_position() {
-    //         assert_eq!(
-    //             parse_csi_cursor_position(b"\x1B[20;10R").unwrap(),
-    //             Some(InternalEvent::CursorPosition(9, 19))
-    //         );
-    //     }
-
     #[test]
     fn test_parse_csi() {
         assert_eq!(
@@ -1176,22 +1094,21 @@ mod tests {
         );
     }
 
-    #[cfg(feature = "bracketed-paste")]
     #[test]
     fn test_parse_csi_bracketed_paste() {
         //
         assert_eq!(
-            parse_event(b"\x1B[200~o", false).unwrap(),
+            parse_event(b"\x1B[200~o").unwrap(),
             None,
             "A partial bracketed paste isn't parsed"
         );
         assert_eq!(
-            parse_event(b"\x1B[200~o\x1B[2D", false).unwrap(),
+            parse_event(b"\x1B[200~o\x1B[2D").unwrap(),
             None,
             "A partial bracketed paste containing another escape code isn't parsed"
         );
         assert_eq!(
-            parse_event(b"\x1B[200~o\x1B[2D\x1B[201~", false).unwrap(),
+            parse_event(b"\x1B[200~o\x1B[2D\x1B[201~").unwrap(),
             Some(Event::Paste("o\x1B[2D".to_string()))
         );
     }

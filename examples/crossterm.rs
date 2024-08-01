@@ -3,20 +3,16 @@
 //! cargo run --example event-read
 
 use std::io;
-
-use crossterm::event::{
-    poll, KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags,
-};
-use crossterm::{
-    cursor::position,
-    event::{
-        read, DisableBracketedPaste, DisableFocusChange, DisableMouseCapture, EnableBracketedPaste,
-        EnableFocusChange, EnableMouseCapture,
-    },
-    execute, queue,
-    terminal::{disable_raw_mode, enable_raw_mode},
-};
 use std::time::Duration;
+
+use crossterm::cursor::position;
+use crossterm::event::{
+    poll, read, DisableBracketedPaste, DisableFocusChange, DisableMouseCapture,
+    EnableBracketedPaste, EnableFocusChange, EnableMouseCapture, KeyboardEnhancementFlags,
+    PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags,
+};
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
+use crossterm::{execute, queue};
 use terminput::{Event, KeyCode, UnsupportedEvent};
 
 const HELP: &str = r#"Blocking read()

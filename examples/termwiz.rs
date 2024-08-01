@@ -1,10 +1,9 @@
 use std::time::Duration;
 
 use terminput::{Event, KeyCode, UnsupportedEvent};
-use termwiz::{
-    caps::Capabilities,
-    terminal::{buffered::BufferedTerminal, SystemTerminal, Terminal},
-};
+use termwiz::caps::Capabilities;
+use termwiz::terminal::buffered::BufferedTerminal;
+use termwiz::terminal::{SystemTerminal, Terminal};
 
 fn main() {
     let caps = Capabilities::new_from_env().unwrap();

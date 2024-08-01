@@ -1,10 +1,8 @@
 use std::io;
 
 use terminput::{Event, KeyCode, UnsupportedEvent};
-use termion::{
-    input::{MouseTerminal, TermRead},
-    raw::IntoRawMode,
-};
+use termion::input::{MouseTerminal, TermRead};
+use termion::raw::IntoRawMode;
 
 fn print_events() {
     let stdin = io::stdin();
