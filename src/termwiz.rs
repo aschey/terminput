@@ -10,7 +10,9 @@ impl TryFrom<termwiz::input::InputEvent> for Event {
         Ok(match value {
             termwiz::input::InputEvent::Key(key_event) => Event::Key(key_event.try_into()?),
             termwiz::input::InputEvent::Mouse(mouse_event) => Event::Mouse(mouse_event.try_into()?),
-            termwiz::input::InputEvent::PixelMouse(_) => Err(UnsupportedEvent)?,
+            val @ termwiz::input::InputEvent::PixelMouse(_) => {
+                Err(UnsupportedEvent(format!("{val:?}")))?
+            }
             termwiz::input::InputEvent::Resized { cols, rows } => {
                 Event::Resize(cols as u16, rows as u16)
             }
@@ -162,7 +164,7 @@ impl TryFrom<termwiz::input::KeyEvent> for KeyEvent {
             termwiz::input::KeyCode::KeyPadPageUp => (KeyCode::PageUp, KeyEventState::KEYPAD),
             termwiz::input::KeyCode::KeyPadPageDown => (KeyCode::PageDown, KeyEventState::KEYPAD),
             termwiz::input::KeyCode::KeyPadBegin => (KeyCode::KeypadBegin, KeyEventState::KEYPAD),
-            _ => Err(UnsupportedEvent)?,
+            val => Err(UnsupportedEvent(format!("{val:?}")))?,
         };
         Ok(Self {
             code,
@@ -296,6 +298,6 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             });
         }
 
-        Err(UnsupportedEvent)
+        Err(UnsupportedEvent(format!("{value:?}")))
     }
 }

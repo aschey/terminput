@@ -121,7 +121,7 @@ impl TryFrom<MouseButton> for crossterm::event::MouseButton {
             MouseButton::Left => crossterm::event::MouseButton::Left,
             MouseButton::Right => crossterm::event::MouseButton::Right,
             MouseButton::Middle => crossterm::event::MouseButton::Middle,
-            MouseButton::Unknown => Err(UnsupportedEvent)?,
+            val @ MouseButton::Unknown => Err(UnsupportedEvent(format!("{val:?}")))?,
         })
     }
 }

@@ -10,7 +10,7 @@ impl TryFrom<termion::event::Event> for Event {
         Ok(match value {
             termion::event::Event::Key(key_event) => Event::Key(key_event.try_into()?),
             termion::event::Event::Mouse(mouse_event) => Event::Mouse(mouse_event.try_into()?),
-            termion::event::Event::Unsupported(_) => Err(UnsupportedEvent)?,
+            termion::event::Event::Unsupported(val) => Err(UnsupportedEvent(format!("{val:?}")))?,
         })
     }
 }
@@ -22,7 +22,7 @@ impl TryFrom<Event> for termion::event::Event {
         Ok(match value {
             Event::Key(key_event) => termion::event::Event::Key(key_event.try_into()?),
             Event::Mouse(mouse_event) => termion::event::Event::Mouse(mouse_event.try_into()?),
-            _ => Err(UnsupportedEvent)?,
+            val => Err(UnsupportedEvent(format!("{val:?}")))?,
         })
     }
 }
@@ -260,7 +260,7 @@ impl TryFrom<termion::event::Key> for KeyEvent {
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            _ => Err(UnsupportedEvent)?,
+            val => Err(UnsupportedEvent(format!("{val:?}")))?,
         })
     }
 }
@@ -270,7 +270,7 @@ impl TryFrom<KeyEvent> for termion::event::Key {
 
     fn try_from(value: KeyEvent) -> Result<Self, Self::Error> {
         if value.kind != KeyEventKind::Press {
-            return Err(UnsupportedEvent);
+            return Err(UnsupportedEvent(format!("{value:?}")));
         }
         if value.modifiers.intersects(KeyModifiers::CONTROL) {
             match value.code {
@@ -320,7 +320,7 @@ impl TryFrom<KeyEvent> for termion::event::Key {
             KeyCode::Char(c) => termion::event::Key::Char(c),
             KeyCode::Null => termion::event::Key::Null,
             KeyCode::Esc => termion::event::Key::Esc,
-            _ => Err(UnsupportedEvent)?,
+            val => Err(UnsupportedEvent(format!("{val:?}")))?,
         })
     }
 }
@@ -426,10 +426,12 @@ impl TryFrom<MouseEvent> for termion::event::MouseEvent {
             MouseEventKind::Down(MouseButton::Middle) => {
                 termion::event::MouseEvent::Press(termion::event::MouseButton::Middle, column, row)
             }
-            MouseEventKind::Down(MouseButton::Unknown) => Err(UnsupportedEvent)?,
+            val @ MouseEventKind::Down(MouseButton::Unknown) => {
+                Err(UnsupportedEvent(format!("{val:?}")))?
+            }
             MouseEventKind::Up(_) => termion::event::MouseEvent::Release(column, row),
             MouseEventKind::Drag(_) => termion::event::MouseEvent::Hold(column, row),
-            MouseEventKind::Moved => Err(UnsupportedEvent)?,
+            val @ MouseEventKind::Moved => Err(UnsupportedEvent(format!("{val:?}")))?,
             MouseEventKind::ScrollDown => termion::event::MouseEvent::Press(
                 termion::event::MouseButton::WheelDown,
                 column,

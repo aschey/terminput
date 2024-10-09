@@ -8,11 +8,22 @@ mod termion;
 #[cfg(feature = "termwiz")]
 mod termwiz;
 
+use core::fmt;
+use std::error::Error;
+
 pub use key::*;
 pub use mouse::*;
 
 #[derive(Debug)]
-pub struct UnsupportedEvent;
+pub struct UnsupportedEvent(String);
+
+impl fmt::Display for UnsupportedEvent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Unsupported event: {}", self.0)
+    }
+}
+
+impl Error for UnsupportedEvent {}
 
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Hash)]
 pub enum Event {
