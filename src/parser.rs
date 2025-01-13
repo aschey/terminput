@@ -16,51 +16,103 @@ impl Event {
         match self {
             Event::FocusGained => b"\x1B[I".to_vec(),
             Event::FocusLost => b"\x1B[O".to_vec(),
-            Event::Key(key_event) => match key_event.code {
-                KeyCode::Backspace => b"\x7F".to_vec(),
-                KeyCode::Enter => b"\r".to_vec(),
-                KeyCode::Left => b"\x1B[2D".to_vec(),
-                KeyCode::Right => b"\x1B[2C".to_vec(),
-                KeyCode::Up => b"\x1B[2A".to_vec(),
-                KeyCode::Down => b"\x1B[2B".to_vec(),
-                KeyCode::Home => b"\x1B[2H".to_vec(),
-                KeyCode::End => b"\x1B[2F".to_vec(),
-                KeyCode::PageUp => b"\x1B[5;1:1~".to_vec(),
-                KeyCode::PageDown => b"\x1B[6;1:1~".to_vec(),
-                KeyCode::Tab => b"\t".to_vec(),
-                KeyCode::BackTab => b"\x1B[Z".to_vec(),
-                KeyCode::Delete => b"\x1B[3~".to_vec(),
-                KeyCode::Insert => b"\x1B[2~".to_vec(),
-                KeyCode::F(1) => b"\x1B[11~".to_vec(),
-                KeyCode::F(2) => b"\x1B[12~".to_vec(),
-                KeyCode::F(3) => b"\x1B[13~".to_vec(),
-                KeyCode::F(4) => b"\x1B[14~".to_vec(),
-                KeyCode::F(5) => b"\x1B[15~".to_vec(),
-                KeyCode::F(6) => b"\x1B[17~".to_vec(),
-                KeyCode::F(7) => b"\x1B[18~".to_vec(),
-                KeyCode::F(8) => b"\x1B[19~".to_vec(),
-                KeyCode::F(9) => b"\x1B[20~".to_vec(),
-                KeyCode::F(10) => b"\x1B[21~".to_vec(),
-                KeyCode::F(11) => b"\x1B[23~".to_vec(),
-                KeyCode::F(12) => b"\x1B[24~".to_vec(),
-                KeyCode::F(_) => todo!(),
-                KeyCode::Char(c) => {
-                    let mut dst = vec![0; 1];
-                    c.encode_utf8(&mut dst);
-                    dst
+            Event::Key(key_event) => {
+                if key_event.modifiers.is_empty() {
+                    match key_event.code {
+                        KeyCode::Backspace => b"\x7F".to_vec(),
+                        KeyCode::Enter => b"\r".to_vec(),
+                        KeyCode::Left => b"\x1B[2D".to_vec(),
+                        KeyCode::Right => b"\x1B[2C".to_vec(),
+                        KeyCode::Up => b"\x1B[2A".to_vec(),
+                        KeyCode::Down => b"\x1B[2B".to_vec(),
+                        KeyCode::Home => b"\x1B[2H".to_vec(),
+                        KeyCode::End => b"\x1B[2F".to_vec(),
+                        KeyCode::PageUp => b"\x1B[5;1:1~".to_vec(),
+                        KeyCode::PageDown => b"\x1B[6;1:1~".to_vec(),
+                        KeyCode::Tab => b"\t".to_vec(),
+                        KeyCode::BackTab => b"\x1B[Z".to_vec(),
+                        KeyCode::Delete => b"\x1B[3~".to_vec(),
+                        KeyCode::Insert => b"\x1B[2~".to_vec(),
+                        KeyCode::F(1) => b"\x1B[11~".to_vec(),
+                        KeyCode::F(2) => b"\x1B[12~".to_vec(),
+                        KeyCode::F(3) => b"\x1B[13~".to_vec(),
+                        KeyCode::F(4) => b"\x1B[14~".to_vec(),
+                        KeyCode::F(5) => b"\x1B[15~".to_vec(),
+                        KeyCode::F(6) => b"\x1B[17~".to_vec(),
+                        KeyCode::F(7) => b"\x1B[18~".to_vec(),
+                        KeyCode::F(8) => b"\x1B[19~".to_vec(),
+                        KeyCode::F(9) => b"\x1B[20~".to_vec(),
+                        KeyCode::F(10) => b"\x1B[21~".to_vec(),
+                        KeyCode::F(11) => b"\x1B[23~".to_vec(),
+                        KeyCode::F(12) => b"\x1B[24~".to_vec(),
+                        KeyCode::F(_) => todo!(),
+                        KeyCode::Char(c) => {
+                            let mut dst = vec![0; 1];
+                            c.encode_utf8(&mut dst);
+                            dst
+                        }
+                        KeyCode::Null => todo!(),
+                        KeyCode::Esc => b"\x1B".to_vec(),
+                        KeyCode::CapsLock => b"\x1B[57358u".to_vec(),
+                        KeyCode::ScrollLock => b"\x1B[57359u".to_vec(),
+                        KeyCode::NumLock => b"\x1B[57360u".to_vec(),
+                        KeyCode::PrintScreen => b"\x1B[57361u".to_vec(),
+                        KeyCode::Pause => b"\x1B[57362u".to_vec(),
+                        KeyCode::Menu => b"\x1B[57363u".to_vec(),
+                        KeyCode::KeypadBegin => todo!(),
+                        KeyCode::Media(_) => todo!(),
+                        KeyCode::Modifier(_) => todo!(),
+                    }
+                } else {
+                    let mut result = Vec::new();
+                    if key_event.modifiers.intersects(KeyModifiers::ALT) {
+                        result.append(&mut b"\x1B".to_vec());
+                        match key_event.code {
+                            KeyCode::Char(c) => {
+                                if !key_event.modifiers.intersects(KeyModifiers::CONTROL) {
+                                    let mut dst = vec![0; 1];
+                                    c.encode_utf8(&mut dst);
+                                    result.append(&mut dst);
+                                }
+                            }
+                            KeyCode::Esc => {
+                                if !key_event.modifiers.intersects(KeyModifiers::CONTROL) {
+                                    result.append(&mut b"\x1B".to_vec());
+                                }
+                            }
+                            KeyCode::Backspace => {
+                                if !key_event.modifiers.intersects(KeyModifiers::CONTROL) {
+                                    result.append(&mut b"\x7F".to_vec());
+                                }
+                            }
+                            KeyCode::Enter => {
+                                result.append(&mut b"\r".to_vec());
+                            }
+                            _ => {
+                                todo!()
+                            }
+                        }
+                    }
+                    if key_event.modifiers.intersects(KeyModifiers::CONTROL) {
+                        match key_event.code {
+                            KeyCode::Char(c) => {
+                                let mut dst = vec![(c as u8) + 0x1 - b'a'];
+                                result.append(&mut dst);
+                            }
+                            KeyCode::Backspace => {
+                                result.append(&mut b"\x08".to_vec());
+                            }
+                            KeyCode::Esc => {
+                                result.append(&mut b"\x1B".to_vec());
+                            }
+                            _ => {
+                                todo!()
+                            }
+                        }
+                    }
+                    result
                 }
-                KeyCode::Null => todo!(),
-                KeyCode::Esc => b"\x1B".to_vec(),
-                KeyCode::CapsLock => b"\x1B[57358u".to_vec(),
-                KeyCode::ScrollLock => b"\x1B[57359u".to_vec(),
-                KeyCode::NumLock => b"\x1B[57360u".to_vec(),
-                KeyCode::PrintScreen => b"\x1B[57361u".to_vec(),
-                KeyCode::Pause => b"\x1B[57362u".to_vec(),
-                KeyCode::Menu => b"\x1B[57363u".to_vec(),
-                KeyCode::KeypadBegin => todo!(),
-                KeyCode::Media(_) => todo!(),
-                KeyCode::Modifier(_) => todo!(),
-            },
+            }
             Event::Mouse(_) => todo!(),
             Event::Paste(_) => todo!(),
             Event::Resize(_, _) => todo!(),
@@ -99,7 +151,10 @@ pub fn parse_event(buffer: &[u8]) -> io::Result<Option<Event>> {
                         }
                     }
                     b'[' => parse_csi(buffer),
-                    b'\x1B' => Ok(Some(Event::Key(KeyCode::Esc.into()))),
+                    b'\x1B' => Ok(Some(Event::Key(KeyEvent::new(
+                        KeyCode::Esc,
+                        KeyModifiers::ALT,
+                    )))),
                     _ => parse_event(&buffer[1..]).map(|event_option| {
                         event_option.map(|event| {
                             if let Event::Key(key_event) = event {
@@ -155,7 +210,7 @@ fn char_code_to_event(code: KeyCode) -> KeyEvent {
 }
 
 pub(crate) fn parse_csi(buffer: &[u8]) -> io::Result<Option<Event>> {
-    assert!(buffer.starts_with(&[b'\x1B', b'['])); // ESC [
+    assert!(buffer.starts_with(b"\x1B[")); // ESC [
 
     if buffer.len() == 2 {
         return Ok(None);
@@ -303,7 +358,7 @@ fn parse_key_event_kind(kind: u8) -> KeyEventKind {
 }
 
 pub(crate) fn parse_csi_modifier_key_code(buffer: &[u8]) -> io::Result<Option<Event>> {
-    assert!(buffer.starts_with(&[b'\x1B', b'['])); // ESC [
+    assert!(buffer.starts_with(b"\x1B[")); // ESC [
     //
     let s = std::str::from_utf8(&buffer[2..buffer.len() - 1])
         .map_err(|_| could_not_parse_event_error())?;
@@ -452,8 +507,8 @@ fn translate_functional_key_code(codepoint: u32) -> Option<(KeyCode, KeyEventSta
 }
 
 pub(crate) fn parse_csi_u_encoded_key_code(buffer: &[u8]) -> io::Result<Option<Event>> {
-    assert!(buffer.starts_with(&[b'\x1B', b'['])); // ESC [
-    assert!(buffer.ends_with(&[b'u']));
+    assert!(buffer.starts_with(b"\x1B[")); // ESC [
+    assert!(buffer.ends_with(b"u"));
 
     // This function parses `CSI … u` sequences. These are sequences defined in either
     // the `CSI u` (a.k.a. "Fix Keyboard Input on Terminals - Please", https://www.leonerd.org.uk/hacks/fixterms/)
@@ -563,8 +618,8 @@ pub(crate) fn parse_csi_u_encoded_key_code(buffer: &[u8]) -> io::Result<Option<E
 }
 
 pub(crate) fn parse_csi_special_key_code(buffer: &[u8]) -> io::Result<Option<Event>> {
-    assert!(buffer.starts_with(&[b'\x1B', b'['])); // ESC [
-    assert!(buffer.ends_with(&[b'~']));
+    assert!(buffer.starts_with(b"\x1B[")); // ESC [
+    assert!(buffer.ends_with(b"~"));
 
     let s = std::str::from_utf8(&buffer[2..buffer.len() - 1])
         .map_err(|_| could_not_parse_event_error())?;
@@ -610,8 +665,8 @@ pub(crate) fn parse_csi_rxvt_mouse(buffer: &[u8]) -> io::Result<Option<Event>> {
     // rxvt mouse encoding:
     // ESC [ Cb ; Cx ; Cy ; M
 
-    assert!(buffer.starts_with(&[b'\x1B', b'['])); // ESC [
-    assert!(buffer.ends_with(&[b'M']));
+    assert!(buffer.starts_with(b"\x1B[")); // ESC [
+    assert!(buffer.ends_with(b"M"));
 
     let s = std::str::from_utf8(&buffer[2..buffer.len() - 1])
         .map_err(|_| could_not_parse_event_error())?;
@@ -636,7 +691,7 @@ pub(crate) fn parse_csi_rxvt_mouse(buffer: &[u8]) -> io::Result<Option<Event>> {
 pub(crate) fn parse_csi_normal_mouse(buffer: &[u8]) -> io::Result<Option<Event>> {
     // Normal mouse encoding: ESC [ M CB Cx Cy (6 characters only).
 
-    assert!(buffer.starts_with(&[b'\x1B', b'[', b'M'])); // ESC [ M
+    assert!(buffer.starts_with(b"\x1B[M")); // ESC [ M
 
     if buffer.len() < 6 {
         return Ok(None);
@@ -664,9 +719,9 @@ pub(crate) fn parse_csi_normal_mouse(buffer: &[u8]) -> io::Result<Option<Event>>
 pub(crate) fn parse_csi_sgr_mouse(buffer: &[u8]) -> io::Result<Option<Event>> {
     // ESC [ < Cb ; Cx ; Cy (;) (M or m)
 
-    assert!(buffer.starts_with(&[b'\x1B', b'[', b'<'])); // ESC [ <
+    assert!(buffer.starts_with(b"\x1B[<")); // ESC [ <
 
-    if !buffer.ends_with(&[b'm']) && !buffer.ends_with(&[b'M']) {
+    if !buffer.ends_with(b"m") && !buffer.ends_with(b"M") {
         return Ok(None);
     }
 
@@ -817,10 +872,69 @@ mod tests {
             parse_event(b"\x1B").unwrap(),
             Some(Event::Key(KeyCode::Esc.into())),
         );
-
         assert_eq!(
             Event::Key(KeyCode::Esc.into()).to_escape_sequence(),
             b"\x1B"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B\x1B").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::ALT))),
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::ALT)).to_escape_sequence(),
+            b"\x1B\x1B"
+        );
+
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::CONTROL)).to_escape_sequence(),
+            b"\x1B"
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Esc,
+                KeyModifiers::ALT | KeyModifiers::CONTROL
+            ))
+            .to_escape_sequence(),
+            b"\x1B\x1B"
+        );
+    }
+
+    #[test]
+    fn test_backspace() {
+        assert_eq!(
+            parse_event(b"\x7F").unwrap(),
+            Some(Event::Key(KeyCode::Backspace.into())),
+        );
+        assert_eq!(
+            Event::Key(KeyCode::Backspace.into()).to_escape_sequence(),
+            b"\x7F"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B\x7F").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Backspace,
+                KeyModifiers::ALT
+            ))),
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Backspace, KeyModifiers::ALT)).to_escape_sequence(),
+            b"\x1B\x7F",
+        );
+
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Backspace, KeyModifiers::CONTROL))
+                .to_escape_sequence(),
+            b"\x08",
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Backspace,
+                KeyModifiers::CONTROL | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B\x08",
         );
     }
 
@@ -846,6 +960,15 @@ mod tests {
             Event::Key(KeyCode::Enter.into()).to_escape_sequence(),
             b"\r"
         );
+
+        assert_eq!(
+            parse_event(b"\x1B\r").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::Enter, KeyModifiers::ALT)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Enter, KeyModifiers::ALT)).to_escape_sequence(),
+            b"\x1B\r"
+        );
     }
 
     #[test]
@@ -856,6 +979,26 @@ mod tests {
                 KeyCode::Char('c'),
                 KeyModifiers::ALT
             ))),
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::ALT)).to_escape_sequence(),
+            b"\x1Bc"
+        );
+    }
+
+    #[test]
+    fn test_ctrl_key() {
+        assert_eq!(
+            parse_event(b"\x03").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Char('c'),
+                KeyModifiers::CONTROL
+            ))),
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL))
+                .to_escape_sequence(),
+            b"\x03"
         );
     }
 
@@ -868,17 +1011,33 @@ mod tests {
                 KeyModifiers::ALT | KeyModifiers::SHIFT
             ))),
         );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Char('H'),
+                KeyModifiers::ALT | KeyModifiers::SHIFT
+            ))
+            .to_escape_sequence(),
+            b"\x1BH"
+        )
     }
 
     #[test]
-    fn test_alt_ctrl() {
+    fn test_ctrl_alt() {
         assert_eq!(
             parse_event(b"\x1B\x14").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Char('t'),
                 KeyModifiers::ALT | KeyModifiers::CONTROL
             ))),
-        )
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Char('t'),
+                KeyModifiers::ALT | KeyModifiers::CONTROL
+            ))
+            .to_escape_sequence(),
+            b"\x1B\x14"
+        );
     }
 
     #[test]
@@ -1059,7 +1218,7 @@ mod tests {
     #[test]
     fn test_parse_csi() {
         assert_eq!(
-            parse_csi(b"\x1B[D").unwrap(),
+            parse_event(b"\x1B[D").unwrap(),
             Some(Event::Key(KeyCode::Left.into())),
         );
     }
@@ -1067,7 +1226,7 @@ mod tests {
     #[test]
     fn test_parse_csi_modifier_key_code() {
         assert_eq!(
-            parse_csi_modifier_key_code(b"\x1B[2D").unwrap(),
+            parse_event(b"\x1B[2D").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Left,
                 KeyModifiers::SHIFT
@@ -1078,7 +1237,7 @@ mod tests {
     #[test]
     fn test_parse_csi_special_key_code() {
         assert_eq!(
-            parse_csi_special_key_code(b"\x1B[3~").unwrap(),
+            parse_event(b"\x1B[3~").unwrap(),
             Some(Event::Key(KeyCode::Delete.into())),
         );
     }
@@ -1086,7 +1245,7 @@ mod tests {
     #[test]
     fn test_parse_csi_special_key_code_multiple_values_not_supported() {
         assert_eq!(
-            parse_csi_special_key_code(b"\x1B[3;2~").unwrap(),
+            parse_event(b"\x1B[3;2~").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Delete,
                 KeyModifiers::SHIFT
@@ -1121,7 +1280,7 @@ mod tests {
     #[test]
     fn test_parse_csi_rxvt_mouse() {
         assert_eq!(
-            parse_csi_rxvt_mouse(b"\x1B[32;30;40;M").unwrap(),
+            parse_event(b"\x1B[32;30;40;M").unwrap(),
             Some(Event::Mouse(MouseEvent {
                 kind: MouseEventKind::Down(MouseButton::Left),
                 column: 29,
@@ -1134,7 +1293,7 @@ mod tests {
     #[test]
     fn test_parse_csi_normal_mouse() {
         assert_eq!(
-            parse_csi_normal_mouse(b"\x1B[M0\x60\x70").unwrap(),
+            parse_event(b"\x1B[M0\x60\x70").unwrap(),
             Some(Event::Mouse(MouseEvent {
                 kind: MouseEventKind::Down(MouseButton::Left),
                 column: 63,
@@ -1147,7 +1306,7 @@ mod tests {
     #[test]
     fn test_parse_csi_sgr_mouse() {
         assert_eq!(
-            parse_csi_sgr_mouse(b"\x1B[<0;20;10;M").unwrap(),
+            parse_event(b"\x1B[<0;20;10;M").unwrap(),
             Some(Event::Mouse(MouseEvent {
                 kind: MouseEventKind::Down(MouseButton::Left),
                 column: 19,
@@ -1156,7 +1315,7 @@ mod tests {
             }))
         );
         assert_eq!(
-            parse_csi_sgr_mouse(b"\x1B[<0;20;10M").unwrap(),
+            parse_event(b"\x1B[<0;20;10M").unwrap(),
             Some(Event::Mouse(MouseEvent {
                 kind: MouseEventKind::Down(MouseButton::Left),
                 column: 19,
@@ -1165,7 +1324,7 @@ mod tests {
             }))
         );
         assert_eq!(
-            parse_csi_sgr_mouse(b"\x1B[<0;20;10;m").unwrap(),
+            parse_event(b"\x1B[<0;20;10;m").unwrap(),
             Some(Event::Mouse(MouseEvent {
                 kind: MouseEventKind::Up(MouseButton::Left),
                 column: 19,
@@ -1174,7 +1333,7 @@ mod tests {
             }))
         );
         assert_eq!(
-            parse_csi_sgr_mouse(b"\x1B[<0;20;10m").unwrap(),
+            parse_event(b"\x1B[<0;20;10m").unwrap(),
             Some(Event::Mouse(MouseEvent {
                 kind: MouseEventKind::Up(MouseButton::Left),
                 column: 19,
@@ -1189,43 +1348,49 @@ mod tests {
         // https://www.php.net/manual/en/reference.pcre.pattern.modifiers.php#54805
 
         // 'Valid ASCII' => "a",
-        assert_eq!(parse_utf8_char(b"a").unwrap(), Some('a'),);
+        assert_eq!(
+            parse_event(b"a").unwrap(),
+            Some(Event::Key(KeyCode::Char('a').into()))
+        );
 
         // 'Valid 2 Octet Sequence' => "\xc3\xb1",
-        assert_eq!(parse_utf8_char(&[0xC3, 0xB1]).unwrap(), Some('ñ'),);
+        assert_eq!(
+            parse_event(&[0xC3, 0xB1]).unwrap(),
+            Some(Event::Key(KeyCode::Char('ñ').into()))
+        );
 
         // 'Invalid 2 Octet Sequence' => "\xc3\x28",
-        assert!(parse_utf8_char(&[0xC3, 0x28]).is_err());
+        assert!(parse_event(&[0xC3, 0x28]).is_err());
 
         // 'Invalid Sequence Identifier' => "\xa0\xa1",
-        assert!(parse_utf8_char(&[0xA0, 0xA1]).is_err());
+        assert!(parse_event(&[0xA0, 0xA1]).is_err());
 
         // 'Valid 3 Octet Sequence' => "\xe2\x82\xa1",
         assert_eq!(
-            parse_utf8_char(&[0xE2, 0x81, 0xA1]).unwrap(),
-            Some('\u{2061}'),
+            parse_event(&[0xE2, 0x81, 0xA1]).unwrap(),
+            Some(Event::Key(KeyCode::Char('\u{2061}').into()))
         );
 
         // 'Invalid 3 Octet Sequence (in 2nd Octet)' => "\xe2\x28\xa1",
-        assert!(parse_utf8_char(&[0xE2, 0x28, 0xA1]).is_err());
+        assert!(parse_event(&[0xE2, 0x28, 0xA1]).is_err());
 
         // 'Invalid 3 Octet Sequence (in 3rd Octet)' => "\xe2\x82\x28",
-        assert!(parse_utf8_char(&[0xE2, 0x82, 0x28]).is_err());
+        assert!(parse_event(&[0xE2, 0x82, 0x28]).is_err());
 
         // 'Valid 4 Octet Sequence' => "\xf0\x90\x8c\xbc",
         assert_eq!(
-            parse_utf8_char(&[0xF0, 0x90, 0x8C, 0xBC]).unwrap(),
-            Some('𐌼'),
+            parse_event(&[0xF0, 0x90, 0x8C, 0xBC]).unwrap(),
+            Some(Event::Key(KeyCode::Char('𐌼').into()))
         );
 
         // 'Invalid 4 Octet Sequence (in 2nd Octet)' => "\xf0\x28\x8c\xbc",
-        assert!(parse_utf8_char(&[0xF0, 0x28, 0x8C, 0xBC]).is_err());
+        assert!(parse_event(&[0xF0, 0x28, 0x8C, 0xBC]).is_err());
 
         // 'Invalid 4 Octet Sequence (in 3rd Octet)' => "\xf0\x90\x28\xbc",
-        assert!(parse_utf8_char(&[0xF0, 0x90, 0x28, 0xBC]).is_err());
+        assert!(parse_event(&[0xF0, 0x90, 0x28, 0xBC]).is_err());
 
         // 'Invalid 4 Octet Sequence (in 4th Octet)' => "\xf0\x28\x8c\x28",
-        assert!(parse_utf8_char(&[0xF0, 0x28, 0x8C, 0x28]).is_err());
+        assert!(parse_event(&[0xF0, 0x28, 0x8C, 0x28]).is_err());
     }
 
     #[test]
@@ -1263,21 +1428,21 @@ mod tests {
     #[test]
     fn test_parse_basic_csi_u_encoded_key_code() {
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97u").unwrap(),
+            parse_event(b"\x1B[97u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Char('a'),
                 KeyModifiers::empty()
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;2u").unwrap(),
+            parse_event(b"\x1B[97;2u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Char('A'),
                 KeyModifiers::SHIFT
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;7u").unwrap(),
+            parse_event(b"\x1B[97;7u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Char('a'),
                 KeyModifiers::ALT | KeyModifiers::CONTROL
@@ -1399,14 +1564,14 @@ mod tests {
     #[test]
     fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[13u").unwrap(),
+            parse_event(b"\x1B[13u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Enter,
                 KeyModifiers::empty()
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[27u").unwrap(),
+            parse_event(b"\x1B[27u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Esc,
                 KeyModifiers::empty()
@@ -1414,7 +1579,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57358u").unwrap(),
+            parse_event(b"\x1B[57358u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::CapsLock,
                 KeyModifiers::empty()
@@ -1427,7 +1592,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57359u").unwrap(),
+            parse_event(b"\x1B[57359u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::ScrollLock,
                 KeyModifiers::empty()
@@ -1440,7 +1605,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57360u").unwrap(),
+            parse_event(b"\x1B[57360u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::NumLock,
                 KeyModifiers::empty()
@@ -1452,7 +1617,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57361u").unwrap(),
+            parse_event(b"\x1B[57361u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::PrintScreen,
                 KeyModifiers::empty()
@@ -1465,7 +1630,7 @@ mod tests {
         );
 
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57362u").unwrap(),
+            parse_event(b"\x1B[57362u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Pause,
                 KeyModifiers::empty()
@@ -1489,21 +1654,21 @@ mod tests {
         );
 
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57376u").unwrap(),
+            parse_event(b"\x1B[57376u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::F(13),
                 KeyModifiers::empty()
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57428u").unwrap(),
+            parse_event(b"\x1B[57428u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Media(MediaKeyCode::Play),
                 KeyModifiers::empty()
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57441u").unwrap(),
+            parse_event(b"\x1B[57441u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Modifier(ModifierKeyCode::Shift),
                 KeyModifiers::SHIFT,
@@ -1514,7 +1679,7 @@ mod tests {
     #[test]
     fn test_parse_csi_u_encoded_keypad_code() {
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57399u").unwrap(),
+            parse_event(b"\x1B[57399u").unwrap(),
             Some(Event::Key(KeyEvent::new_with_kind_and_state(
                 KeyCode::Char('0'),
                 KeyModifiers::empty(),
@@ -1523,7 +1688,7 @@ mod tests {
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57419u").unwrap(),
+            parse_event(b"\x1B[57419u").unwrap(),
             Some(Event::Key(KeyEvent::new_with_kind_and_state(
                 KeyCode::Up,
                 KeyModifiers::empty(),
@@ -1536,7 +1701,7 @@ mod tests {
     #[test]
     fn test_parse_csi_u_encoded_key_code_with_types() {
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;1u").unwrap(),
+            parse_event(b"\x1B[97;1u").unwrap(),
             Some(Event::Key(KeyEvent::new_with_kind(
                 KeyCode::Char('a'),
                 KeyModifiers::empty(),
@@ -1544,7 +1709,7 @@ mod tests {
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;1:1u").unwrap(),
+            parse_event(b"\x1B[97;1:1u").unwrap(),
             Some(Event::Key(KeyEvent::new_with_kind(
                 KeyCode::Char('a'),
                 KeyModifiers::empty(),
@@ -1552,7 +1717,7 @@ mod tests {
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;5:1u").unwrap(),
+            parse_event(b"\x1B[97;5:1u").unwrap(),
             Some(Event::Key(KeyEvent::new_with_kind(
                 KeyCode::Char('a'),
                 KeyModifiers::CONTROL,
@@ -1560,7 +1725,7 @@ mod tests {
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;1:2u").unwrap(),
+            parse_event(b"\x1B[97;1:2u").unwrap(),
             Some(Event::Key(KeyEvent::new_with_kind(
                 KeyCode::Char('a'),
                 KeyModifiers::empty(),
@@ -1568,7 +1733,7 @@ mod tests {
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;1:3u").unwrap(),
+            parse_event(b"\x1B[97;1:3u").unwrap(),
             Some(Event::Key(KeyEvent::new_with_kind(
                 KeyCode::Char('a'),
                 KeyModifiers::empty(),
@@ -1580,7 +1745,7 @@ mod tests {
     #[test]
     fn test_parse_csi_u_encoded_key_code_has_modifier_on_modifier_press() {
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57449u").unwrap(),
+            parse_event(b"\x1B[57449u").unwrap(),
             Some(Event::Key(KeyEvent::new_with_kind(
                 KeyCode::Modifier(ModifierKeyCode::Alt),
                 KeyModifiers::ALT,
@@ -1588,7 +1753,7 @@ mod tests {
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57449;3:3u").unwrap(),
+            parse_event(b"\x1B[57449;3:3u").unwrap(),
             Some(Event::Key(KeyEvent::new_with_kind(
                 KeyCode::Modifier(ModifierKeyCode::Alt),
                 KeyModifiers::ALT,
@@ -1596,21 +1761,21 @@ mod tests {
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57450u").unwrap(),
+            parse_event(b"\x1B[57450u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Modifier(ModifierKeyCode::Super),
                 KeyModifiers::SUPER,
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57451u").unwrap(),
+            parse_event(b"\x1B[57451u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Modifier(ModifierKeyCode::Hyper),
                 KeyModifiers::HYPER,
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[57452u").unwrap(),
+            parse_event(b"\x1B[57452u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Modifier(ModifierKeyCode::Meta),
                 KeyModifiers::META,
@@ -1621,21 +1786,21 @@ mod tests {
     #[test]
     fn test_parse_csi_u_encoded_key_code_with_extra_modifiers() {
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;9u").unwrap(),
+            parse_event(b"\x1B[97;9u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Char('a'),
                 KeyModifiers::SUPER
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;17u").unwrap(),
+            parse_event(b"\x1B[97;17u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Char('a'),
                 KeyModifiers::HYPER,
             ))),
         );
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;33u").unwrap(),
+            parse_event(b"\x1B[97;33u").unwrap(),
             Some(Event::Key(KeyEvent::new(
                 KeyCode::Char('a'),
                 KeyModifiers::META,
@@ -1646,7 +1811,7 @@ mod tests {
     #[test]
     fn test_parse_csi_u_encoded_key_code_with_extra_state() {
         assert_eq!(
-            parse_csi_u_encoded_key_code(b"\x1B[97;65u").unwrap(),
+            parse_event(b"\x1B[97;65u").unwrap(),
             Some(Event::Key(KeyEvent::new_with_kind_and_state(
                 KeyCode::Char('a'),
                 KeyModifiers::empty(),
