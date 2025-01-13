@@ -1,6 +1,6 @@
 use crate::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
-    ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, UnsupportedEvent,
+    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, UnsupportedEvent,
 };
 
 impl TryFrom<crossterm::event::Event> for Event {
@@ -183,7 +183,10 @@ impl TryFrom<crossterm::event::KeyCode> for KeyCode {
             crossterm::event::KeyCode::Menu => KeyCode::Menu,
             crossterm::event::KeyCode::KeypadBegin => KeyCode::KeypadBegin,
             crossterm::event::KeyCode::Media(m) => KeyCode::Media(m.try_into()?),
-            crossterm::event::KeyCode::Modifier(m) => KeyCode::Modifier(m.try_into()?),
+            crossterm::event::KeyCode::Modifier(m) => {
+                let (code, direction) = convert_modifier_key_code(m);
+                KeyCode::Modifier(code, direction)
+            }
         })
     }
 }
@@ -219,7 +222,9 @@ impl TryFrom<KeyCode> for crossterm::event::KeyCode {
             KeyCode::Menu => crossterm::event::KeyCode::Menu,
             KeyCode::KeypadBegin => crossterm::event::KeyCode::KeypadBegin,
             KeyCode::Media(m) => crossterm::event::KeyCode::Media(m.try_into()?),
-            KeyCode::Modifier(m) => crossterm::event::KeyCode::Modifier(m.try_into()?),
+            KeyCode::Modifier(code, direction) => crossterm::event::KeyCode::Modifier(
+                convert_crossterm_modifier_key_code(code, direction),
+            ),
         })
     }
 }
@@ -228,7 +233,21 @@ impl TryFrom<crossterm::event::KeyModifiers> for KeyModifiers {
     type Error = UnsupportedEvent;
 
     fn try_from(value: crossterm::event::KeyModifiers) -> Result<Self, Self::Error> {
-        Ok(Self::from_bits_retain(value.bits()))
+        let mut res = KeyModifiers::empty();
+        if value.intersects(crossterm::event::KeyModifiers::ALT) {
+            res |= KeyModifiers::ALT;
+        }
+        if value.intersects(crossterm::event::KeyModifiers::SHIFT) {
+            res |= KeyModifiers::SHIFT;
+        }
+        if value.intersects(crossterm::event::KeyModifiers::CONTROL) {
+            res |= KeyModifiers::CTRL;
+        }
+        if value.intersects(crossterm::event::KeyModifiers::SUPER) {
+            res |= KeyModifiers::SUPER;
+        }
+
+        Ok(res)
     }
 }
 
@@ -236,7 +255,24 @@ impl TryFrom<KeyModifiers> for crossterm::event::KeyModifiers {
     type Error = UnsupportedEvent;
 
     fn try_from(value: KeyModifiers) -> Result<Self, Self::Error> {
-        Ok(Self::from_bits_retain(value.bits()))
+        let mut res = crossterm::event::KeyModifiers::empty();
+        if value.intersects(KeyModifiers::ALT | KeyModifiers::LEFT_ALT | KeyModifiers::RIGHT_ALT) {
+            res |= crossterm::event::KeyModifiers::ALT;
+        }
+        if value
+            .intersects(KeyModifiers::SHIFT | KeyModifiers::LEFT_SHIFT | KeyModifiers::RIGHT_SHIFT)
+        {
+            res |= crossterm::event::KeyModifiers::SHIFT;
+        }
+        if value.intersects(KeyModifiers::CTRL | KeyModifiers::LEFT_CTRL | KeyModifiers::RIGHT_CTRL)
+        {
+            res |= crossterm::event::KeyModifiers::CONTROL;
+        }
+        if value.intersects(KeyModifiers::SUPER) {
+            res |= crossterm::event::KeyModifiers::SUPER;
+        }
+
+        Ok(res)
     }
 }
 
@@ -308,43 +344,98 @@ impl TryFrom<MediaKeyCode> for crossterm::event::MediaKeyCode {
     }
 }
 
-impl TryFrom<crossterm::event::ModifierKeyCode> for ModifierKeyCode {
-    type Error = UnsupportedEvent;
-
-    fn try_from(value: crossterm::event::ModifierKeyCode) -> Result<Self, Self::Error> {
-        Ok(match value {
-            crossterm::event::ModifierKeyCode::LeftShift => ModifierKeyCode::Shift,
-            crossterm::event::ModifierKeyCode::LeftControl => ModifierKeyCode::Control,
-            crossterm::event::ModifierKeyCode::LeftAlt => ModifierKeyCode::Alt,
-            crossterm::event::ModifierKeyCode::LeftSuper => ModifierKeyCode::Super,
-            crossterm::event::ModifierKeyCode::LeftHyper => ModifierKeyCode::Hyper,
-            crossterm::event::ModifierKeyCode::LeftMeta => ModifierKeyCode::Meta,
-            crossterm::event::ModifierKeyCode::RightShift => ModifierKeyCode::Shift,
-            crossterm::event::ModifierKeyCode::RightControl => ModifierKeyCode::Control,
-            crossterm::event::ModifierKeyCode::RightAlt => ModifierKeyCode::Alt,
-            crossterm::event::ModifierKeyCode::RightSuper => ModifierKeyCode::Super,
-            crossterm::event::ModifierKeyCode::RightHyper => ModifierKeyCode::Hyper,
-            crossterm::event::ModifierKeyCode::RightMeta => ModifierKeyCode::Meta,
-            crossterm::event::ModifierKeyCode::IsoLevel3Shift => ModifierKeyCode::IsoLevel3Shift,
-            crossterm::event::ModifierKeyCode::IsoLevel5Shift => ModifierKeyCode::IsoLevel5Shift,
-        })
+fn convert_modifier_key_code(
+    value: crossterm::event::ModifierKeyCode,
+) -> (ModifierKeyCode, ModifierDirection) {
+    match value {
+        crossterm::event::ModifierKeyCode::LeftShift => {
+            (ModifierKeyCode::Shift, ModifierDirection::Left)
+        }
+        crossterm::event::ModifierKeyCode::LeftControl => {
+            (ModifierKeyCode::Control, ModifierDirection::Left)
+        }
+        crossterm::event::ModifierKeyCode::LeftAlt => {
+            (ModifierKeyCode::Alt, ModifierDirection::Left)
+        }
+        crossterm::event::ModifierKeyCode::LeftSuper => {
+            (ModifierKeyCode::Super, ModifierDirection::Left)
+        }
+        crossterm::event::ModifierKeyCode::LeftHyper => {
+            (ModifierKeyCode::Hyper, ModifierDirection::Left)
+        }
+        crossterm::event::ModifierKeyCode::LeftMeta => {
+            (ModifierKeyCode::Meta, ModifierDirection::Left)
+        }
+        crossterm::event::ModifierKeyCode::RightShift => {
+            (ModifierKeyCode::Shift, ModifierDirection::Right)
+        }
+        crossterm::event::ModifierKeyCode::RightControl => {
+            (ModifierKeyCode::Control, ModifierDirection::Right)
+        }
+        crossterm::event::ModifierKeyCode::RightAlt => {
+            (ModifierKeyCode::Alt, ModifierDirection::Right)
+        }
+        crossterm::event::ModifierKeyCode::RightSuper => {
+            (ModifierKeyCode::Super, ModifierDirection::Right)
+        }
+        crossterm::event::ModifierKeyCode::RightHyper => {
+            (ModifierKeyCode::Hyper, ModifierDirection::Right)
+        }
+        crossterm::event::ModifierKeyCode::RightMeta => {
+            (ModifierKeyCode::Meta, ModifierDirection::Right)
+        }
+        crossterm::event::ModifierKeyCode::IsoLevel3Shift => {
+            (ModifierKeyCode::IsoLevel3Shift, ModifierDirection::Unknown)
+        }
+        crossterm::event::ModifierKeyCode::IsoLevel5Shift => {
+            (ModifierKeyCode::IsoLevel5Shift, ModifierDirection::Unknown)
+        }
     }
 }
 
-impl TryFrom<ModifierKeyCode> for crossterm::event::ModifierKeyCode {
-    type Error = UnsupportedEvent;
-
-    fn try_from(value: ModifierKeyCode) -> Result<Self, Self::Error> {
-        Ok(match value {
-            ModifierKeyCode::Shift => crossterm::event::ModifierKeyCode::LeftShift,
-            ModifierKeyCode::Control => crossterm::event::ModifierKeyCode::LeftControl,
-            ModifierKeyCode::Alt => crossterm::event::ModifierKeyCode::LeftAlt,
-            ModifierKeyCode::Super => crossterm::event::ModifierKeyCode::LeftSuper,
-            ModifierKeyCode::Hyper => crossterm::event::ModifierKeyCode::LeftHyper,
-            ModifierKeyCode::Meta => crossterm::event::ModifierKeyCode::LeftMeta,
-            ModifierKeyCode::IsoLevel3Shift => crossterm::event::ModifierKeyCode::IsoLevel3Shift,
-            ModifierKeyCode::IsoLevel5Shift => crossterm::event::ModifierKeyCode::IsoLevel5Shift,
-        })
+fn convert_crossterm_modifier_key_code(
+    code: ModifierKeyCode,
+    direction: ModifierDirection,
+) -> crossterm::event::ModifierKeyCode {
+    match (code, direction) {
+        (ModifierKeyCode::Shift, ModifierDirection::Left | ModifierDirection::Unknown) => {
+            crossterm::event::ModifierKeyCode::LeftShift
+        }
+        (ModifierKeyCode::Control, ModifierDirection::Left | ModifierDirection::Unknown) => {
+            crossterm::event::ModifierKeyCode::LeftControl
+        }
+        (ModifierKeyCode::Alt, ModifierDirection::Left | ModifierDirection::Unknown) => {
+            crossterm::event::ModifierKeyCode::LeftAlt
+        }
+        (ModifierKeyCode::Super, ModifierDirection::Left | ModifierDirection::Unknown) => {
+            crossterm::event::ModifierKeyCode::LeftSuper
+        }
+        (ModifierKeyCode::Hyper, ModifierDirection::Left | ModifierDirection::Unknown) => {
+            crossterm::event::ModifierKeyCode::LeftHyper
+        }
+        (ModifierKeyCode::Meta, ModifierDirection::Left | ModifierDirection::Unknown) => {
+            crossterm::event::ModifierKeyCode::LeftMeta
+        }
+        (ModifierKeyCode::Shift, ModifierDirection::Right) => {
+            crossterm::event::ModifierKeyCode::RightShift
+        }
+        (ModifierKeyCode::Control, ModifierDirection::Right) => {
+            crossterm::event::ModifierKeyCode::RightControl
+        }
+        (ModifierKeyCode::Alt, ModifierDirection::Right) => {
+            crossterm::event::ModifierKeyCode::RightAlt
+        }
+        (ModifierKeyCode::Super, ModifierDirection::Right) => {
+            crossterm::event::ModifierKeyCode::RightSuper
+        }
+        (ModifierKeyCode::Hyper, ModifierDirection::Right) => {
+            crossterm::event::ModifierKeyCode::RightHyper
+        }
+        (ModifierKeyCode::Meta, ModifierDirection::Right) => {
+            crossterm::event::ModifierKeyCode::RightMeta
+        }
+        (ModifierKeyCode::IsoLevel3Shift, _) => crossterm::event::ModifierKeyCode::IsoLevel3Shift,
+        (ModifierKeyCode::IsoLevel5Shift, _) => crossterm::event::ModifierKeyCode::IsoLevel5Shift,
     }
 }
 

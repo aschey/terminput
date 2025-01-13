@@ -114,6 +114,13 @@ impl Hash for KeyEvent {
     }
 }
 
+#[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
+pub enum ModifierDirection {
+    Left,
+    Right,
+    Unknown,
+}
+
 /// Represents a key.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum KeyCode {
@@ -211,7 +218,7 @@ pub enum KeyCode {
     /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] and
     /// [`KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES`] have been enabled with
     /// [`PushKeyboardEnhancementFlags`].
-    Modifier(ModifierKeyCode),
+    Modifier(ModifierKeyCode, ModifierDirection),
 }
 
 bitflags! {
@@ -221,14 +228,20 @@ bitflags! {
     /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
     /// [`PushKeyboardEnhancementFlags`].
     #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
-    pub struct KeyModifiers: u8 {
-        const SHIFT = 0b0000_0001;
-        const CONTROL = 0b0000_0010;
-        const ALT = 0b0000_0100;
-        const SUPER = 0b0000_1000;
-        const HYPER = 0b0001_0000;
-        const META = 0b0010_0000;
-        const NONE = 0b0000_0000;
+    pub struct KeyModifiers: u16 {
+        const NONE = 0;
+        const SHIFT = 1<<1;
+        const ALT = 1<<2;
+        const CTRL = 1<<3;
+        const SUPER = 1<<4;
+        const LEFT_ALT = 1<<5;
+        const RIGHT_ALT = 1<<6;
+        const LEFT_CTRL = 1<<8;
+        const RIGHT_CTRL = 1<<9;
+        const LEFT_SHIFT = 1<<10;
+        const RIGHT_SHIFT = 1<<11;
+        const HYPER = 1<<12;
+        const META = 1<<13;
     }
 }
 

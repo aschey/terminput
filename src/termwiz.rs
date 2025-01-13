@@ -1,6 +1,6 @@
 use crate::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
-    ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, UnsupportedEvent,
+    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, UnsupportedEvent,
 };
 
 impl TryFrom<termwiz::input::InputEvent> for Event {
@@ -28,55 +28,55 @@ impl TryFrom<termwiz::input::KeyEvent> for KeyEvent {
         let (code, state) = match value.key {
             termwiz::input::KeyCode::Char(c) => (KeyCode::Char(c), KeyEventState::empty()),
             termwiz::input::KeyCode::Hyper => (
-                KeyCode::Modifier(ModifierKeyCode::Hyper),
+                KeyCode::Modifier(ModifierKeyCode::Hyper, ModifierDirection::Unknown),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::Super => (
-                KeyCode::Modifier(ModifierKeyCode::Shift),
+                KeyCode::Modifier(ModifierKeyCode::Super, ModifierDirection::Unknown),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::Meta => (
-                KeyCode::Modifier(ModifierKeyCode::Meta),
+                KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Unknown),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::Backspace => (KeyCode::Backspace, KeyEventState::empty()),
             termwiz::input::KeyCode::Tab => (KeyCode::Tab, KeyEventState::empty()),
             termwiz::input::KeyCode::Enter => (KeyCode::Enter, KeyEventState::empty()),
             termwiz::input::KeyCode::Shift => (
-                KeyCode::Modifier(ModifierKeyCode::Shift),
+                KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Unknown),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::Escape => (KeyCode::Esc, KeyEventState::empty()),
             termwiz::input::KeyCode::LeftShift => (
-                KeyCode::Modifier(ModifierKeyCode::Shift),
+                KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Left),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::RightShift => (
-                KeyCode::Modifier(ModifierKeyCode::Shift),
+                KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Right),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::Control => (
-                KeyCode::Modifier(ModifierKeyCode::Control),
+                KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Unknown),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::LeftControl => (
-                KeyCode::Modifier(ModifierKeyCode::Control),
+                KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Left),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::RightControl => (
-                KeyCode::Modifier(ModifierKeyCode::Control),
+                KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Right),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::Alt => (
-                KeyCode::Modifier(ModifierKeyCode::Alt),
+                KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Unknown),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::LeftAlt => (
-                KeyCode::Modifier(ModifierKeyCode::Alt),
+                KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Left),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::RightAlt => (
-                KeyCode::Modifier(ModifierKeyCode::Alt),
+                KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Right),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::Menu => (KeyCode::Menu, KeyEventState::empty()),
@@ -97,11 +97,11 @@ impl TryFrom<termwiz::input::KeyEvent> for KeyEvent {
             termwiz::input::KeyCode::Insert => (KeyCode::Insert, KeyEventState::empty()),
             termwiz::input::KeyCode::Delete => (KeyCode::Delete, KeyEventState::empty()),
             termwiz::input::KeyCode::LeftWindows => (
-                KeyCode::Modifier(ModifierKeyCode::Meta),
+                KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Left),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::RightWindows => (
-                KeyCode::Modifier(ModifierKeyCode::Meta),
+                KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Right),
                 KeyEventState::empty(),
             ),
             termwiz::input::KeyCode::Numpad0 => (KeyCode::Char('0'), KeyEventState::KEYPAD),
@@ -180,26 +180,32 @@ impl TryFrom<termwiz::input::Modifiers> for KeyModifiers {
 
     fn try_from(value: termwiz::input::Modifiers) -> Result<Self, Self::Error> {
         let mut res = KeyModifiers::empty();
-        if value.intersects(
-            termwiz::input::Modifiers::ALT
-                | termwiz::input::Modifiers::LEFT_ALT
-                | termwiz::input::Modifiers::RIGHT_ALT,
-        ) {
+        if value.intersects(termwiz::input::Modifiers::ALT) {
             res |= KeyModifiers::ALT;
         }
-        if value.intersects(
-            termwiz::input::Modifiers::SHIFT
-                | termwiz::input::Modifiers::LEFT_SHIFT
-                | termwiz::input::Modifiers::RIGHT_SHIFT,
-        ) {
+        if value.intersects(termwiz::input::Modifiers::LEFT_ALT) {
+            res |= KeyModifiers::ALT | KeyModifiers::LEFT_ALT;
+        }
+        if value.intersects(termwiz::input::Modifiers::RIGHT_ALT) {
+            res |= KeyModifiers::ALT | KeyModifiers::RIGHT_ALT;
+        }
+        if value.intersects(termwiz::input::Modifiers::SHIFT) {
             res |= KeyModifiers::SHIFT;
         }
-        if value.intersects(
-            termwiz::input::Modifiers::CTRL
-                | termwiz::input::Modifiers::LEFT_CTRL
-                | termwiz::input::Modifiers::RIGHT_CTRL,
-        ) {
-            res |= KeyModifiers::CONTROL;
+        if value.intersects(termwiz::input::Modifiers::LEFT_SHIFT) {
+            res |= KeyModifiers::SHIFT | KeyModifiers::LEFT_SHIFT;
+        }
+        if value.intersects(termwiz::input::Modifiers::RIGHT_SHIFT) {
+            res |= KeyModifiers::SHIFT | KeyModifiers::RIGHT_SHIFT;
+        }
+        if value.intersects(termwiz::input::Modifiers::CTRL) {
+            res |= KeyModifiers::CTRL;
+        }
+        if value.intersects(termwiz::input::Modifiers::LEFT_CTRL) {
+            res |= KeyModifiers::CTRL | KeyModifiers::LEFT_CTRL;
+        }
+        if value.intersects(termwiz::input::Modifiers::RIGHT_CTRL) {
+            res |= KeyModifiers::CTRL | KeyModifiers::RIGHT_CTRL;
         }
         if value.intersects(termwiz::input::Modifiers::SUPER) {
             res |= KeyModifiers::SUPER;

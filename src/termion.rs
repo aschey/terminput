@@ -58,7 +58,7 @@ impl TryFrom<termion::event::Key> for KeyEvent {
             },
             termion::event::Key::CtrlLeft => KeyEvent {
                 code: KeyCode::Left,
-                modifiers: KeyModifiers::CONTROL,
+                modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
@@ -82,7 +82,7 @@ impl TryFrom<termion::event::Key> for KeyEvent {
             },
             termion::event::Key::CtrlRight => KeyEvent {
                 code: KeyCode::Right,
-                modifiers: KeyModifiers::CONTROL,
+                modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
@@ -106,7 +106,7 @@ impl TryFrom<termion::event::Key> for KeyEvent {
             },
             termion::event::Key::CtrlUp => KeyEvent {
                 code: KeyCode::Up,
-                modifiers: KeyModifiers::CONTROL,
+                modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
@@ -130,7 +130,7 @@ impl TryFrom<termion::event::Key> for KeyEvent {
             },
             termion::event::Key::CtrlDown => KeyEvent {
                 code: KeyCode::Down,
-                modifiers: KeyModifiers::CONTROL,
+                modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
@@ -142,7 +142,7 @@ impl TryFrom<termion::event::Key> for KeyEvent {
             },
             termion::event::Key::CtrlHome => KeyEvent {
                 code: KeyCode::Home,
-                modifiers: KeyModifiers::CONTROL,
+                modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
@@ -154,7 +154,7 @@ impl TryFrom<termion::event::Key> for KeyEvent {
             },
             termion::event::Key::CtrlEnd => KeyEvent {
                 code: KeyCode::End,
-                modifiers: KeyModifiers::CONTROL,
+                modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
@@ -232,19 +232,19 @@ impl TryFrom<termion::event::Key> for KeyEvent {
             },
             termion::event::Key::Ctrl('\n') => KeyEvent {
                 code: KeyCode::Enter,
-                modifiers: KeyModifiers::CONTROL,
+                modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
             termion::event::Key::Ctrl('\t') => KeyEvent {
                 code: KeyCode::Tab,
-                modifiers: KeyModifiers::CONTROL,
+                modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
             termion::event::Key::Ctrl(c) => KeyEvent {
                 code: KeyCode::Char(c),
-                modifiers: KeyModifiers::CONTROL,
+                modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
@@ -272,7 +272,7 @@ impl TryFrom<KeyEvent> for termion::event::Key {
         if value.kind != KeyEventKind::Press {
             return Err(UnsupportedEvent(format!("{value:?}")));
         }
-        if value.modifiers.intersects(KeyModifiers::CONTROL) {
+        if value.modifiers.intersects(KeyModifiers::CTRL) {
             match value.code {
                 KeyCode::Char(c) => return Ok(termion::event::Key::Ctrl(c)),
                 KeyCode::Left => return Ok(termion::event::Key::CtrlLeft),
