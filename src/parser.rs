@@ -17,18 +17,18 @@ impl Event {
             Event::FocusGained => b"\x1B[I".to_vec(),
             Event::FocusLost => b"\x1B[O".to_vec(),
             Event::Key(key_event) => {
-                if key_event.modifiers.is_empty() {
+                let mut result = {
                     match key_event.code {
                         KeyCode::Backspace => b"\x7F".to_vec(),
                         KeyCode::Enter => b"\r".to_vec(),
-                        KeyCode::Left => b"\x1B[2D".to_vec(),
-                        KeyCode::Right => b"\x1B[2C".to_vec(),
-                        KeyCode::Up => b"\x1B[2A".to_vec(),
-                        KeyCode::Down => b"\x1B[2B".to_vec(),
-                        KeyCode::Home => b"\x1B[2H".to_vec(),
-                        KeyCode::End => b"\x1B[2F".to_vec(),
-                        KeyCode::PageUp => b"\x1B[5;1:1~".to_vec(),
-                        KeyCode::PageDown => b"\x1B[6;1:1~".to_vec(),
+                        KeyCode::Left => b"\x1B[D".to_vec(),
+                        KeyCode::Right => b"\x1B[C".to_vec(),
+                        KeyCode::Up => b"\x1B[A".to_vec(),
+                        KeyCode::Down => b"\x1B[B".to_vec(),
+                        KeyCode::Home => b"\x1B[H".to_vec(),
+                        KeyCode::End => b"\x1B[F".to_vec(),
+                        KeyCode::PageUp => b"\x1B[5~".to_vec(),
+                        KeyCode::PageDown => b"\x1B[6~".to_vec(),
                         KeyCode::Tab => b"\t".to_vec(),
                         KeyCode::BackTab => b"\x1B[Z".to_vec(),
                         KeyCode::Delete => b"\x1B[3~".to_vec(),
@@ -63,55 +63,54 @@ impl Event {
                         KeyCode::Media(_) => todo!(),
                         KeyCode::Modifier(_) => todo!(),
                     }
-                } else {
-                    let mut result = Vec::new();
-                    if key_event.modifiers.intersects(KeyModifiers::ALT) {
-                        result.append(&mut b"\x1B".to_vec());
-                        match key_event.code {
-                            KeyCode::Char(c) => {
-                                if !key_event.modifiers.intersects(KeyModifiers::CONTROL) {
-                                    let mut dst = vec![0; 1];
-                                    c.encode_utf8(&mut dst);
-                                    result.append(&mut dst);
-                                }
-                            }
-                            KeyCode::Esc => {
-                                if !key_event.modifiers.intersects(KeyModifiers::CONTROL) {
-                                    result.append(&mut b"\x1B".to_vec());
-                                }
-                            }
-                            KeyCode::Backspace => {
-                                if !key_event.modifiers.intersects(KeyModifiers::CONTROL) {
-                                    result.append(&mut b"\x7F".to_vec());
-                                }
-                            }
-                            KeyCode::Enter => {
-                                result.append(&mut b"\r".to_vec());
-                            }
-                            _ => {
-                                todo!()
-                            }
+                };
+
+                if !key_event.modifiers.is_empty() {
+                    match key_event.code {
+                        KeyCode::Left | KeyCode::Right | KeyCode::Up | KeyCode::Down => {
+                            let last = result.pop().unwrap();
+                            result.append(&mut b"1;1".to_vec());
+                            result.push(last);
                         }
+                        _ => {}
                     }
-                    if key_event.modifiers.intersects(KeyModifiers::CONTROL) {
-                        match key_event.code {
-                            KeyCode::Char(c) => {
-                                let mut dst = vec![(c as u8) + 0x1 - b'a'];
-                                result.append(&mut dst);
-                            }
-                            KeyCode::Backspace => {
-                                result.append(&mut b"\x08".to_vec());
-                            }
-                            KeyCode::Esc => {
-                                result.append(&mut b"\x1B".to_vec());
-                            }
-                            _ => {
-                                todo!()
-                            }
-                        }
-                    }
-                    result
                 }
+                if key_event.modifiers.intersects(KeyModifiers::SHIFT) {
+                    match key_event.code {
+                        KeyCode::Left | KeyCode::Right | KeyCode::Up | KeyCode::Down => {
+                            result[4] += 1;
+                        }
+                        _ => {}
+                    }
+                }
+                if key_event.modifiers.intersects(KeyModifiers::ALT) {
+                    match key_event.code {
+                        KeyCode::Char(_) | KeyCode::Esc | KeyCode::Backspace | KeyCode::Enter => {
+                            let mut prefix = b"\x1B".to_vec();
+                            prefix.append(&mut result);
+                            result = prefix;
+                        }
+                        KeyCode::Left | KeyCode::Right | KeyCode::Up | KeyCode::Down => {
+                            result[4] += 2;
+                        }
+                        _ => {}
+                    }
+                }
+                if key_event.modifiers.intersects(KeyModifiers::CONTROL) {
+                    match key_event.code {
+                        KeyCode::Char(c) => {
+                            *result.last_mut().unwrap() = (c as u8) + 0x1 - b'a';
+                        }
+                        KeyCode::Backspace => {
+                            *result.last_mut().unwrap() = b'\x08';
+                        }
+                        KeyCode::Left | KeyCode::Right | KeyCode::Up | KeyCode::Down => {
+                            result[4] += 4;
+                        }
+                        _ => {}
+                    }
+                }
+                result
             }
             Event::Mouse(_) => todo!(),
             Event::Paste(_) => todo!(),
@@ -1041,6 +1040,336 @@ mod tests {
     }
 
     #[test]
+    fn test_left_arrow() {
+        assert_eq!(
+            parse_event(b"\x1B[D").unwrap(),
+            Some(Event::Key(KeyCode::Left.into())),
+        );
+        assert_eq!(
+            Event::Key(KeyCode::Left.into()).to_escape_sequence(),
+            b"\x1B[D"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[2D").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Left,
+                KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;2D").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Left,
+                KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::SHIFT)).to_escape_sequence(),
+            b"\x1B[1;2D"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;5D").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Left,
+                KeyModifiers::CONTROL
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::CONTROL)).to_escape_sequence(),
+            b"\x1B[1;5D"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;3D").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::ALT)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::ALT)).to_escape_sequence(),
+            b"\x1B[1;3D"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;7D").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Left,
+                KeyModifiers::CONTROL | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Left,
+                KeyModifiers::CONTROL | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;7D"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;8D").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Left,
+                KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Left,
+                KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;8D"
+        );
+    }
+
+    #[test]
+    fn test_right_arrow() {
+        assert_eq!(
+            parse_event(b"\x1B[C").unwrap(),
+            Some(Event::Key(KeyCode::Right.into())),
+        );
+        assert_eq!(
+            Event::Key(KeyCode::Right.into()).to_escape_sequence(),
+            b"\x1B[C"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[2C").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Right,
+                KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;2C").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Right,
+                KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::SHIFT)).to_escape_sequence(),
+            b"\x1B[1;2C"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;5C").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Right,
+                KeyModifiers::CONTROL
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::CONTROL)).to_escape_sequence(),
+            b"\x1B[1;5C"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;3C").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::ALT)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::ALT)).to_escape_sequence(),
+            b"\x1B[1;3C"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;7C").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Right,
+                KeyModifiers::CONTROL | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Right,
+                KeyModifiers::CONTROL | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;7C"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;8C").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Right,
+                KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Right,
+                KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;8C"
+        );
+    }
+
+    #[test]
+    fn test_up_arrow() {
+        assert_eq!(
+            parse_event(b"\x1B[A").unwrap(),
+            Some(Event::Key(KeyCode::Up.into())),
+        );
+        assert_eq!(
+            Event::Key(KeyCode::Up.into()).to_escape_sequence(),
+            b"\x1B[A"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[2A").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::Up, KeyModifiers::SHIFT)))
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;2A").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::Up, KeyModifiers::SHIFT)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Up, KeyModifiers::SHIFT)).to_escape_sequence(),
+            b"\x1B[1;2A"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;5A").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Up,
+                KeyModifiers::CONTROL
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Up, KeyModifiers::CONTROL)).to_escape_sequence(),
+            b"\x1B[1;5A"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;3A").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::Up, KeyModifiers::ALT)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Up, KeyModifiers::ALT)).to_escape_sequence(),
+            b"\x1B[1;3A"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;7A").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Up,
+                KeyModifiers::CONTROL | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Up,
+                KeyModifiers::CONTROL | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;7A"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;8A").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Up,
+                KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Up,
+                KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;8A"
+        );
+    }
+
+    #[test]
+    fn test_down_arrow() {
+        assert_eq!(
+            parse_event(b"\x1B[B").unwrap(),
+            Some(Event::Key(KeyCode::Down.into())),
+        );
+        assert_eq!(
+            Event::Key(KeyCode::Down.into()).to_escape_sequence(),
+            b"\x1B[B"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[2B").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Down,
+                KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;2B").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Down,
+                KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Down, KeyModifiers::SHIFT)).to_escape_sequence(),
+            b"\x1B[1;2B"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;5B").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Down,
+                KeyModifiers::CONTROL
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Down, KeyModifiers::CONTROL)).to_escape_sequence(),
+            b"\x1B[1;5B"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;3B").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::Down, KeyModifiers::ALT)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Down, KeyModifiers::ALT)).to_escape_sequence(),
+            b"\x1B[1;3B"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;7B").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Down,
+                KeyModifiers::CONTROL | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Down,
+                KeyModifiers::CONTROL | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;7B"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[1;8B").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Down,
+                KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Down,
+                KeyModifiers::CONTROL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;8B"
+        );
+    }
+
+    #[test]
     fn test_parse_event_subsequent_calls() {
         // The main purpose of this test is to check if we're passing
         // correct slice to other parse_ functions.
@@ -1052,24 +1381,6 @@ mod tests {
         // );
 
         // parse_csi
-        assert_eq!(
-            parse_event(b"\x1B[D").unwrap(),
-            Some(Event::Key(KeyCode::Left.into())),
-        );
-
-        // parse_csi_modifier_key_code
-        assert_eq!(
-            parse_event(b"\x1B[2D").unwrap(),
-            Some(Event::Key(KeyEvent::new(
-                KeyCode::Left,
-                KeyModifiers::SHIFT
-            )))
-        );
-
-        assert_eq!(
-            Event::Key(KeyCode::Left.into()).to_escape_sequence(),
-            b"\x1B[2D"
-        );
 
         assert_eq!(
             parse_event(b"\x1B[C").unwrap(),
