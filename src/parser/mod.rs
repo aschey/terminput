@@ -5,7 +5,10 @@ use crate::{
     ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind,
 };
 
-// This is a lightly modified version of crossterm's ansi escape sequence parser: https://github.com/crossterm-rs/crossterm/blob/master/src/event/sys/unix/parse.rs
+// This is a lightly modified version of crossterm's ansi escape sequence parser:
+// https://github.com/crossterm-rs/crossterm/blob/master/src/event/sys/unix/parse.rs
+
+// Additional functionality is added here to encode events as escape sequences
 
 fn could_not_parse_event_error() -> io::Error {
     io::Error::new(io::ErrorKind::Other, "Could not parse an event.")
@@ -17,6 +20,9 @@ impl Event {
             Event::FocusGained => b"\x1B[I".to_vec(),
             Event::FocusLost => b"\x1B[O".to_vec(),
             Event::Key(key_event) => {
+                if key_event.kind != KeyEventKind::Press {
+                    todo!()
+                }
                 let mut result = {
                     match key_event.code {
                         KeyCode::Backspace => b"\x7F".to_vec(),
@@ -33,10 +39,10 @@ impl Event {
                         KeyCode::BackTab => b"\x1B[Z".to_vec(),
                         KeyCode::Delete => b"\x1B[3~".to_vec(),
                         KeyCode::Insert => b"\x1B[2~".to_vec(),
-                        KeyCode::F(1) => b"\x1B[11~".to_vec(),
-                        KeyCode::F(2) => b"\x1B[12~".to_vec(),
-                        KeyCode::F(3) => b"\x1B[13~".to_vec(),
-                        KeyCode::F(4) => b"\x1B[14~".to_vec(),
+                        KeyCode::F(1) => b"\x1BOP".to_vec(),
+                        KeyCode::F(2) => b"\x1BOQ".to_vec(),
+                        KeyCode::F(3) => b"\x1BOR".to_vec(),
+                        KeyCode::F(4) => b"\x1BOS".to_vec(),
                         KeyCode::F(5) => b"\x1B[15~".to_vec(),
                         KeyCode::F(6) => b"\x1B[17~".to_vec(),
                         KeyCode::F(7) => b"\x1B[18~".to_vec(),
@@ -53,15 +59,30 @@ impl Event {
                         }
                         KeyCode::Null => todo!(),
                         KeyCode::Esc => b"\x1B".to_vec(),
-                        KeyCode::CapsLock => b"\x1B[57358u".to_vec(),
-                        KeyCode::ScrollLock => b"\x1B[57359u".to_vec(),
-                        KeyCode::NumLock => b"\x1B[57360u".to_vec(),
-                        KeyCode::PrintScreen => b"\x1B[57361u".to_vec(),
-                        KeyCode::Pause => b"\x1B[57362u".to_vec(),
-                        KeyCode::Menu => b"\x1B[57363u".to_vec(),
-                        KeyCode::KeypadBegin => todo!(),
-                        KeyCode::Media(_) => todo!(),
-                        KeyCode::Modifier(_, _) => todo!(),
+                        KeyCode::CapsLock
+                        | KeyCode::ScrollLock
+                        | KeyCode::NumLock
+                        | KeyCode::PrintScreen
+                        | KeyCode::Pause
+                        | KeyCode::Menu
+                        | KeyCode::KeypadBegin
+                        | KeyCode::Media(_)
+                        | KeyCode::Modifier(_, _) => todo!(), /* KeyCode::CapsLock =>
+                                                               * b"\x1B[57358u".to_vec(),
+                                                               * KeyCode::ScrollLock =>
+                                                               * b"\x1B[57359u".to_vec(),
+                                                               * KeyCode::NumLock =>
+                                                               * b"\x1B[57360u".to_vec(),
+                                                               * KeyCode::PrintScreen =>
+                                                               * b"\x1B[57361u".to_vec(),
+                                                               * KeyCode::Pause =>
+                                                               * b"\x1B[57362u".to_vec(),
+                                                               * KeyCode::Menu =>
+                                                               * b"\x1B[57363u".to_vec(),
+                                                               * KeyCode::KeypadBegin => todo!(),
+                                                               * KeyCode::Media(_) => todo!(),
+                                                               * KeyCode::Modifier(_, _) =>
+                                                               * todo!(), */
                     }
                 };
 
@@ -77,11 +98,22 @@ impl Event {
                             result.append(&mut b"1;1".to_vec());
                             result.push(last);
                         }
-                        KeyCode::PageUp | KeyCode::PageDown => {
+                        KeyCode::F(1..=4) => {
+                            let last = result.pop().unwrap();
+                            result.pop().unwrap();
+                            result.append(&mut b"[1;1".to_vec());
+                            result.push(last);
+                        }
+                        KeyCode::PageUp
+                        | KeyCode::PageDown
+                        | KeyCode::Delete
+                        | KeyCode::Insert
+                        | KeyCode::F(_) => {
                             let last = result.pop().unwrap();
                             result.append(&mut b";1".to_vec());
                             result.push(last);
                         }
+
                         _ => {}
                     }
                 }
@@ -94,8 +126,14 @@ impl Event {
                         | KeyCode::Home
                         | KeyCode::End
                         | KeyCode::PageUp
-                        | KeyCode::PageDown => {
+                        | KeyCode::PageDown
+                        | KeyCode::Delete
+                        | KeyCode::Insert
+                        | KeyCode::F(1..=4) => {
                             result[4] += 1;
+                        }
+                        KeyCode::F(_) => {
+                            result[5] += 1;
                         }
                         _ => {}
                     }
@@ -119,8 +157,14 @@ impl Event {
                         | KeyCode::Home
                         | KeyCode::End
                         | KeyCode::PageUp
-                        | KeyCode::PageDown => {
+                        | KeyCode::PageDown
+                        | KeyCode::Delete
+                        | KeyCode::Insert
+                        | KeyCode::F(1..=4) => {
                             result[4] += 2;
+                        }
+                        KeyCode::F(_) => {
+                            result[5] += 2;
                         }
                         _ => {}
                     }
@@ -140,18 +184,68 @@ impl Event {
                         | KeyCode::Home
                         | KeyCode::End
                         | KeyCode::PageUp
-                        | KeyCode::PageDown => {
+                        | KeyCode::PageDown
+                        | KeyCode::Delete
+                        | KeyCode::Insert
+                        | KeyCode::F(1..=4) => {
                             result[4] += 4;
+                        }
+                        KeyCode::F(_) => {
+                            result[5] += 4;
                         }
                         _ => {}
                     }
                 }
                 result
             }
-            Event::Mouse(_) => todo!(),
+            Event::Mouse(mouse_event) => {
+                let mut base = match mouse_event.kind {
+                    MouseEventKind::Moved => 35,
+                    MouseEventKind::Down(MouseButton::Left | MouseButton::Unknown)
+                    | MouseEventKind::Up(MouseButton::Left | MouseButton::Unknown) => 0,
+                    MouseEventKind::Down(MouseButton::Middle)
+                    | MouseEventKind::Up(MouseButton::Middle) => 1,
+                    MouseEventKind::Down(MouseButton::Right)
+                    | MouseEventKind::Up(MouseButton::Right) => 2,
+                    MouseEventKind::Drag(MouseButton::Left | MouseButton::Unknown) => 32,
+                    MouseEventKind::Drag(MouseButton::Middle) => 33,
+                    MouseEventKind::Drag(MouseButton::Right) => 34,
+                    MouseEventKind::ScrollDown => 65,
+                    MouseEventKind::ScrollUp => 64,
+                    MouseEventKind::ScrollLeft => 66,
+                    MouseEventKind::ScrollRight => 67,
+                };
+                if mouse_event.modifiers.intersects(KeyModifiers::SHIFT) {
+                    base += 4;
+                }
+                if mouse_event.modifiers.intersects(KeyModifiers::ALT) {
+                    base += 8;
+                }
+                if mouse_event.modifiers.intersects(KeyModifiers::CTRL) {
+                    base += 16;
+                }
+                let mut res = b"\x1B[<".to_vec();
+                res.append(&mut base.to_string().as_bytes().to_vec());
+                res.push(b';');
+                res.append(&mut (mouse_event.column + 1).to_string().as_bytes().to_vec());
+                res.push(b';');
+                res.append(&mut (mouse_event.row + 1).to_string().as_bytes().to_vec());
+
+                if matches!(mouse_event.kind, MouseEventKind::Up(_)) {
+                    res.push(b'm');
+                } else {
+                    res.push(b'M');
+                }
+
+                res
+            }
             Event::Paste(_) => todo!(),
             Event::Resize(_, _) => todo!(),
         }
+    }
+
+    pub fn to_kitty_escape_sequence(&self) -> Vec<u8> {
+        todo!()
     }
 }
 
@@ -298,6 +392,7 @@ pub(crate) fn parse_csi(buffer: &[u8]) -> io::Result<Option<Event>> {
         // https://sw.kovidgoyal.net/kitty/keyboard-protocol/#legacy-functional-keys
         b'P' => Some(Event::Key(KeyCode::F(1).into())),
         b'Q' => Some(Event::Key(KeyCode::F(2).into())),
+        b'R' => Some(Event::Key(KeyCode::F(3).into())),
         b'S' => Some(Event::Key(KeyCode::F(4).into())),
         b'?' => match buffer[buffer.len() - 1] {
             b'u' => return Ok(None), //return parse_csi_keyboard_enhancement_flags(buffer),
@@ -322,7 +417,7 @@ pub(crate) fn parse_csi(buffer: &[u8]) -> io::Result<Option<Event>> {
                         b'M' => return parse_csi_rxvt_mouse(buffer),
                         b'~' => return parse_csi_special_key_code(buffer),
                         b'u' => return parse_csi_u_encoded_key_code(buffer),
-                        b'R' => return Ok(None), //parse_csi_cursor_position(buffer),
+                        //  b'R' => return Ok(None), //parse_csi_cursor_position(buffer),
                         _ => return parse_csi_modifier_key_code(buffer),
                     }
                 }
@@ -1804,6 +1899,166 @@ mod tests {
     }
 
     #[test]
+    fn test_delete() {
+        assert_eq!(
+            parse_event(b"\x1B[3~").unwrap(),
+            Some(Event::Key(KeyCode::Delete.into())),
+        );
+        assert_eq!(
+            Event::Key(KeyCode::Delete.into()).to_escape_sequence(),
+            b"\x1B[3~"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[3;2~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Delete,
+                KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Delete, KeyModifiers::SHIFT)).to_escape_sequence(),
+            b"\x1B[3;2~"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[3;5~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Delete,
+                KeyModifiers::CTRL
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Delete, KeyModifiers::CTRL)).to_escape_sequence(),
+            b"\x1B[3;5~"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[3;3~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Delete,
+                KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Delete, KeyModifiers::ALT)).to_escape_sequence(),
+            b"\x1B[3;3~"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[3;7~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Delete,
+                KeyModifiers::CTRL | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Delete,
+                KeyModifiers::CTRL | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[3;7~"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[3;8~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Delete,
+                KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Delete,
+                KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[3;8~"
+        );
+    }
+
+    #[test]
+    fn test_insert() {
+        assert_eq!(
+            parse_event(b"\x1B[2~").unwrap(),
+            Some(Event::Key(KeyCode::Insert.into())),
+        );
+        assert_eq!(
+            Event::Key(KeyCode::Insert.into()).to_escape_sequence(),
+            b"\x1B[2~"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[2;2~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Insert,
+                KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Insert, KeyModifiers::SHIFT)).to_escape_sequence(),
+            b"\x1B[2;2~"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[2;5~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Insert,
+                KeyModifiers::CTRL
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Insert, KeyModifiers::CTRL)).to_escape_sequence(),
+            b"\x1B[2;5~"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[2;3~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Insert,
+                KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::Insert, KeyModifiers::ALT)).to_escape_sequence(),
+            b"\x1B[2;3~"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[2;7~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Insert,
+                KeyModifiers::CTRL | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Insert,
+                KeyModifiers::CTRL | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[2;7~"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[2;8~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::Insert,
+                KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::Insert,
+                KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[2;8~"
+        );
+    }
+
+    #[test]
     fn test_parse_event_subsequent_calls() {
         // The main purpose of this test is to check if we're passing
         // correct slice to other parse_ functions.
@@ -1864,17 +2119,6 @@ mod tests {
         assert_eq!(
             Event::Key(KeyCode::End.into()).to_escape_sequence(),
             b"\x1B[F"
-        );
-
-        // parse_csi_special_key_code
-        assert_eq!(
-            parse_event(b"\x1B[3~").unwrap(),
-            Some(Event::Key(KeyCode::Delete.into())),
-        );
-
-        assert_eq!(
-            Event::Key(KeyCode::Delete.into()).to_escape_sequence(),
-            b"\x1B[3~"
         );
 
         assert_eq!(
@@ -2074,6 +2318,45 @@ mod tests {
     #[test]
     fn test_parse_csi_sgr_mouse() {
         assert_eq!(
+            parse_event(b"\x1B[<35;20;10M").unwrap(),
+            Some(Event::Mouse(MouseEvent {
+                kind: MouseEventKind::Moved,
+                column: 19,
+                row: 9,
+                modifiers: KeyModifiers::empty()
+            }))
+        );
+        assert_eq!(
+            Event::Mouse(MouseEvent {
+                kind: MouseEventKind::Moved,
+                column: 19,
+                row: 9,
+                modifiers: KeyModifiers::empty()
+            })
+            .to_escape_sequence(),
+            b"\x1B[<35;20;10M"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[<39;20;10M").unwrap(),
+            Some(Event::Mouse(MouseEvent {
+                kind: MouseEventKind::Moved,
+                column: 19,
+                row: 9,
+                modifiers: KeyModifiers::SHIFT
+            }))
+        );
+        assert_eq!(
+            Event::Mouse(MouseEvent {
+                kind: MouseEventKind::Moved,
+                column: 19,
+                row: 9,
+                modifiers: KeyModifiers::SHIFT
+            })
+            .to_escape_sequence(),
+            b"\x1B[<39;20;10M"
+        );
+
+        assert_eq!(
             parse_event(b"\x1B[<0;20;10;M").unwrap(),
             Some(Event::Mouse(MouseEvent {
                 kind: MouseEventKind::Down(MouseButton::Left),
@@ -2092,6 +2375,17 @@ mod tests {
             }))
         );
         assert_eq!(
+            Event::Mouse(MouseEvent {
+                kind: MouseEventKind::Down(MouseButton::Left),
+                column: 19,
+                row: 9,
+                modifiers: KeyModifiers::empty(),
+            })
+            .to_escape_sequence(),
+            b"\x1B[<0;20;10M"
+        );
+
+        assert_eq!(
             parse_event(b"\x1B[<0;20;10;m").unwrap(),
             Some(Event::Mouse(MouseEvent {
                 kind: MouseEventKind::Up(MouseButton::Left),
@@ -2108,6 +2402,56 @@ mod tests {
                 row: 9,
                 modifiers: KeyModifiers::empty(),
             }))
+        );
+        assert_eq!(
+            Event::Mouse(MouseEvent {
+                kind: MouseEventKind::Up(MouseButton::Left),
+                column: 19,
+                row: 9,
+                modifiers: KeyModifiers::empty(),
+            })
+            .to_escape_sequence(),
+            b"\x1B[<0;20;10m"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[<2;20;10M").unwrap(),
+            Some(Event::Mouse(MouseEvent {
+                kind: MouseEventKind::Down(MouseButton::Right),
+                column: 19,
+                row: 9,
+                modifiers: KeyModifiers::empty(),
+            }))
+        );
+        assert_eq!(
+            Event::Mouse(MouseEvent {
+                kind: MouseEventKind::Down(MouseButton::Right),
+                column: 19,
+                row: 9,
+                modifiers: KeyModifiers::empty(),
+            })
+            .to_escape_sequence(),
+            b"\x1B[<2;20;10M"
+        );
+
+        assert_eq!(
+            parse_event(b"\x1B[<1;20;10M").unwrap(),
+            Some(Event::Mouse(MouseEvent {
+                kind: MouseEventKind::Down(MouseButton::Middle),
+                column: 19,
+                row: 9,
+                modifiers: KeyModifiers::empty(),
+            }))
+        );
+        assert_eq!(
+            Event::Mouse(MouseEvent {
+                kind: MouseEventKind::Down(MouseButton::Middle),
+                column: 19,
+                row: 9,
+                modifiers: KeyModifiers::empty(),
+            })
+            .to_escape_sequence(),
+            b"\x1B[<1;20;10M"
         );
     }
 
@@ -2225,8 +2569,35 @@ mod tests {
             Some(Event::Key(KeyCode::F(1).into())),
         );
         assert_eq!(
+            parse_event(b"\x1BOP").unwrap(),
+            Some(Event::Key(KeyCode::F(1).into())),
+        );
+        assert_eq!(
             Event::Key(KeyCode::F(1).into()).to_escape_sequence(),
-            b"\x1B[11~"
+            b"\x1BOP"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;5P").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::F(1), KeyModifiers::CTRL)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::F(1), KeyModifiers::CTRL)).to_escape_sequence(),
+            b"\x1B[1;5P"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;8P").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::F(1),
+                KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::F(1),
+                KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;8P"
         );
 
         assert_eq!(
@@ -2234,8 +2605,35 @@ mod tests {
             Some(Event::Key(KeyCode::F(2).into())),
         );
         assert_eq!(
+            parse_event(b"\x1BOQ").unwrap(),
+            Some(Event::Key(KeyCode::F(2).into())),
+        );
+        assert_eq!(
             Event::Key(KeyCode::F(2).into()).to_escape_sequence(),
-            b"\x1B[12~"
+            b"\x1BOQ"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;5Q").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::F(2), KeyModifiers::CTRL)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::F(2), KeyModifiers::CTRL)).to_escape_sequence(),
+            b"\x1B[1;5Q"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;8Q").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::F(2),
+                KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::F(2),
+                KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;8Q"
         );
 
         assert_eq!(
@@ -2243,8 +2641,35 @@ mod tests {
             Some(Event::Key(KeyCode::F(3).into())),
         );
         assert_eq!(
+            parse_event(b"\x1BOR").unwrap(),
+            Some(Event::Key(KeyCode::F(3).into())),
+        );
+        assert_eq!(
             Event::Key(KeyCode::F(3).into()).to_escape_sequence(),
-            b"\x1B[13~"
+            b"\x1BOR"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;5R").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::F(3), KeyModifiers::CTRL)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::F(3), KeyModifiers::CTRL)).to_escape_sequence(),
+            b"\x1B[1;5R"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;8R").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::F(3),
+                KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::F(3),
+                KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;8R"
         );
 
         assert_eq!(
@@ -2252,8 +2677,35 @@ mod tests {
             Some(Event::Key(KeyCode::F(4).into())),
         );
         assert_eq!(
+            parse_event(b"\x1BOS").unwrap(),
+            Some(Event::Key(KeyCode::F(4).into())),
+        );
+        assert_eq!(
             Event::Key(KeyCode::F(4).into()).to_escape_sequence(),
-            b"\x1B[14~"
+            b"\x1BOS"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;5S").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::F(4), KeyModifiers::CTRL)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::F(4), KeyModifiers::CTRL)).to_escape_sequence(),
+            b"\x1B[1;5S"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[1;8S").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::F(4),
+                KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::F(4),
+                KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[1;8S"
         );
 
         assert_eq!(
@@ -2263,6 +2715,29 @@ mod tests {
         assert_eq!(
             Event::Key(KeyCode::F(5).into()).to_escape_sequence(),
             b"\x1B[15~"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[15;5~").unwrap(),
+            Some(Event::Key(KeyEvent::new(KeyCode::F(5), KeyModifiers::CTRL)))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(KeyCode::F(5), KeyModifiers::CTRL)).to_escape_sequence(),
+            b"\x1B[15;5~"
+        );
+        assert_eq!(
+            parse_event(b"\x1B[15;8~").unwrap(),
+            Some(Event::Key(KeyEvent::new(
+                KeyCode::F(5),
+                KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT
+            )))
+        );
+        assert_eq!(
+            Event::Key(KeyEvent::new(
+                KeyCode::F(5),
+                KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT
+            ))
+            .to_escape_sequence(),
+            b"\x1B[15;8~"
         );
 
         assert_eq!(
