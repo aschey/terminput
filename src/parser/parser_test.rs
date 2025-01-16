@@ -45,7 +45,7 @@ fn test_esc_key() {
 fn test_backspace() {
     assert_eq!(
         parse_event(b"\x7F").unwrap(),
-        Some(Event::Key(KeyCode::Backspace.into())),
+        Some(Event::Key(KeyCode::Backspace.into()))
     );
     assert_eq!(
         Event::Key(KeyCode::Backspace.into())
@@ -89,12 +89,20 @@ fn test_backspace() {
 fn test_focus_gained() {
     assert_eq!(parse_event(b"\x1B[I").unwrap(), Some(Event::FocusGained));
     assert_eq!(Event::FocusGained.to_escape_sequence().unwrap(), b"\x1B[I");
+    assert_eq!(
+        Event::FocusGained.to_kitty_escape_sequence().unwrap(),
+        b"\x1B[I"
+    );
 }
 
 #[test]
 fn test_focus_lost() {
     assert_eq!(parse_event(b"\x1B[O").unwrap(), Some(Event::FocusLost));
     assert_eq!(Event::FocusLost.to_escape_sequence().unwrap(), b"\x1B[O");
+    assert_eq!(
+        Event::FocusLost.to_kitty_escape_sequence().unwrap(),
+        b"\x1B[O"
+    );
 }
 
 #[test]
@@ -1922,6 +1930,12 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
             KeyModifiers::empty()
         ))),
     );
+    assert_eq!(
+        Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::empty()))
+            .to_kitty_escape_sequence()
+            .unwrap(),
+        b"\x1B[27u"
+    );
 
     assert_eq!(
         parse_event(b"\x1B[57358u").unwrap(),
@@ -1930,10 +1944,12 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
             KeyModifiers::empty()
         ))),
     );
-    // assert_eq!(
-    //     Event::Key(KeyEvent::new(KeyCode::CapsLock,
-    // KeyModifiers::empty())).to_escape_sequence().unwrap(),     b"\x1B[57358u"
-    // );
+    assert_eq!(
+        Event::Key(KeyEvent::new(KeyCode::CapsLock, KeyModifiers::empty()))
+            .to_kitty_escape_sequence()
+            .unwrap(),
+        b"\x1B[57358u"
+    );
 
     assert_eq!(
         parse_event(b"\x1B[57359u").unwrap(),
@@ -1942,10 +1958,12 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
             KeyModifiers::empty()
         ))),
     );
-    // assert_eq!(
-    //     Event::Key(KeyEvent::new(KeyCode::ScrollLock,
-    // KeyModifiers::empty())).to_escape_sequence().unwrap(),     b"\x1B[57359u"
-    // );
+    assert_eq!(
+        Event::Key(KeyEvent::new(KeyCode::ScrollLock, KeyModifiers::empty()))
+            .to_kitty_escape_sequence()
+            .unwrap(),
+        b"\x1B[57359u"
+    );
 
     assert_eq!(
         parse_event(b"\x1B[57360u").unwrap(),
@@ -1954,10 +1972,12 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
             KeyModifiers::empty()
         ))),
     );
-    // assert_eq!(
-    //     Event::Key(KeyEvent::new(KeyCode::NumLock,
-    // KeyModifiers::empty())).to_escape_sequence().unwrap(),     b"\x1B[57360u"
-    // );
+    assert_eq!(
+        Event::Key(KeyEvent::new(KeyCode::NumLock, KeyModifiers::empty()))
+            .to_kitty_escape_sequence()
+            .unwrap(),
+        b"\x1B[57360u"
+    );
 
     assert_eq!(
         parse_event(b"\x1B[57361u").unwrap(),
@@ -1966,10 +1986,12 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
             KeyModifiers::empty()
         ))),
     );
-    // assert_eq!(
-    //     Event::Key(KeyEvent::new(KeyCode::PrintScreen,
-    // KeyModifiers::empty())).to_escape_sequence().unwrap(),     b"\x1B[57361u"
-    // );
+    assert_eq!(
+        Event::Key(KeyEvent::new(KeyCode::PrintScreen, KeyModifiers::empty()))
+            .to_kitty_escape_sequence()
+            .unwrap(),
+        b"\x1B[57361u"
+    );
 
     assert_eq!(
         parse_event(b"\x1B[57362u").unwrap(),
@@ -1978,10 +2000,12 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
             KeyModifiers::empty()
         ))),
     );
-    // assert_eq!(
-    //     Event::Key(KeyEvent::new(KeyCode::Pause,
-    // KeyModifiers::empty())).to_escape_sequence().unwrap(),     b"\x1B[57362u"
-    // );
+    assert_eq!(
+        Event::Key(KeyEvent::new(KeyCode::Pause, KeyModifiers::empty()))
+            .to_kitty_escape_sequence()
+            .unwrap(),
+        b"\x1B[57362u"
+    );
 
     assert_eq!(
         parse_csi_u_encoded_key_code(b"\x1B[57363u").unwrap(),
@@ -1990,10 +2014,12 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
             KeyModifiers::empty()
         ))),
     );
-    // assert_eq!(
-    //     Event::Key(KeyEvent::new(KeyCode::Menu,
-    // KeyModifiers::empty())).to_escape_sequence().unwrap(),     b"\x1B[57363u"
-    // );
+    assert_eq!(
+        Event::Key(KeyEvent::new(KeyCode::Menu, KeyModifiers::empty()))
+            .to_kitty_escape_sequence()
+            .unwrap(),
+        b"\x1B[57363u"
+    );
 
     assert_eq!(
         parse_event(b"\x1B[57376u").unwrap(),
@@ -2050,6 +2076,17 @@ fn test_parse_csi_u_encoded_key_code_with_types() {
             KeyEventKind::Press,
         ))),
     );
+    assert_eq!(
+        Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Char('a'),
+            KeyModifiers::empty(),
+            KeyEventKind::Press,
+        ))
+        .to_kitty_escape_sequence()
+        .unwrap(),
+        b"\x1B[97u"
+    );
+
     assert_eq!(
         parse_event(b"\x1B[97;1:1u").unwrap(),
         Some(Event::Key(KeyEvent::new_with_kind(
