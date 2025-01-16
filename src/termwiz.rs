@@ -10,14 +10,13 @@ impl TryFrom<termwiz::input::InputEvent> for Event {
         Ok(match value {
             termwiz::input::InputEvent::Key(key_event) => Event::Key(key_event.try_into()?),
             termwiz::input::InputEvent::Mouse(mouse_event) => Event::Mouse(mouse_event.try_into()?),
-            val @ termwiz::input::InputEvent::PixelMouse(_) => {
-                Err(UnsupportedEvent(format!("{val:?}")))?
-            }
             termwiz::input::InputEvent::Resized { cols, rows } => {
                 Event::Resize(cols as u16, rows as u16)
             }
             termwiz::input::InputEvent::Paste(val) => Event::Paste(val),
-            termwiz::input::InputEvent::Wake => Event::FocusGained,
+            termwiz::input::InputEvent::PixelMouse(_) | termwiz::input::InputEvent::Wake => {
+                Err(UnsupportedEvent(format!("{value:?}")))?
+            }
         })
     }
 }

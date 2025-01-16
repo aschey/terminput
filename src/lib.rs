@@ -1,5 +1,7 @@
 #[cfg(feature = "crossterm")]
 mod crossterm;
+#[cfg(feature = "egui")]
+mod egui;
 mod key;
 mod mouse;
 pub mod parser;

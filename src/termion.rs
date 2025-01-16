@@ -320,7 +320,15 @@ impl TryFrom<KeyEvent> for termion::event::Key {
             KeyCode::Char(c) => termion::event::Key::Char(c),
             KeyCode::Null => termion::event::Key::Null,
             KeyCode::Esc => termion::event::Key::Esc,
-            val => Err(UnsupportedEvent(format!("{val:?}")))?,
+            KeyCode::CapsLock
+            | KeyCode::NumLock
+            | KeyCode::ScrollLock
+            | KeyCode::PrintScreen
+            | KeyCode::Pause
+            | KeyCode::Menu
+            | KeyCode::KeypadBegin
+            | KeyCode::Media(_)
+            | KeyCode::Modifier(_, _) => Err(UnsupportedEvent(format!("{value:?}")))?,
         })
     }
 }
