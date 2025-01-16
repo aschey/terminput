@@ -228,20 +228,14 @@ bitflags! {
     /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
     /// [`PushKeyboardEnhancementFlags`].
     #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
-    pub struct KeyModifiers: u16 {
+    pub struct KeyModifiers: u8 {
         const NONE = 0;
         const SHIFT = 1<<1;
         const ALT = 1<<2;
         const CTRL = 1<<3;
         const SUPER = 1<<4;
-        const LEFT_ALT = 1<<5;
-        const RIGHT_ALT = 1<<6;
-        const LEFT_CTRL = 1<<8;
-        const RIGHT_CTRL = 1<<9;
-        const LEFT_SHIFT = 1<<10;
-        const RIGHT_SHIFT = 1<<11;
-        const HYPER = 1<<12;
-        const META = 1<<13;
+        const HYPER = 1<<5;
+        const META = 1<<6;
     }
 }
 

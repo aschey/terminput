@@ -256,16 +256,13 @@ impl TryFrom<KeyModifiers> for crossterm::event::KeyModifiers {
 
     fn try_from(value: KeyModifiers) -> Result<Self, Self::Error> {
         let mut res = crossterm::event::KeyModifiers::empty();
-        if value.intersects(KeyModifiers::ALT | KeyModifiers::LEFT_ALT | KeyModifiers::RIGHT_ALT) {
+        if value.intersects(KeyModifiers::ALT) {
             res |= crossterm::event::KeyModifiers::ALT;
         }
-        if value
-            .intersects(KeyModifiers::SHIFT | KeyModifiers::LEFT_SHIFT | KeyModifiers::RIGHT_SHIFT)
-        {
+        if value.intersects(KeyModifiers::SHIFT) {
             res |= crossterm::event::KeyModifiers::SHIFT;
         }
-        if value.intersects(KeyModifiers::CTRL | KeyModifiers::LEFT_CTRL | KeyModifiers::RIGHT_CTRL)
-        {
+        if value.intersects(KeyModifiers::CTRL) {
             res |= crossterm::event::KeyModifiers::CONTROL;
         }
         if value.intersects(KeyModifiers::SUPER) {

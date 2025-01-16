@@ -180,32 +180,27 @@ impl TryFrom<termwiz::input::Modifiers> for KeyModifiers {
 
     fn try_from(value: termwiz::input::Modifiers) -> Result<Self, Self::Error> {
         let mut res = KeyModifiers::empty();
-        if value.intersects(termwiz::input::Modifiers::ALT) {
+        if value.intersects(
+            termwiz::input::Modifiers::ALT
+                | termwiz::input::Modifiers::LEFT_ALT
+                | termwiz::input::Modifiers::RIGHT_ALT,
+        ) {
             res |= KeyModifiers::ALT;
         }
-        if value.intersects(termwiz::input::Modifiers::LEFT_ALT) {
-            res |= KeyModifiers::ALT | KeyModifiers::LEFT_ALT;
-        }
-        if value.intersects(termwiz::input::Modifiers::RIGHT_ALT) {
-            res |= KeyModifiers::ALT | KeyModifiers::RIGHT_ALT;
-        }
-        if value.intersects(termwiz::input::Modifiers::SHIFT) {
+        if value.intersects(
+            termwiz::input::Modifiers::SHIFT
+                | termwiz::input::Modifiers::LEFT_SHIFT
+                | termwiz::input::Modifiers::RIGHT_SHIFT,
+        ) {
             res |= KeyModifiers::SHIFT;
         }
-        if value.intersects(termwiz::input::Modifiers::LEFT_SHIFT) {
-            res |= KeyModifiers::SHIFT | KeyModifiers::LEFT_SHIFT;
-        }
-        if value.intersects(termwiz::input::Modifiers::RIGHT_SHIFT) {
-            res |= KeyModifiers::SHIFT | KeyModifiers::RIGHT_SHIFT;
-        }
-        if value.intersects(termwiz::input::Modifiers::CTRL) {
+
+        if value.intersects(
+            termwiz::input::Modifiers::CTRL
+                | termwiz::input::Modifiers::LEFT_CTRL
+                | termwiz::input::Modifiers::RIGHT_CTRL,
+        ) {
             res |= KeyModifiers::CTRL;
-        }
-        if value.intersects(termwiz::input::Modifiers::LEFT_CTRL) {
-            res |= KeyModifiers::CTRL | KeyModifiers::LEFT_CTRL;
-        }
-        if value.intersects(termwiz::input::Modifiers::RIGHT_CTRL) {
-            res |= KeyModifiers::CTRL | KeyModifiers::RIGHT_CTRL;
         }
         if value.intersects(termwiz::input::Modifiers::SUPER) {
             res |= KeyModifiers::SUPER;

@@ -888,43 +888,16 @@ pub(crate) fn parse_csi_u_encoded_key_code(buffer: &[u8]) -> io::Result<Option<E
         }
     };
 
-    if let KeyCode::Modifier(modifier_keycode, direction) = keycode {
+    if let KeyCode::Modifier(modifier_keycode, _) = keycode {
         match modifier_keycode {
             ModifierKeyCode::Alt => {
                 modifiers.set(KeyModifiers::ALT, true);
-                match direction {
-                    ModifierDirection::Left => {
-                        modifiers.set(KeyModifiers::LEFT_ALT, true);
-                    }
-                    ModifierDirection::Right => {
-                        modifiers.set(KeyModifiers::RIGHT_ALT, true);
-                    }
-                    ModifierDirection::Unknown => {}
-                }
             }
             ModifierKeyCode::Control => {
                 modifiers.set(KeyModifiers::CTRL, true);
-                match direction {
-                    ModifierDirection::Left => {
-                        modifiers.set(KeyModifiers::LEFT_CTRL, true);
-                    }
-                    ModifierDirection::Right => {
-                        modifiers.set(KeyModifiers::RIGHT_CTRL, true);
-                    }
-                    ModifierDirection::Unknown => {}
-                }
             }
             ModifierKeyCode::Shift => {
                 modifiers.set(KeyModifiers::SHIFT, true);
-                match direction {
-                    ModifierDirection::Left => {
-                        modifiers.set(KeyModifiers::LEFT_SHIFT, true);
-                    }
-                    ModifierDirection::Right => {
-                        modifiers.set(KeyModifiers::RIGHT_SHIFT, true);
-                    }
-                    ModifierDirection::Unknown => {}
-                }
             }
             ModifierKeyCode::Super => {
                 modifiers.set(KeyModifiers::SUPER, true);

@@ -2039,7 +2039,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
         parse_event(b"\x1B[57441u").unwrap(),
         Some(Event::Key(KeyEvent::new(
             KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Left),
-            KeyModifiers::SHIFT | KeyModifiers::LEFT_SHIFT,
+            KeyModifiers::SHIFT,
         ))),
     );
 }
@@ -2127,7 +2127,7 @@ fn test_parse_csi_u_encoded_key_code_has_modifier_on_modifier_press() {
         parse_event(b"\x1B[57449u").unwrap(),
         Some(Event::Key(KeyEvent::new_with_kind(
             KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Right),
-            KeyModifiers::ALT | KeyModifiers::RIGHT_ALT,
+            KeyModifiers::ALT,
             KeyEventKind::Press,
         ))),
     );
@@ -2135,7 +2135,7 @@ fn test_parse_csi_u_encoded_key_code_has_modifier_on_modifier_press() {
         parse_event(b"\x1B[57449;3:3u").unwrap(),
         Some(Event::Key(KeyEvent::new_with_kind(
             KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Right),
-            KeyModifiers::ALT | KeyModifiers::RIGHT_ALT,
+            KeyModifiers::ALT,
             KeyEventKind::Release,
         ))),
     );
