@@ -1,4 +1,4 @@
-use std::io;
+use std::io::{self, Cursor, Seek, Write};
 
 use crate::{
     Event, KeyCode, KeyEventKind, KeyModifiers, MediaKeyCode, ModifierDirection, ModifierKeyCode,
@@ -6,10 +6,17 @@ use crate::{
 };
 
 impl Event {
-    pub fn to_escape_sequence(&self) -> io::Result<Vec<u8>> {
+    pub fn to_escape_sequence(&self, buf: &mut [u8]) -> io::Result<usize> {
+        let mut buf = Cursor::new(buf);
         match self {
-            Event::FocusGained => Ok(b"\x1B[I".to_vec()),
-            Event::FocusLost => Ok(b"\x1B[O".to_vec()),
+            Event::FocusGained => {
+                buf.write_all(b"\x1B[I")?;
+                Ok(buf.position() as usize)
+            }
+            Event::FocusLost => {
+                buf.write_all(b"\x1B[O")?;
+                Ok(buf.position() as usize)
+            }
             Event::Key(key_event) => {
                 if key_event.kind != KeyEventKind::Press {
                     return Err(io::Error::new(
@@ -17,39 +24,50 @@ impl Event {
                         "Only keypress events can be encoded.",
                     ));
                 }
-                let mut result = {
-                    let suffix = self.keycode_suffix(key_event.code);
-                    let Some(mut suffix) = suffix else {
-                        return Err(io::Error::new(
-                            io::ErrorKind::Unsupported,
-                            "Unsupported keycode.",
-                        ));
-                    };
+
+                if key_event.modifiers.intersects(KeyModifiers::ALT) {
                     match key_event.code {
-                        KeyCode::F(1..=4) => {
-                            let mut res = b"\x1B".to_vec();
-                            res.append(&mut suffix);
-                            res
+                        KeyCode::Char(_)
+                        | KeyCode::Esc
+                        | KeyCode::Backspace
+                        | KeyCode::Enter
+                        | KeyCode::Tab
+                        | KeyCode::BackTab => {
+                            buf.write_all(b"\x1B")?;
                         }
-                        KeyCode::Left
-                        | KeyCode::Right
-                        | KeyCode::Up
-                        | KeyCode::Down
-                        | KeyCode::Home
-                        | KeyCode::End
-                        | KeyCode::PageUp
-                        | KeyCode::PageDown
-                        | KeyCode::BackTab
-                        | KeyCode::Delete
-                        | KeyCode::Insert
-                        | KeyCode::F(_) => {
-                            let mut res = b"\x1B[".to_vec();
-                            res.append(&mut suffix);
-                            res
-                        }
-                        _ => suffix,
+                        _ => {}
                     }
-                };
+                }
+                match key_event.code {
+                    KeyCode::F(1..=4) => {
+                        buf.write_all(b"\x1B")?;
+                        self.keycode_suffix(key_event.code, &mut buf)?;
+                    }
+                    KeyCode::Left
+                    | KeyCode::Right
+                    | KeyCode::Up
+                    | KeyCode::Down
+                    | KeyCode::Home
+                    | KeyCode::End
+                    | KeyCode::PageUp
+                    | KeyCode::PageDown
+                    | KeyCode::BackTab
+                    | KeyCode::Delete
+                    | KeyCode::Insert
+                    | KeyCode::F(_) => {
+                        buf.write_all(b"\x1B[")?;
+                        self.keycode_suffix(key_event.code, &mut buf)?;
+                    }
+                    _ => {
+                        let handled = self.keycode_suffix(key_event.code, &mut buf)?;
+                        if !handled {
+                            return Err(io::Error::new(
+                                io::ErrorKind::Unsupported,
+                                "unsupported key",
+                            ));
+                        }
+                    }
+                }
 
                 if !key_event.modifiers.is_empty() {
                     match key_event.code {
@@ -59,24 +77,29 @@ impl Event {
                         | KeyCode::Down
                         | KeyCode::Home
                         | KeyCode::End => {
-                            let last = result.pop().unwrap();
-                            result.append(&mut b"1;1".to_vec());
-                            result.push(last);
+                            let pos = buf.position() as usize;
+                            let last = buf.get_mut()[pos - 1];
+                            buf.seek_relative(-1)?;
+                            buf.write_all(b"1;1")?;
+                            buf.write_all(&[last])?;
                         }
                         KeyCode::F(1..=4) => {
-                            let last = result.pop().unwrap();
-                            result.pop().unwrap();
-                            result.append(&mut b"[1;1".to_vec());
-                            result.push(last);
+                            let pos = buf.position() as usize;
+                            let last = buf.get_ref()[pos - 1];
+                            buf.seek_relative(-2)?;
+                            buf.write_all(b"[1;1")?;
+                            buf.write_all(&[last])?;
                         }
                         KeyCode::PageUp
                         | KeyCode::PageDown
                         | KeyCode::Delete
                         | KeyCode::Insert
                         | KeyCode::F(_) => {
-                            let last = result.pop().unwrap();
-                            result.append(&mut b";1".to_vec());
-                            result.push(last);
+                            let pos = buf.position() as usize;
+                            let last = buf.get_ref()[pos - 1];
+                            buf.seek_relative(-1)?;
+                            buf.write_all(b";1")?;
+                            buf.write_all(&[last])?;
                         }
                         _ => {}
                     }
@@ -94,26 +117,16 @@ impl Event {
                         | KeyCode::Delete
                         | KeyCode::Insert
                         | KeyCode::F(1..=4) => {
-                            result[4] += 1;
+                            buf.get_mut()[4] += 1;
                         }
                         KeyCode::F(_) => {
-                            result[5] += 1;
+                            buf.get_mut()[5] += 1;
                         }
                         _ => {}
                     }
                 }
                 if key_event.modifiers.intersects(KeyModifiers::ALT) {
                     match key_event.code {
-                        KeyCode::Char(_)
-                        | KeyCode::Esc
-                        | KeyCode::Backspace
-                        | KeyCode::Enter
-                        | KeyCode::Tab
-                        | KeyCode::BackTab => {
-                            let mut prefix = b"\x1B".to_vec();
-                            prefix.append(&mut result);
-                            result = prefix;
-                        }
                         KeyCode::Left
                         | KeyCode::Right
                         | KeyCode::Up
@@ -125,10 +138,10 @@ impl Event {
                         | KeyCode::Delete
                         | KeyCode::Insert
                         | KeyCode::F(1..=4) => {
-                            result[4] += 2;
+                            buf.get_mut()[4] += 2;
                         }
                         KeyCode::F(_) => {
-                            result[5] += 2;
+                            buf.get_mut()[5] += 2;
                         }
                         _ => {}
                     }
@@ -136,10 +149,12 @@ impl Event {
                 if key_event.modifiers.intersects(KeyModifiers::CTRL) {
                     match key_event.code {
                         KeyCode::Char(c) => {
-                            *result.last_mut().unwrap() = (c as u8) + 0x1 - b'a';
+                            let pos = buf.position() as usize;
+                            buf.get_mut()[pos - 1] = (c as u8) + 0x1 - b'a';
                         }
                         KeyCode::Backspace => {
-                            *result.last_mut().unwrap() = b'\x08';
+                            let pos = buf.position() as usize;
+                            buf.get_mut()[pos - 1] = b'\x08';
                         }
                         KeyCode::Left
                         | KeyCode::Right
@@ -152,15 +167,15 @@ impl Event {
                         | KeyCode::Delete
                         | KeyCode::Insert
                         | KeyCode::F(1..=4) => {
-                            result[4] += 4;
+                            buf.get_mut()[4] += 4;
                         }
                         KeyCode::F(_) => {
-                            result[5] += 4;
+                            buf.get_mut()[5] += 4;
                         }
                         _ => {}
                     }
                 }
-                Ok(result)
+                Ok(buf.position() as usize)
             }
             Event::Mouse(mouse_event) => {
                 let mut base = match mouse_event.kind {
@@ -188,26 +203,26 @@ impl Event {
                 if mouse_event.modifiers.intersects(KeyModifiers::CTRL) {
                     base += 16;
                 }
-                let mut res = b"\x1B[<".to_vec();
-                res.append(&mut base.to_string().as_bytes().to_vec());
-                res.push(b';');
-                res.append(&mut (mouse_event.column + 1).to_string().as_bytes().to_vec());
-                res.push(b';');
-                res.append(&mut (mouse_event.row + 1).to_string().as_bytes().to_vec());
+                buf.write_all(b"\x1B[<")?;
+                buf.write_all(base.to_string().as_bytes())?;
+                buf.write_all(b";")?;
+                buf.write_all((mouse_event.column + 1).to_string().as_bytes())?;
+                buf.write_all(b";")?;
+                buf.write_all((mouse_event.row + 1).to_string().as_bytes())?;
 
                 if matches!(mouse_event.kind, MouseEventKind::Up(_)) {
-                    res.push(b'm');
+                    buf.write_all(b"m")?;
                 } else {
-                    res.push(b'M');
+                    buf.write_all(b"M")?;
                 }
 
-                Ok(res)
+                Ok(buf.position() as usize)
             }
             Event::Paste(text) => {
-                let mut res = b"\x1B[200~".to_vec();
-                res.append(&mut text.as_bytes().to_vec());
-                res.append(&mut b"\x1B[201~".to_vec());
-                Ok(res)
+                buf.write_all(b"\x1B[200~")?;
+                buf.write_all(text.as_bytes())?;
+                buf.write_all(b"\x1B[201~")?;
+                Ok(buf.position() as usize)
             }
             Event::Resize(_, _) => Err(io::Error::new(
                 io::ErrorKind::Unsupported,
@@ -216,145 +231,158 @@ impl Event {
         }
     }
 
-    fn keycode_suffix(&self, key_code: KeyCode) -> Option<Vec<u8>> {
+    fn keycode_suffix(&self, key_code: KeyCode, buf: &mut Cursor<&mut [u8]>) -> io::Result<bool> {
         match key_code {
-            KeyCode::Backspace => Some(b"\x7F".to_vec()),
-            KeyCode::Enter => Some(b"\r".to_vec()),
-            KeyCode::Left => Some(b"D".to_vec()),
-            KeyCode::Right => Some(b"C".to_vec()),
-            KeyCode::Up => Some(b"A".to_vec()),
-            KeyCode::Down => Some(b"B".to_vec()),
-            KeyCode::Home => Some(b"H".to_vec()),
-            KeyCode::End => Some(b"F".to_vec()),
-            KeyCode::PageUp => Some(b"5~".to_vec()),
-            KeyCode::PageDown => Some(b"6~".to_vec()),
-            KeyCode::Tab => Some(b"\t".to_vec()),
-            KeyCode::BackTab => Some(b"Z".to_vec()),
-            KeyCode::Delete => Some(b"3~".to_vec()),
-            KeyCode::Insert => Some(b"2~".to_vec()),
-            KeyCode::F(1) => Some(b"OP".to_vec()),
-            KeyCode::F(2) => Some(b"OQ".to_vec()),
-            KeyCode::F(3) => Some(b"OR".to_vec()),
-            KeyCode::F(4) => Some(b"OS".to_vec()),
-            KeyCode::F(5) => Some(b"15~".to_vec()),
-            KeyCode::F(6) => Some(b"17~".to_vec()),
-            KeyCode::F(7) => Some(b"18~".to_vec()),
-            KeyCode::F(8) => Some(b"19~".to_vec()),
-            KeyCode::F(9) => Some(b"20~".to_vec()),
-            KeyCode::F(10) => Some(b"21~".to_vec()),
-            KeyCode::F(11) => Some(b"23~".to_vec()),
-            KeyCode::F(12) => Some(b"24~".to_vec()),
-            KeyCode::F(_) => None,
+            KeyCode::Backspace => buf.write_all(b"\x7F"),
+            KeyCode::Enter => buf.write_all(b"\r"),
+            KeyCode::Left => buf.write_all(b"D"),
+            KeyCode::Right => buf.write_all(b"C"),
+            KeyCode::Up => buf.write_all(b"A"),
+            KeyCode::Down => buf.write_all(b"B"),
+            KeyCode::Home => buf.write_all(b"H"),
+            KeyCode::End => buf.write_all(b"F"),
+            KeyCode::PageUp => buf.write_all(b"5~"),
+            KeyCode::PageDown => buf.write_all(b"6~"),
+            KeyCode::Tab => buf.write_all(b"\t"),
+            KeyCode::BackTab => buf.write_all(b"Z"),
+            KeyCode::Delete => buf.write_all(b"3~"),
+            KeyCode::Insert => buf.write_all(b"2~"),
+            KeyCode::F(1) => buf.write_all(b"OP"),
+            KeyCode::F(2) => buf.write_all(b"OQ"),
+            KeyCode::F(3) => buf.write_all(b"OR"),
+            KeyCode::F(4) => buf.write_all(b"OS"),
+            KeyCode::F(5) => buf.write_all(b"15~"),
+            KeyCode::F(6) => buf.write_all(b"17~"),
+            KeyCode::F(7) => buf.write_all(b"18~"),
+            KeyCode::F(8) => buf.write_all(b"19~"),
+            KeyCode::F(9) => buf.write_all(b"20~"),
+            KeyCode::F(10) => buf.write_all(b"21~"),
+            KeyCode::F(11) => buf.write_all(b"23~"),
+            KeyCode::F(12) => buf.write_all(b"24~"),
             KeyCode::Char(c) => {
-                let mut dst = vec![0; 1];
-                c.encode_utf8(&mut dst);
-                Some(dst)
+                let pos = buf.position() as usize;
+                let len = c.encode_utf8(&mut buf.get_mut()[pos..]).len();
+                buf.seek_relative(len as i64)
             }
-            // KeyCode::Null => None,
-            KeyCode::Esc => Some(b"\x1B".to_vec()),
-            _ => None,
-        }
+            KeyCode::Esc => buf.write_all(b"\x1B"),
+            _ => return Ok(false),
+        }?;
+        Ok(true)
     }
 
-    pub fn to_kitty_escape_sequence(&self) -> io::Result<Vec<u8>> {
+    pub fn to_kitty_escape_sequence(&self, buf: &mut [u8]) -> io::Result<usize> {
+        let mut buf = Cursor::new(buf);
+        buf.write_all(b"\x1B[")?;
         match self {
-            Event::FocusGained => Ok(b"\x1B[I".to_vec()),
-            Event::FocusLost => Ok(b"\x1B[O".to_vec()),
+            Event::FocusGained => {
+                buf.write_all(b"I")?;
+                Ok(buf.position() as usize)
+            }
+            Event::FocusLost => {
+                buf.write_all(b"O")?;
+                Ok(buf.position() as usize)
+            }
             Event::Key(key_event) => {
-                let mut suffix = if let Some(suffix) = self.keycode_suffix(key_event.code) {
-                    let suffix = suffix
-                        .into_iter()
-                        .map(|b| b.to_string())
-                        .collect::<String>()
-                        .into_bytes();
+                match key_event.code {
+                    KeyCode::CapsLock => buf.write_all(b"57358")?,
+                    KeyCode::ScrollLock => buf.write_all(b"57359")?,
+                    KeyCode::NumLock => buf.write_all(b"57360")?,
+                    KeyCode::PrintScreen => buf.write_all(b"57361")?,
+                    KeyCode::Pause => buf.write_all(b"57362")?,
+                    KeyCode::Menu => buf.write_all(b"57363")?,
+                    KeyCode::F(val @ 13..=35) => {
+                        buf.write_all(&(57376 + (val as u16 - 13)).to_string().into_bytes())?;
+                    }
+                    KeyCode::F(36..) => {
+                        return Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported"));
+                    }
+                    KeyCode::Media(MediaKeyCode::Play) => buf.write_all(b"57428")?,
+                    KeyCode::Media(MediaKeyCode::Pause) => buf.write_all(b"57429")?,
+                    KeyCode::Media(MediaKeyCode::PlayPause) => buf.write_all(b"57430")?,
+                    KeyCode::Media(MediaKeyCode::Reverse) => buf.write_all(b"57431")?,
+                    KeyCode::Media(MediaKeyCode::Stop) => buf.write_all(b"57432")?,
+                    KeyCode::Media(MediaKeyCode::FastForward) => buf.write_all(b"57433")?,
+                    KeyCode::Media(MediaKeyCode::Rewind) => buf.write_all(b"57434")?,
+                    KeyCode::Media(MediaKeyCode::TrackNext) => buf.write_all(b"57435")?,
+                    KeyCode::Media(MediaKeyCode::TrackPrevious) => buf.write_all(b"57436")?,
+                    KeyCode::Media(MediaKeyCode::Record) => buf.write_all(b"57437")?,
+                    KeyCode::Media(MediaKeyCode::LowerVolume) => buf.write_all(b"57438")?,
+                    KeyCode::Media(MediaKeyCode::RaiseVolume) => buf.write_all(b"57439")?,
+                    KeyCode::Media(MediaKeyCode::MuteVolume) => buf.write_all(b"57440")?,
+                    KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Left) => {
+                        buf.write_all(b"57441")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Left) => {
+                        buf.write_all(b"57442")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Left) => {
+                        buf.write_all(b"57443")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Super, ModifierDirection::Left) => {
+                        buf.write_all(b"57444")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Hyper, ModifierDirection::Left) => {
+                        buf.write_all(b"57445")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Left) => {
+                        buf.write_all(b"57446")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Right) => {
+                        buf.write_all(b"57447")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Right) => {
+                        buf.write_all(b"57448")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Right) => {
+                        buf.write_all(b"57449")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Super, ModifierDirection::Right) => {
+                        buf.write_all(b"57450")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Hyper, ModifierDirection::Right) => {
+                        buf.write_all(b"57451")?
+                    }
+                    KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Right) => {
+                        buf.write_all(b"57452")?
+                    }
+                    KeyCode::Modifier(
+                        ModifierKeyCode::IsoLevel3Shift,
+                        ModifierDirection::Unknown,
+                    ) => buf.write_all(b"57453")?,
+                    KeyCode::Modifier(
+                        ModifierKeyCode::IsoLevel5Shift,
+                        ModifierDirection::Unknown,
+                    ) => buf.write_all(b"57454")?,
+                    KeyCode::Null => {
+                        return Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported"));
+                    }
+                    key_code => {
+                        let old_pos = buf.position() as usize;
+                        self.keycode_suffix(key_code, &mut buf)?;
+                        let new_pos = buf.position() as usize;
+                        let suffix_bytes = buf.get_ref()[old_pos..new_pos]
+                            .iter()
+                            .map(|b| b.to_string())
+                            .collect::<String>()
+                            .into_bytes();
+                        buf.seek_relative(old_pos as i64 - new_pos as i64)?;
 
-                    if let KeyCode::F(1..=4) = key_event.code {
-                        suffix[1..].to_vec()
-                    } else {
-                        suffix
+                        if let KeyCode::F(1..=4) = key_code {
+                            buf.write_all(&suffix_bytes[1..])?;
+                        } else {
+                            buf.write_all(&suffix_bytes)?;
+                        }
                     }
-                } else {
-                    match key_event.code {
-                        KeyCode::CapsLock => b"57358".to_vec(),
-                        KeyCode::ScrollLock => b"57359".to_vec(),
-                        KeyCode::NumLock => b"57360".to_vec(),
-                        KeyCode::PrintScreen => b"57361".to_vec(),
-                        KeyCode::Pause => b"57362".to_vec(),
-                        KeyCode::Menu => b"57363".to_vec(),
-                        KeyCode::F(val @ 13..=35) => {
-                            (57376 + (val as u16 - 13)).to_string().into_bytes()
-                        }
-                        KeyCode::Media(MediaKeyCode::Play) => b"57428".to_vec(),
-                        KeyCode::Media(MediaKeyCode::Pause) => b"57429".to_vec(),
-                        KeyCode::Media(MediaKeyCode::PlayPause) => b"57430".to_vec(),
-                        KeyCode::Media(MediaKeyCode::Reverse) => b"57431".to_vec(),
-                        KeyCode::Media(MediaKeyCode::Stop) => b"57432".to_vec(),
-                        KeyCode::Media(MediaKeyCode::FastForward) => b"57433".to_vec(),
-                        KeyCode::Media(MediaKeyCode::Rewind) => b"57434".to_vec(),
-                        KeyCode::Media(MediaKeyCode::TrackNext) => b"57435".to_vec(),
-                        KeyCode::Media(MediaKeyCode::TrackPrevious) => b"57436".to_vec(),
-                        KeyCode::Media(MediaKeyCode::Record) => b"57437".to_vec(),
-                        KeyCode::Media(MediaKeyCode::LowerVolume) => b"57438".to_vec(),
-                        KeyCode::Media(MediaKeyCode::RaiseVolume) => b"57439".to_vec(),
-                        KeyCode::Media(MediaKeyCode::MuteVolume) => b"57440".to_vec(),
-                        KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Left) => {
-                            b"57441".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Left) => {
-                            b"57442".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Left) => {
-                            b"57443".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Super, ModifierDirection::Left) => {
-                            b"57444".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Hyper, ModifierDirection::Left) => {
-                            b"57445".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Left) => {
-                            b"57446".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Right) => {
-                            b"57447".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Right) => {
-                            b"57448".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Right) => {
-                            b"57449".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Super, ModifierDirection::Right) => {
-                            b"57450".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Hyper, ModifierDirection::Right) => {
-                            b"57451".to_vec()
-                        }
-                        KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Right) => {
-                            b"57452".to_vec()
-                        }
-                        KeyCode::Modifier(
-                            ModifierKeyCode::IsoLevel3Shift,
-                            ModifierDirection::Unknown,
-                        ) => b"57453".to_vec(),
-                        KeyCode::Modifier(
-                            ModifierKeyCode::IsoLevel5Shift,
-                            ModifierDirection::Unknown,
-                        ) => b"57454".to_vec(),
-                        KeyCode::Null => {
-                            return Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported"));
-                        }
-                        _ => unreachable!(),
-                    }
-                };
-                let mut res = b"\x1B[".to_vec();
-                res.append(&mut suffix);
-                res.push(b'u');
-                Ok(res)
+                }
+                buf.write_all(b"u")?;
+                Ok(buf.position() as usize)
             }
             Event::Mouse(_) => todo!(),
-            Event::Paste(_) => {
-                todo!()
+            Event::Paste(text) => {
+                buf.write_all(b"200~")?;
+                buf.write_all(text.as_bytes())?;
+                buf.write_all(b"\x1B[201~")?;
+                Ok(buf.position() as usize)
             }
             Event::Resize(_, _) => Err(io::Error::new(
                 io::ErrorKind::Unsupported,
