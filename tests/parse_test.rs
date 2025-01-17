@@ -1,4 +1,8 @@
-use super::*;
+use terminput::parser::parse_event;
+use terminput::{
+    Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
+    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind,
+};
 
 #[test]
 fn test_esc_key() {
@@ -1347,7 +1351,7 @@ fn test_parse_csi_bracketed_paste() {
 
 #[test]
 fn test_parse_csi_focus() {
-    assert_eq!(parse_csi(b"\x1B[O").unwrap(), Some(Event::FocusLost));
+    assert_eq!(parse_event(b"\x1B[O").unwrap(), Some(Event::FocusLost));
 }
 
 #[test]
@@ -2008,7 +2012,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
 
     assert_eq!(
-        parse_csi_u_encoded_key_code(b"\x1B[57363u").unwrap(),
+        parse_event(b"\x1B[57363u").unwrap(),
         Some(Event::Key(KeyEvent::new(
             KeyCode::Menu,
             KeyModifiers::empty()
@@ -2199,7 +2203,7 @@ fn test_parse_csi_u_encoded_key_code_with_extra_state() {
         ))),
     );
     assert_eq!(
-        parse_csi_u_encoded_key_code(b"\x1B[49;129u").unwrap(),
+        parse_event(b"\x1B[49;129u").unwrap(),
         Some(Event::Key(KeyEvent::new_with_kind_and_state(
             KeyCode::Char('1'),
             KeyModifiers::empty(),

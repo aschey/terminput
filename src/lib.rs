@@ -2,6 +2,7 @@
 mod crossterm;
 #[cfg(feature = "egui")]
 mod egui;
+mod encoder;
 mod key;
 mod mouse;
 pub mod parser;
