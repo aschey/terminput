@@ -256,8 +256,8 @@ impl Event {
 
     pub fn to_kitty_escape_sequence(
         &self,
-        flags: KeyboardEnhancementFlags,
         buf: &mut [u8],
+        flags: KeyboardEnhancementFlags,
     ) -> io::Result<usize> {
         match self {
             Event::Key(mut key_event) => {
@@ -382,9 +382,7 @@ impl Event {
                                     let upper = c.to_ascii_uppercase();
                                     if upper != c {
                                         buf.write_all(b":")?;
-                                        let pos = buf.position() as usize;
-                                        let len = c.encode_utf8(&mut buf.get_mut()[pos..]).len();
-                                        buf.seek_relative(len as i64)?;
+                                        buf.write_all(&(upper as u8).to_string().into_bytes())?;
                                     }
                                 }
                             }
@@ -400,7 +398,14 @@ impl Event {
 
                 if !key_event.modifiers.is_empty() || key_event.kind != KeyEventKind::Press {
                     buf.write_all(b";")?;
-                    buf.write_all(&[key_event.modifiers.bits() + 1])?;
+                    let pos = buf.position() as usize;
+                    (key_event.modifiers.bits() + 1)
+                        .to_string()
+                        .chars()
+                        .next()
+                        .expect("should have exactly one char")
+                        .encode_utf8(&mut buf.get_mut()[pos..]);
+                    buf.seek_relative(1)?;
                 }
                 if flags.intersects(KeyboardEnhancementFlags::REPORT_EVENT_TYPES) {
                     match key_event.kind {

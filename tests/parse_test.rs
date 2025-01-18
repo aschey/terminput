@@ -92,7 +92,7 @@ fn test_focus_gained() {
     assert_eq!(buf[..written], *b"\x1B[I");
     let mut buf = [0; 8];
     let written = Event::FocusGained
-        .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[I");
 }
@@ -105,7 +105,7 @@ fn test_focus_lost() {
     assert_eq!(buf[..written], *b"\x1B[O");
     let mut buf = [0; 8];
     let written = Event::FocusLost
-        .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[O");
 }
@@ -201,6 +201,61 @@ fn test_ctrl_alt() {
     .to_escape_sequence(&mut buf)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B\x14");
+}
+
+#[test]
+fn test_kitty_modifiers() {
+    assert_eq!(
+        parse_event(b"\x1B[99;5u").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::Char('c'),
+            KeyModifiers::CTRL
+        ))),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CTRL))
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99;5u");
+
+    assert_eq!(
+        parse_event(b"\x1B[99:67;2u").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::Char('C'),
+            KeyModifiers::SHIFT
+        ))),
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new(KeyCode::Char('C'), KeyModifiers::SHIFT))
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99:67;2u");
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::SHIFT))
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99:67;2u");
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new(KeyCode::Char('C'), KeyModifiers::NONE))
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99:67;2u");
+
+    assert_eq!(
+        parse_event(b"\x1B[99;7u").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::Char('c'),
+            KeyModifiers::CTRL | KeyModifiers::ALT
+        ))),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(
+        KeyCode::Char('c'),
+        KeyModifiers::CTRL | KeyModifiers::ALT,
+    ))
+    .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99;7u");
 }
 
 #[test]
@@ -1052,7 +1107,7 @@ fn test_parse_event_subsequent_calls() {
     assert_eq!(buf[..written], *b"\x1B[200~on and on and on\x1B[201~");
     let mut buf = [0; 32];
     let written = Event::Paste("on and on and on".to_string())
-        .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[200~on and on and on\x1B[201~");
 
@@ -1777,7 +1832,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[27u");
 
@@ -1790,7 +1845,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::CapsLock, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57358u");
 
@@ -1803,7 +1858,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::ScrollLock, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57359u");
 
@@ -1816,7 +1871,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::NumLock, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57360u");
 
@@ -1829,7 +1884,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::PrintScreen, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57361u");
 
@@ -1842,7 +1897,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Pause, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57362u");
 
@@ -1855,7 +1910,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Menu, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57363u");
 
@@ -1920,7 +1975,7 @@ fn test_parse_csi_u_encoded_key_code_with_types() {
         KeyModifiers::empty(),
         KeyEventKind::Press,
     ))
-    .to_kitty_escape_sequence(KeyboardEnhancementFlags::all(), &mut buf)
+    .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[97u");
 
