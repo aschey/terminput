@@ -3,8 +3,8 @@ use std::io::{self, Cursor, Seek, Write};
 use bitflags::bitflags;
 
 use crate::{
-    Event, KeyCode, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode, ModifierDirection,
-    ModifierKeyCode, MouseButton, MouseEventKind,
+    Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
+    ModifierDirection, ModifierKeyCode, MouseButton, MouseEventKind,
 };
 
 bitflags! {
@@ -212,6 +212,8 @@ impl Event {
                     return self.to_escape_sequence(buf);
                 }
 
+                // If this flag is disabled, normal text keys with no special modifiers should use
+                // simple encoding
                 if !flags.intersects(KittyFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES)
                     && key_event.kind == KeyEventKind::Press
                     && !key_event.modifiers.intersects(
@@ -232,159 +234,55 @@ impl Event {
                 let mut trailing_char = b'u';
                 let is_keypad = key_event.state.intersects(KeyEventState::KEYPAD);
 
-                match key_event.code {
-                    KeyCode::Home
-                    | KeyCode::End
-                    | KeyCode::Delete
-                    | KeyCode::Insert
-                    | KeyCode::Left
-                    | KeyCode::Right
-                    | KeyCode::Up
-                    | KeyCode::Down
-                    | KeyCode::F(1..=12)
-                        if !is_keypad =>
+                // legacy encoding keys
+                if !is_keypad
+                    && matches!(
+                        key_event.code,
+                        KeyCode::Home
+                            | KeyCode::End
+                            | KeyCode::Delete
+                            | KeyCode::Insert
+                            | KeyCode::Left
+                            | KeyCode::Right
+                            | KeyCode::Up
+                            | KeyCode::Down
+                            | KeyCode::F(1..=12)
+                    )
+                {
+                    if key_event.kind == KeyEventKind::Press
+                        && !matches!(key_event.code, KeyCode::F(1..=4))
                     {
-                        if key_event.kind == KeyEventKind::Press
-                            && !matches!(key_event.code, KeyCode::F(1..=4))
-                        {
-                            buf.set_position(0);
-                            let pos = self.to_escape_sequence(buf.get_mut())?;
-                            return Ok(pos);
-                        }
-                        write_keycode_suffix(key_event.code, key_event.modifiers, false, &mut buf)?;
-                        let mut pos = buf.position();
+                        buf.set_position(0);
+                        let pos = self.to_escape_sequence(buf.get_mut())?;
+                        return Ok(pos);
+                    }
+                    write_keycode_suffix(key_event.code, key_event.modifiers, false, &mut buf)?;
+                    let pos = buf.position();
+                    // Instead of the usual 'u' suffix, we need to use the last character from
+                    // the legacy encoding
+                    trailing_char = buf.get_ref()[pos as usize - 1];
+                    // Encodings with only 2 characters require adding this placeholder
+                    let mut add_placeholder = pos == 3;
 
-                        trailing_char = buf.get_ref()[pos as usize - 1];
-                        if matches!(key_event.code, KeyCode::F(1..=4)) {
-                            buf.set_position(pos - 2);
-                            if !key_event.modifiers.is_empty()
-                                || key_event.kind != KeyEventKind::Press
-                            {
-                                pos -= 1;
-                            }
-                        } else {
-                            buf.set_position(pos - 1);
-                        }
-                        if pos == 3 {
-                            buf.write_all(b"1")?;
-                        }
-                    }
-                    KeyCode::CapsLock => buf.write_all(b"57358")?,
-                    KeyCode::ScrollLock => buf.write_all(b"57359")?,
-                    KeyCode::NumLock => buf.write_all(b"57360")?,
-                    KeyCode::PrintScreen => buf.write_all(b"57361")?,
-                    KeyCode::Pause => buf.write_all(b"57362")?,
-                    KeyCode::Menu => buf.write_all(b"57363")?,
-                    KeyCode::F(val @ 13..=35) => {
-                        buf.write_all(&(57376 + (val as u16 - 13)).to_string().into_bytes())?;
-                    }
-                    KeyCode::F(36..) => {
-                        return Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported"));
-                    }
-                    KeyCode::Media(MediaKeyCode::Play) => buf.write_all(b"57428")?,
-                    KeyCode::Media(MediaKeyCode::Pause) => buf.write_all(b"57429")?,
-                    KeyCode::Media(MediaKeyCode::PlayPause) => buf.write_all(b"57430")?,
-                    KeyCode::Media(MediaKeyCode::Reverse) => buf.write_all(b"57431")?,
-                    KeyCode::Media(MediaKeyCode::Stop) => buf.write_all(b"57432")?,
-                    KeyCode::Media(MediaKeyCode::FastForward) => buf.write_all(b"57433")?,
-                    KeyCode::Media(MediaKeyCode::Rewind) => buf.write_all(b"57434")?,
-                    KeyCode::Media(MediaKeyCode::TrackNext) => buf.write_all(b"57435")?,
-                    KeyCode::Media(MediaKeyCode::TrackPrevious) => buf.write_all(b"57436")?,
-                    KeyCode::Media(MediaKeyCode::Record) => buf.write_all(b"57437")?,
-                    KeyCode::Media(MediaKeyCode::LowerVolume) => buf.write_all(b"57438")?,
-                    KeyCode::Media(MediaKeyCode::RaiseVolume) => buf.write_all(b"57439")?,
-                    KeyCode::Media(MediaKeyCode::MuteVolume) => buf.write_all(b"57440")?,
-                    KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Left) => {
-                        buf.write_all(b"57441")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Left) => {
-                        buf.write_all(b"57442")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Left) => {
-                        buf.write_all(b"57443")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Super, ModifierDirection::Left) => {
-                        buf.write_all(b"57444")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Hyper, ModifierDirection::Left) => {
-                        buf.write_all(b"57445")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Left) => {
-                        buf.write_all(b"57446")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Right) => {
-                        buf.write_all(b"57447")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Right) => {
-                        buf.write_all(b"57448")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Right) => {
-                        buf.write_all(b"57449")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Super, ModifierDirection::Right) => {
-                        buf.write_all(b"57450")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Hyper, ModifierDirection::Right) => {
-                        buf.write_all(b"57451")?
-                    }
-                    KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Right) => {
-                        buf.write_all(b"57452")?
-                    }
-                    KeyCode::Modifier(
-                        ModifierKeyCode::IsoLevel3Shift,
-                        ModifierDirection::Unknown,
-                    ) => buf.write_all(b"57453")?,
-                    KeyCode::Modifier(
-                        ModifierKeyCode::IsoLevel5Shift,
-                        ModifierDirection::Unknown,
-                    ) => buf.write_all(b"57454")?,
-                    KeyCode::Null => {
-                        return Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported"));
-                    }
-                    KeyCode::Char(val @ '0'..='9') if is_keypad => {
-                        buf.write_all(&(57399 + (val as u16 - 48)).to_string().into_bytes())?
-                    }
-                    KeyCode::Char('.') if is_keypad => buf.write_all(b"57409")?,
-                    KeyCode::Char('/') if is_keypad => buf.write_all(b"57410")?,
-                    KeyCode::Char('*') if is_keypad => buf.write_all(b"57411")?,
-                    KeyCode::Char('-') if is_keypad => buf.write_all(b"57412")?,
-                    KeyCode::Char('+') if is_keypad => buf.write_all(b"57413")?,
-                    KeyCode::Enter if is_keypad => buf.write_all(b"57414")?,
-                    KeyCode::Char('=') if is_keypad => buf.write_all(b"57415")?,
-                    KeyCode::Char(',') if is_keypad => buf.write_all(b"57416")?,
-                    KeyCode::Left if is_keypad => buf.write_all(b"57417")?,
-                    KeyCode::Right if is_keypad => buf.write_all(b"57418")?,
-                    KeyCode::Up if is_keypad => buf.write_all(b"57419")?,
-                    KeyCode::Down if is_keypad => buf.write_all(b"57420")?,
-                    KeyCode::PageUp if is_keypad => buf.write_all(b"57421")?,
-                    KeyCode::PageDown if is_keypad => buf.write_all(b"57422")?,
-                    KeyCode::Home if is_keypad => buf.write_all(b"57423")?,
-                    KeyCode::End if is_keypad => buf.write_all(b"57424")?,
-                    KeyCode::Insert if is_keypad => buf.write_all(b"57425")?,
-                    KeyCode::Delete if is_keypad => buf.write_all(b"57426")?,
-                    KeyCode::KeypadBegin if is_keypad => buf.write_all(b"57427")?,
-                    KeyCode::Char(c) => {
-                        // We should always use the lower-cased key for the first value
-                        let c = c.to_ascii_lowercase();
-                        convert_suffix_code(KeyCode::Char(c), key_event.modifiers, &mut buf)?;
-                        if flags.intersects(KittyFlags::REPORT_ALTERNATE_KEYS)
-                            && key_event.modifiers.intersects(KeyModifiers::SHIFT)
+                    if matches!(key_event.code, KeyCode::F(1..=4)) {
+                        // F(1-4) require overwriting the second-last character from the legacy
+                        // encoding
+                        buf.set_position(pos - 2);
+                        if !key_event.modifiers.is_empty() || key_event.kind != KeyEventKind::Press
                         {
-                            // Ideally we could do this for other chars besides just ascii,
-                            // but that requires knowing the keyboard layout
-                            let upper = c.to_ascii_uppercase();
-                            if upper != c {
-                                buf.write_all(b":")?;
-                                buf.write_all(&(upper as u8).to_string().into_bytes())?;
-                            }
+                            // We need the placeholder if the F(1-4) key requires any kind of
+                            // modifiers
+                            add_placeholder = true;
                         }
+                    } else {
+                        buf.set_position(pos - 1);
                     }
-                    KeyCode::Esc | KeyCode::Enter | KeyCode::Tab | KeyCode::Backspace => {
-                        convert_suffix_code(key_event.code, key_event.modifiers, &mut buf)?;
+
+                    if add_placeholder {
+                        buf.write_all(b"1")?;
                     }
-                    key_code => {
-                        write_keycode_suffix(key_code, key_event.modifiers, false, &mut buf)?;
-                    }
+                } else {
+                    write_kitty_encoding(key_event, flags, &mut buf)?;
                 }
 
                 let report_event_types = flags.intersects(KittyFlags::REPORT_EVENT_TYPES);
@@ -418,6 +316,131 @@ impl Event {
             _ => self.to_escape_sequence(buf),
         }
     }
+}
+
+fn write_kitty_encoding(
+    key_event: KeyEvent,
+    flags: KittyFlags,
+    buf: &mut Cursor<&mut [u8]>,
+) -> io::Result<()> {
+    let is_keypad = key_event.state.intersects(KeyEventState::KEYPAD);
+    match key_event.code {
+        KeyCode::CapsLock => buf.write_all(b"57358")?,
+        KeyCode::ScrollLock => buf.write_all(b"57359")?,
+        KeyCode::NumLock => buf.write_all(b"57360")?,
+        KeyCode::PrintScreen => buf.write_all(b"57361")?,
+        KeyCode::Pause => buf.write_all(b"57362")?,
+        KeyCode::Menu => buf.write_all(b"57363")?,
+        KeyCode::F(val @ 13..=35) => {
+            buf.write_all(&(57376 + (val as u16 - 13)).to_string().into_bytes())?;
+        }
+        KeyCode::F(36..) => {
+            return Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported"));
+        }
+        KeyCode::Media(MediaKeyCode::Play) => buf.write_all(b"57428")?,
+        KeyCode::Media(MediaKeyCode::Pause) => buf.write_all(b"57429")?,
+        KeyCode::Media(MediaKeyCode::PlayPause) => buf.write_all(b"57430")?,
+        KeyCode::Media(MediaKeyCode::Reverse) => buf.write_all(b"57431")?,
+        KeyCode::Media(MediaKeyCode::Stop) => buf.write_all(b"57432")?,
+        KeyCode::Media(MediaKeyCode::FastForward) => buf.write_all(b"57433")?,
+        KeyCode::Media(MediaKeyCode::Rewind) => buf.write_all(b"57434")?,
+        KeyCode::Media(MediaKeyCode::TrackNext) => buf.write_all(b"57435")?,
+        KeyCode::Media(MediaKeyCode::TrackPrevious) => buf.write_all(b"57436")?,
+        KeyCode::Media(MediaKeyCode::Record) => buf.write_all(b"57437")?,
+        KeyCode::Media(MediaKeyCode::LowerVolume) => buf.write_all(b"57438")?,
+        KeyCode::Media(MediaKeyCode::RaiseVolume) => buf.write_all(b"57439")?,
+        KeyCode::Media(MediaKeyCode::MuteVolume) => buf.write_all(b"57440")?,
+        KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Left) => {
+            buf.write_all(b"57441")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Left) => {
+            buf.write_all(b"57442")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Left) => {
+            buf.write_all(b"57443")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Super, ModifierDirection::Left) => {
+            buf.write_all(b"57444")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Hyper, ModifierDirection::Left) => {
+            buf.write_all(b"57445")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Left) => {
+            buf.write_all(b"57446")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Shift, ModifierDirection::Right) => {
+            buf.write_all(b"57447")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Control, ModifierDirection::Right) => {
+            buf.write_all(b"57448")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Alt, ModifierDirection::Right) => {
+            buf.write_all(b"57449")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Super, ModifierDirection::Right) => {
+            buf.write_all(b"57450")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Hyper, ModifierDirection::Right) => {
+            buf.write_all(b"57451")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::Meta, ModifierDirection::Right) => {
+            buf.write_all(b"57452")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::IsoLevel3Shift, ModifierDirection::Unknown) => {
+            buf.write_all(b"57453")?
+        }
+        KeyCode::Modifier(ModifierKeyCode::IsoLevel5Shift, ModifierDirection::Unknown) => {
+            buf.write_all(b"57454")?
+        }
+        KeyCode::Null => {
+            return Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported"));
+        }
+        KeyCode::Char(val @ '0'..='9') if is_keypad => {
+            buf.write_all(&(57399 + (val as u16 - 48)).to_string().into_bytes())?
+        }
+        KeyCode::Char('.') if is_keypad => buf.write_all(b"57409")?,
+        KeyCode::Char('/') if is_keypad => buf.write_all(b"57410")?,
+        KeyCode::Char('*') if is_keypad => buf.write_all(b"57411")?,
+        KeyCode::Char('-') if is_keypad => buf.write_all(b"57412")?,
+        KeyCode::Char('+') if is_keypad => buf.write_all(b"57413")?,
+        KeyCode::Enter if is_keypad => buf.write_all(b"57414")?,
+        KeyCode::Char('=') if is_keypad => buf.write_all(b"57415")?,
+        KeyCode::Char(',') if is_keypad => buf.write_all(b"57416")?,
+        KeyCode::Left if is_keypad => buf.write_all(b"57417")?,
+        KeyCode::Right if is_keypad => buf.write_all(b"57418")?,
+        KeyCode::Up if is_keypad => buf.write_all(b"57419")?,
+        KeyCode::Down if is_keypad => buf.write_all(b"57420")?,
+        KeyCode::PageUp if is_keypad => buf.write_all(b"57421")?,
+        KeyCode::PageDown if is_keypad => buf.write_all(b"57422")?,
+        KeyCode::Home if is_keypad => buf.write_all(b"57423")?,
+        KeyCode::End if is_keypad => buf.write_all(b"57424")?,
+        KeyCode::Insert if is_keypad => buf.write_all(b"57425")?,
+        KeyCode::Delete if is_keypad => buf.write_all(b"57426")?,
+        KeyCode::KeypadBegin if is_keypad => buf.write_all(b"57427")?,
+        KeyCode::Char(c) => {
+            // We should always use the lower-cased key for the first value
+            let c = c.to_ascii_lowercase();
+            convert_suffix_code(KeyCode::Char(c), key_event.modifiers, buf)?;
+            if flags.intersects(KittyFlags::REPORT_ALTERNATE_KEYS)
+                && key_event.modifiers.intersects(KeyModifiers::SHIFT)
+            {
+                // Ideally we could do this for other chars besides just ascii,
+                // but that requires knowing the keyboard layout
+                let upper = c.to_ascii_uppercase();
+                if upper != c {
+                    buf.write_all(b":")?;
+                    buf.write_all(&(upper as u8).to_string().into_bytes())?;
+                }
+            }
+        }
+        KeyCode::Esc | KeyCode::Enter | KeyCode::Tab | KeyCode::Backspace => {
+            convert_suffix_code(key_event.code, key_event.modifiers, buf)?;
+        }
+        key_code => {
+            write_keycode_suffix(key_code, key_event.modifiers, false, buf)?;
+        }
+    }
+    Ok(())
 }
 
 fn write_keycode_suffix(

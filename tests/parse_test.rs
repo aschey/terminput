@@ -2395,6 +2395,29 @@ fn test_kitty_fn_keys() {
     .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[15;2:3~");
+
+    assert_eq!(
+        parse_event(b"\x1B[57376u").unwrap(),
+        Some(Event::Key(KeyCode::F(13).into())),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyCode::F(13).into())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[57376u");
+
+    assert_eq!(
+        parse_event(b"\x1B[57376;2u").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::F(13),
+            KeyModifiers::SHIFT
+        ))),
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new(KeyCode::F(13), KeyModifiers::SHIFT))
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[57376;2u");
 }
 
 #[test]
