@@ -2264,6 +2264,127 @@ fn test_parse_fn_keys() {
 }
 
 #[test]
+fn test_kitty_fn_keys() {
+    assert_eq!(
+        parse_event(b"\x1B[P").unwrap(),
+        Some(Event::Key(KeyCode::F(1).into())),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyCode::F(1).into())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[P");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;2P").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::F(1),
+            KeyModifiers::SHIFT
+        ))),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::F(1), KeyModifiers::SHIFT))
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;2P");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;1:3P").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::F(1),
+            KeyModifiers::NONE,
+            KeyEventKind::Release,
+        ))),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::F(1),
+        KeyModifiers::NONE,
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;1:3P");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;2:3P").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::F(1),
+            KeyModifiers::SHIFT,
+            KeyEventKind::Release,
+        ))),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::F(1),
+        KeyModifiers::SHIFT,
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;2:3P");
+
+    assert_eq!(
+        parse_event(b"\x1B[15~").unwrap(),
+        Some(Event::Key(KeyCode::F(5).into())),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyCode::F(5).into())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[15~");
+
+    assert_eq!(
+        parse_event(b"\x1B[15;2~").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::F(5),
+            KeyModifiers::SHIFT
+        ))),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::F(5), KeyModifiers::SHIFT))
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[15;2~");
+
+    assert_eq!(
+        parse_event(b"\x1B[15;1:3~").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::F(5),
+            KeyModifiers::NONE,
+            KeyEventKind::Release,
+        ))),
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::F(5),
+        KeyModifiers::NONE,
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[15;1:3~");
+
+    assert_eq!(
+        parse_event(b"\x1B[15;2:3~").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::F(5),
+            KeyModifiers::SHIFT,
+            KeyEventKind::Release,
+        ))),
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::F(5),
+        KeyModifiers::SHIFT,
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[15;2:3~");
+}
+
+#[test]
 fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     assert_eq!(
         parse_event(b"\x1B[13u").unwrap(),

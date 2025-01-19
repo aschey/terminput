@@ -238,7 +238,7 @@ impl Event {
         &self,
         key_code: KeyCode,
         modifiers: KeyModifiers,
-        special_backtab: bool,
+        special_back_tab: bool,
         buf: &mut Cursor<&mut [u8]>,
     ) -> io::Result<bool> {
         match key_code {
@@ -252,7 +252,7 @@ impl Event {
             KeyCode::End => buf.write_all(b"F"),
             KeyCode::PageUp => buf.write_all(b"5~"),
             KeyCode::PageDown => buf.write_all(b"6~"),
-            KeyCode::Tab if modifiers.intersects(KeyModifiers::SHIFT) && special_backtab => {
+            KeyCode::Tab if modifiers.intersects(KeyModifiers::SHIFT) && special_back_tab => {
                 buf.write_all(b"Z")
             }
             KeyCode::Tab => buf.write_all(b"\t"),
@@ -320,15 +320,27 @@ impl Event {
                     | KeyCode::F(1..=12)
                         if !is_keypad =>
                     {
-                        if key_event.kind == KeyEventKind::Press {
+                        if key_event.kind == KeyEventKind::Press
+                            && !matches!(key_event.code, KeyCode::F(1..=4))
+                        {
                             buf.set_position(0);
                             let pos = self.to_escape_sequence(buf.get_mut())?;
                             return Ok(pos);
                         }
                         self.keycode_suffix(key_event.code, key_event.modifiers, false, &mut buf)?;
-                        let pos = buf.position();
+                        let mut pos = buf.position();
+
                         trailing_char = buf.get_ref()[pos as usize - 1];
-                        buf.set_position(pos - 1);
+                        if matches!(key_event.code, KeyCode::F(1..=4)) {
+                            buf.set_position(pos - 2);
+                            if !key_event.modifiers.is_empty()
+                                || key_event.kind != KeyEventKind::Press
+                            {
+                                pos -= 1;
+                            }
+                        } else {
+                            buf.set_position(pos - 1);
+                        }
                         if pos == 3 {
                             buf.write_all(b"1")?;
                         }
