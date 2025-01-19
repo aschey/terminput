@@ -85,6 +85,19 @@ fn test_backspace() {
 }
 
 #[test]
+fn test_kitty_backspace() {
+    assert_eq!(
+        parse_event(b"\x1B[127u").unwrap(),
+        Some(Event::Key(KeyCode::Backspace.into()))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyCode::Backspace.into())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[127u");
+}
+
+#[test]
 fn test_focus_gained() {
     assert_eq!(parse_event(b"\x1B[I").unwrap(), Some(Event::FocusGained));
     let mut buf = [0; 8];
