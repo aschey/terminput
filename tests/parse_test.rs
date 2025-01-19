@@ -1,4 +1,4 @@
-use terminput::encoder::KeyboardEnhancementFlags;
+use terminput::encoder::{Encoding, KittyFlags};
 use terminput::parser::parse_event;
 use terminput::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
@@ -13,7 +13,7 @@ fn test_esc_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Esc.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B");
 
@@ -23,13 +23,13 @@ fn test_esc_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B\x1B");
 
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
 
     assert_eq!(buf[..written], *b"\x1B");
@@ -38,7 +38,7 @@ fn test_esc_key() {
         KeyCode::Esc,
         KeyModifiers::ALT | KeyModifiers::CTRL,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B\x1B");
 }
@@ -51,7 +51,7 @@ fn test_backspace() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Backspace.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x7F");
 
@@ -64,13 +64,13 @@ fn test_backspace() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Backspace, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B\x7F");
 
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Backspace, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x08");
 
@@ -79,7 +79,7 @@ fn test_backspace() {
         KeyCode::Backspace,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B\x08");
 }
@@ -88,11 +88,13 @@ fn test_backspace() {
 fn test_focus_gained() {
     assert_eq!(parse_event(b"\x1B[I").unwrap(), Some(Event::FocusGained));
     let mut buf = [0; 8];
-    let written = Event::FocusGained.to_escape_sequence(&mut buf).unwrap();
+    let written = Event::FocusGained
+        .encode(&mut buf, Encoding::Xterm)
+        .unwrap();
     assert_eq!(buf[..written], *b"\x1B[I");
     let mut buf = [0; 8];
     let written = Event::FocusGained
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[I");
 }
@@ -101,11 +103,11 @@ fn test_focus_gained() {
 fn test_focus_lost() {
     assert_eq!(parse_event(b"\x1B[O").unwrap(), Some(Event::FocusLost));
     let mut buf = [0; 8];
-    let written = Event::FocusLost.to_escape_sequence(&mut buf).unwrap();
+    let written = Event::FocusLost.encode(&mut buf, Encoding::Xterm).unwrap();
     assert_eq!(buf[..written], *b"\x1B[O");
     let mut buf = [0; 8];
     let written = Event::FocusLost
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[O");
 }
@@ -118,7 +120,7 @@ fn test_enter() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Enter.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\r");
 
@@ -128,7 +130,7 @@ fn test_enter() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Enter, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B\r");
 }
@@ -144,7 +146,7 @@ fn test_alt_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1Bc");
 }
@@ -160,7 +162,7 @@ fn test_ctrl_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x03");
 }
@@ -179,7 +181,7 @@ fn test_alt_shift() {
         KeyCode::Char('H'),
         KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1BH")
 }
@@ -198,7 +200,7 @@ fn test_ctrl_alt() {
         KeyCode::Char('t'),
         KeyModifiers::ALT | KeyModifiers::CTRL,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B\x14");
 }
@@ -214,7 +216,7 @@ fn test_kitty_modifiers() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CTRL))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[99;5u");
 
@@ -227,17 +229,17 @@ fn test_kitty_modifiers() {
     );
     let mut buf = [0; 16];
     let written = Event::Key(KeyEvent::new(KeyCode::Char('C'), KeyModifiers::SHIFT))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[99:67;2u");
     let mut buf = [0; 16];
     let written = Event::Key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::SHIFT))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[99:67;2u");
     let mut buf = [0; 16];
     let written = Event::Key(KeyEvent::new(KeyCode::Char('C'), KeyModifiers::NONE))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[99:67;2u");
 
@@ -253,9 +255,230 @@ fn test_kitty_modifiers() {
         KeyCode::Char('c'),
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[99;7u");
+
+    assert_eq!(
+        parse_event(b"\x1B[99;71u").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind_and_state(
+            KeyCode::Char('c'),
+            KeyModifiers::CTRL | KeyModifiers::ALT,
+            KeyEventKind::Press,
+            KeyEventState::CAPS_LOCK,
+        ))),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new_with_kind_and_state(
+        KeyCode::Char('c'),
+        KeyModifiers::CTRL | KeyModifiers::ALT,
+        KeyEventKind::Press,
+        KeyEventState::CAPS_LOCK,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99;71u");
+
+    assert_eq!(
+        parse_event(b"\x1B[99;199u").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind_and_state(
+            KeyCode::Char('c'),
+            KeyModifiers::CTRL | KeyModifiers::ALT,
+            KeyEventKind::Press,
+            KeyEventState::CAPS_LOCK | KeyEventState::NUM_LOCK,
+        ))),
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind_and_state(
+        KeyCode::Char('c'),
+        KeyModifiers::CTRL | KeyModifiers::ALT,
+        KeyEventKind::Press,
+        KeyEventState::CAPS_LOCK | KeyEventState::NUM_LOCK,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99;199u");
+
+    assert_eq!(
+        parse_event(b"\x1B[57408;200u").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind_and_state(
+            KeyCode::Char('9'),
+            KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
+            KeyEventKind::Press,
+            KeyEventState::CAPS_LOCK | KeyEventState::NUM_LOCK | KeyEventState::KEYPAD,
+        ))),
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind_and_state(
+        KeyCode::Char('9'),
+        KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
+        KeyEventKind::Press,
+        KeyEventState::CAPS_LOCK | KeyEventState::NUM_LOCK | KeyEventState::KEYPAD,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[57408;200u");
+}
+
+#[test]
+fn test_kitty_alternate_keys() {
+    assert_eq!(
+        parse_event(b"\x1B[99:67;2u").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::Char('c'),
+            KeyModifiers::SHIFT
+        ))),
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::SHIFT))
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99:67;2u");
+
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::SHIFT))
+        .encode(
+            &mut buf,
+            Encoding::Kitty(
+                KittyFlags::DISAMBIGUATE_ESCAPE_CODES | KittyFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES,
+            ),
+        )
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99;2u");
+}
+
+#[test]
+fn test_kitty_event_types() {
+    assert_eq!(
+        parse_event(b"\x1B[99;1:3u").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Char('c'),
+            KeyModifiers::empty(),
+            KeyEventKind::Release
+        ))),
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Char('c'),
+        KeyModifiers::empty(),
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99;1:3u");
+
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Char('c'),
+        KeyModifiers::empty(),
+        KeyEventKind::Release,
+    ))
+    .encode(
+        &mut buf,
+        Encoding::Kitty(
+            KittyFlags::DISAMBIGUATE_ESCAPE_CODES | KittyFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES,
+        ),
+    )
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[99u");
+}
+
+#[test]
+fn test_kitty_arrow() {
+    assert_eq!(
+        parse_event(b"\x1B[D").unwrap(),
+        Some(Event::Key(KeyCode::Left.into())),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyCode::Left.into())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[D");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;2D").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::Left,
+            KeyModifiers::SHIFT
+        )))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::SHIFT))
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;2D");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;1:3D").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Left,
+            KeyModifiers::empty(),
+            KeyEventKind::Release
+        )))
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Left,
+        KeyModifiers::empty(),
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;1:3D");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;1:2D").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Left,
+            KeyModifiers::empty(),
+            KeyEventKind::Repeat
+        )))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Left,
+        KeyModifiers::empty(),
+        KeyEventKind::Repeat,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;1:2D");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;5:3D").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Left,
+            KeyModifiers::CTRL,
+            KeyEventKind::Release
+        )))
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Left,
+        KeyModifiers::CTRL,
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;5:3D");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;3:3D").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Left,
+            KeyModifiers::ALT,
+            KeyEventKind::Release
+        )))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Left,
+        KeyModifiers::ALT,
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;3:3D");
 }
 
 #[test]
@@ -266,7 +489,7 @@ fn test_home_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Home.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[H");
 
@@ -286,7 +509,7 @@ fn test_home_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Home, KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;2H");
 
@@ -296,7 +519,7 @@ fn test_home_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Home, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;5H");
 
@@ -306,7 +529,7 @@ fn test_home_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Home, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;3H");
 
@@ -322,7 +545,7 @@ fn test_home_key() {
         KeyCode::Home,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;7H");
 
@@ -337,9 +560,107 @@ fn test_home_key() {
         KeyCode::Home,
         KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;8H");
+}
+
+#[test]
+fn test_kitty_home() {
+    assert_eq!(
+        parse_event(b"\x1B[H").unwrap(),
+        Some(Event::Key(KeyCode::Home.into())),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyCode::Home.into())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[H");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;2H").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::Home,
+            KeyModifiers::SHIFT
+        )))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::Home, KeyModifiers::SHIFT))
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;2H");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;1:3H").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Home,
+            KeyModifiers::empty(),
+            KeyEventKind::Release
+        )))
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Home,
+        KeyModifiers::empty(),
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;1:3H");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;1:2H").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Home,
+            KeyModifiers::empty(),
+            KeyEventKind::Repeat
+        )))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Home,
+        KeyModifiers::empty(),
+        KeyEventKind::Repeat,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;1:2H");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;5:3H").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Home,
+            KeyModifiers::CTRL,
+            KeyEventKind::Release
+        )))
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Home,
+        KeyModifiers::CTRL,
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;5:3H");
+
+    assert_eq!(
+        parse_event(b"\x1B[1;3:3H").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Home,
+            KeyModifiers::ALT,
+            KeyEventKind::Release
+        )))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Home,
+        KeyModifiers::ALT,
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[1;3:3H");
 }
 
 #[test]
@@ -350,7 +671,7 @@ fn test_end_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::End.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[F");
 
@@ -364,7 +685,7 @@ fn test_end_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::End, KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;2F");
 
@@ -374,7 +695,7 @@ fn test_end_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::End, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;5F");
 
@@ -384,7 +705,7 @@ fn test_end_key() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::End, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;3F");
 
@@ -400,7 +721,7 @@ fn test_end_key() {
         KeyCode::End,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;7F");
 
@@ -416,7 +737,7 @@ fn test_end_key() {
         KeyCode::End,
         KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;8F");
 }
@@ -429,7 +750,7 @@ fn test_page_up() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::PageUp.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[5~");
 
@@ -442,7 +763,7 @@ fn test_page_up() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::PageUp, KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[5;2~");
 
@@ -455,7 +776,7 @@ fn test_page_up() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::PageUp, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[5;5~");
 
@@ -468,7 +789,7 @@ fn test_page_up() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::PageUp, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[5;3~");
 
@@ -484,7 +805,7 @@ fn test_page_up() {
         KeyCode::PageUp,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[5;7~");
 
@@ -500,7 +821,7 @@ fn test_page_up() {
         KeyCode::PageUp,
         KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[5;8~");
 }
@@ -513,7 +834,7 @@ fn test_page_down() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::PageDown.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[6~");
 
@@ -526,7 +847,7 @@ fn test_page_down() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::PageDown, KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[6;2~");
 
@@ -539,7 +860,7 @@ fn test_page_down() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::PageDown, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[6;5~");
 
@@ -552,7 +873,7 @@ fn test_page_down() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::PageDown, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[6;3~");
 
@@ -568,7 +889,7 @@ fn test_page_down() {
         KeyCode::PageDown,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[6;7~");
 
@@ -583,7 +904,7 @@ fn test_page_down() {
         KeyCode::PageDown,
         KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[6;8~");
 }
@@ -596,7 +917,7 @@ fn test_left_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Left.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[D");
 
@@ -616,7 +937,7 @@ fn test_left_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;2D");
 
@@ -626,7 +947,7 @@ fn test_left_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;5D");
 
@@ -636,7 +957,7 @@ fn test_left_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Left, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;3D");
 
@@ -652,7 +973,7 @@ fn test_left_arrow() {
         KeyCode::Left,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;7D");
 
@@ -668,7 +989,7 @@ fn test_left_arrow() {
         KeyCode::Left,
         KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;8D");
 }
@@ -681,7 +1002,7 @@ fn test_right_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Right.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[C");
 
@@ -701,7 +1022,7 @@ fn test_right_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;2C");
 
@@ -714,7 +1035,7 @@ fn test_right_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;5C");
 
@@ -724,7 +1045,7 @@ fn test_right_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Right, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;3C");
 
@@ -740,7 +1061,7 @@ fn test_right_arrow() {
         KeyCode::Right,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;7C");
 
@@ -756,7 +1077,7 @@ fn test_right_arrow() {
         KeyCode::Right,
         KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;8C");
 }
@@ -769,7 +1090,7 @@ fn test_up_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Up.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[A");
 
@@ -783,7 +1104,7 @@ fn test_up_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Up, KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;2A");
 
@@ -793,7 +1114,7 @@ fn test_up_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Up, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;5A");
 
@@ -803,7 +1124,7 @@ fn test_up_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Up, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;3A");
 
@@ -819,7 +1140,7 @@ fn test_up_arrow() {
         KeyCode::Up,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;7A");
 
@@ -835,7 +1156,7 @@ fn test_up_arrow() {
         KeyCode::Up,
         KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;8A");
 }
@@ -848,7 +1169,7 @@ fn test_down_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Down.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[B");
 
@@ -868,7 +1189,7 @@ fn test_down_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Down, KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;2B");
 
@@ -878,7 +1199,7 @@ fn test_down_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Down, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;5B");
 
@@ -888,7 +1209,7 @@ fn test_down_arrow() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Down, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;3B");
 
@@ -904,7 +1225,7 @@ fn test_down_arrow() {
         KeyCode::Down,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;7B");
 
@@ -920,7 +1241,7 @@ fn test_down_arrow() {
         KeyCode::Down,
         KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;8B");
 }
@@ -933,7 +1254,7 @@ fn test_delete() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Delete.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[3~");
 
@@ -946,7 +1267,7 @@ fn test_delete() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Delete, KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[3;2~");
 
@@ -959,7 +1280,7 @@ fn test_delete() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Delete, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[3;5~");
 
@@ -972,7 +1293,7 @@ fn test_delete() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Delete, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[3;3~");
 
@@ -988,7 +1309,7 @@ fn test_delete() {
         KeyCode::Delete,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[3;7~");
 
@@ -1004,7 +1325,7 @@ fn test_delete() {
         KeyCode::Delete,
         KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[3;8~");
 }
@@ -1017,7 +1338,7 @@ fn test_insert() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Insert.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[2~");
 
@@ -1030,7 +1351,7 @@ fn test_insert() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Insert, KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[2;2~");
 
@@ -1043,7 +1364,7 @@ fn test_insert() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Insert, KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[2;5~");
 
@@ -1056,7 +1377,7 @@ fn test_insert() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Insert, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[2;3~");
 
@@ -1072,7 +1393,7 @@ fn test_insert() {
         KeyCode::Insert,
         KeyModifiers::CTRL | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[2;7~");
 
@@ -1088,9 +1409,107 @@ fn test_insert() {
         KeyCode::Insert,
         KeyModifiers::CTRL | KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[2;8~");
+}
+
+#[test]
+fn test_kitty_insert() {
+    assert_eq!(
+        parse_event(b"\x1B[2~").unwrap(),
+        Some(Event::Key(KeyCode::Insert.into())),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyCode::Insert.into())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[2~");
+
+    assert_eq!(
+        parse_event(b"\x1B[2;2~").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::Insert,
+            KeyModifiers::SHIFT
+        )))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::Insert, KeyModifiers::SHIFT))
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[2;2~");
+
+    assert_eq!(
+        parse_event(b"\x1B[2;1:3~").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Insert,
+            KeyModifiers::empty(),
+            KeyEventKind::Release
+        )))
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Insert,
+        KeyModifiers::empty(),
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[2;1:3~");
+
+    assert_eq!(
+        parse_event(b"\x1B[2;1:2~").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Insert,
+            KeyModifiers::empty(),
+            KeyEventKind::Repeat
+        )))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Insert,
+        KeyModifiers::empty(),
+        KeyEventKind::Repeat,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[2;1:2~");
+
+    assert_eq!(
+        parse_event(b"\x1B[2;5:3~").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Insert,
+            KeyModifiers::CTRL,
+            KeyEventKind::Release
+        )))
+    );
+    let mut buf = [0; 16];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Insert,
+        KeyModifiers::CTRL,
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[2;5:3~");
+
+    assert_eq!(
+        parse_event(b"\x1B[2;3:3~").unwrap(),
+        Some(Event::Key(KeyEvent::new_with_kind(
+            KeyCode::Insert,
+            KeyModifiers::ALT,
+            KeyEventKind::Release
+        )))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Insert,
+        KeyModifiers::ALT,
+        KeyEventKind::Release,
+    ))
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[2;3:3~");
 }
 
 #[test]
@@ -1102,12 +1521,12 @@ fn test_parse_event_subsequent_calls() {
     );
     let mut buf = [0; 32];
     let written = Event::Paste("on and on and on".to_string())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[200~on and on and on\x1B[201~");
     let mut buf = [0; 32];
     let written = Event::Paste("on and on and on".to_string())
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[200~on and on and on\x1B[201~");
 
@@ -1154,7 +1573,7 @@ fn test_parse_event_subsequent_calls() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Char('Ž'), KeyModifiers::SHIFT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *"Ž".as_bytes());
 }
@@ -1167,22 +1586,26 @@ fn test_parse_tab() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Tab.into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\t");
 
     assert_eq!(
         parse_event(b"\x1B[Z").unwrap(),
         Some(Event::Key(KeyEvent::new_with_kind(
-            KeyCode::BackTab,
+            KeyCode::Tab,
             KeyModifiers::SHIFT,
             KeyEventKind::Press,
         ))),
     );
     let mut buf = [0; 8];
-    let written = Event::Key(KeyCode::BackTab.into())
-        .to_escape_sequence(&mut buf)
-        .unwrap();
+    let written = Event::Key(KeyEvent::new_with_kind(
+        KeyCode::Tab,
+        KeyModifiers::SHIFT,
+        KeyEventKind::Press,
+    ))
+    .encode(&mut buf, Encoding::Xterm)
+    .unwrap();
     assert_eq!(buf[..written], *b"\x1B[Z");
 
     assert_eq!(
@@ -1191,25 +1614,51 @@ fn test_parse_tab() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Tab, KeyModifiers::ALT))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B\x09");
 
     assert_eq!(
         parse_event(b"\x1B\x1B[Z").unwrap(),
         Some(Event::Key(KeyEvent::new(
-            KeyCode::BackTab,
+            KeyCode::Tab,
             KeyModifiers::ALT | KeyModifiers::SHIFT
         )))
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(
-        KeyCode::BackTab,
+        KeyCode::Tab,
         KeyModifiers::ALT | KeyModifiers::SHIFT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B\x1B[Z");
+}
+
+#[test]
+fn test_kitty_tab() {
+    assert_eq!(
+        parse_event(b"\x1B[9u").unwrap(),
+        Some(Event::Key(KeyEvent::new(
+            KeyCode::Tab,
+            KeyModifiers::empty()
+        ))),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::Tab, KeyModifiers::empty()))
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[9u");
+
+    assert_eq!(
+        parse_event(b"\x1B[9;2u").unwrap(),
+        Some(Event::Key(KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT))),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::Tab, KeyModifiers::SHIFT))
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[9;2u");
 }
 
 #[test]
@@ -1317,7 +1766,7 @@ fn test_parse_csi_sgr_mouse() {
         row: 9,
         modifiers: KeyModifiers::empty(),
     })
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[<35;20;10M");
     assert_eq!(
@@ -1336,7 +1785,7 @@ fn test_parse_csi_sgr_mouse() {
         row: 9,
         modifiers: KeyModifiers::SHIFT,
     })
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[<39;20;10M");
 
@@ -1365,7 +1814,7 @@ fn test_parse_csi_sgr_mouse() {
         row: 9,
         modifiers: KeyModifiers::empty(),
     })
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[<0;20;10M");
 
@@ -1394,7 +1843,7 @@ fn test_parse_csi_sgr_mouse() {
         row: 9,
         modifiers: KeyModifiers::empty(),
     })
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[<0;20;10m");
 
@@ -1414,7 +1863,7 @@ fn test_parse_csi_sgr_mouse() {
         row: 9,
         modifiers: KeyModifiers::empty(),
     })
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[<2;20;10M");
 
@@ -1434,7 +1883,7 @@ fn test_parse_csi_sgr_mouse() {
         row: 9,
         modifiers: KeyModifiers::empty(),
     })
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[<1;20;10M");
 }
@@ -1501,7 +1950,7 @@ fn test_parse_char_event_lowercase() {
 
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Char('c').into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"c");
 }
@@ -1518,7 +1967,7 @@ fn test_parse_char_event_uppercase() {
 
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::Char('C').into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"C");
 }
@@ -1567,7 +2016,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(1).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1BOP");
     assert_eq!(
@@ -1576,7 +2025,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::F(1), KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;5P");
     assert_eq!(
@@ -1591,7 +2040,7 @@ fn test_parse_fn_keys() {
         KeyCode::F(1),
         KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;8P");
 
@@ -1605,7 +2054,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(2).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1BOQ");
     assert_eq!(
@@ -1614,7 +2063,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::F(2), KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;5Q");
     assert_eq!(
@@ -1629,7 +2078,7 @@ fn test_parse_fn_keys() {
         KeyCode::F(2),
         KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;8Q");
 
@@ -1643,7 +2092,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(3).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1BOR");
     assert_eq!(
@@ -1652,7 +2101,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::F(3), KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;5R");
     assert_eq!(
@@ -1667,7 +2116,7 @@ fn test_parse_fn_keys() {
         KeyCode::F(3),
         KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;8R");
 
@@ -1681,7 +2130,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(4).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1BOS");
     assert_eq!(
@@ -1690,7 +2139,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::F(4), KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;5S");
     assert_eq!(
@@ -1705,7 +2154,7 @@ fn test_parse_fn_keys() {
         KeyCode::F(4),
         KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;8S");
 
@@ -1715,7 +2164,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(5).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[15~");
     assert_eq!(
@@ -1724,7 +2173,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::F(5), KeyModifiers::CTRL))
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[15;5~");
     assert_eq!(
@@ -1739,7 +2188,7 @@ fn test_parse_fn_keys() {
         KeyCode::F(5),
         KeyModifiers::CTRL | KeyModifiers::SHIFT | KeyModifiers::ALT,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[15;8~");
 
@@ -1749,7 +2198,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(6).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[17~");
 
@@ -1759,7 +2208,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(7).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[18~");
 
@@ -1769,7 +2218,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(8).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[19~");
 
@@ -1779,7 +2228,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(9).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[20~");
 
@@ -1789,7 +2238,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(10).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[21~");
 
@@ -1799,7 +2248,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(11).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[23~");
 
@@ -1809,7 +2258,7 @@ fn test_parse_fn_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyCode::F(12).into())
-        .to_escape_sequence(&mut buf)
+        .encode(&mut buf, Encoding::Xterm)
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[24~");
 }
@@ -1832,7 +2281,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Esc, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[27u");
 
@@ -1845,7 +2294,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::CapsLock, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57358u");
 
@@ -1858,7 +2307,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::ScrollLock, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57359u");
 
@@ -1871,7 +2320,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::NumLock, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57360u");
 
@@ -1884,7 +2333,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::PrintScreen, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57361u");
 
@@ -1897,7 +2346,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Pause, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57362u");
 
@@ -1910,7 +2359,7 @@ fn test_parse_basic_csi_u_encoded_key_code_special_keys() {
     );
     let mut buf = [0; 8];
     let written = Event::Key(KeyEvent::new(KeyCode::Menu, KeyModifiers::empty()))
-        .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
         .unwrap();
     assert_eq!(buf[..written], *b"\x1B[57363u");
 
@@ -1975,7 +2424,7 @@ fn test_parse_csi_u_encoded_key_code_with_types() {
         KeyModifiers::empty(),
         KeyEventKind::Press,
     ))
-    .to_kitty_escape_sequence(&mut buf, KeyboardEnhancementFlags::all())
+    .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[97u");
 
@@ -2166,7 +2615,7 @@ fn test_parse_csi_numbered_escape_code_with_types() {
         KeyModifiers::empty(),
         KeyEventKind::Press,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[5~");
 
@@ -2193,7 +2642,7 @@ fn test_parse_csi_numbered_escape_code_with_types() {
         KeyModifiers::empty(),
         KeyEventKind::Press,
     ))
-    .to_escape_sequence(&mut buf)
+    .encode(&mut buf, Encoding::Xterm)
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[6~");
 }

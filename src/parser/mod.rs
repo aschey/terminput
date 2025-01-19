@@ -52,7 +52,7 @@ pub fn parse_event(buffer: &[u8]) -> io::Result<Option<Event>> {
                         } else {
                             match &buffer[2..] {
                                 b"[Z" => Ok(Some(Event::Key(KeyEvent::new(
-                                    KeyCode::BackTab,
+                                    KeyCode::Tab,
                                     KeyModifiers::SHIFT | KeyModifiers::ALT,
                                 )))),
                                 _ => Err(could_not_parse_event_error()),
@@ -140,7 +140,7 @@ pub(crate) fn parse_csi(buffer: &[u8]) -> io::Result<Option<Event>> {
         b'H' => Some(Event::Key(KeyCode::Home.into())),
         b'F' => Some(Event::Key(KeyCode::End.into())),
         b'Z' => Some(Event::Key(KeyEvent::new_with_kind(
-            KeyCode::BackTab,
+            KeyCode::Tab,
             KeyModifiers::SHIFT,
             KeyEventKind::Press,
         ))),
@@ -510,13 +510,7 @@ pub(crate) fn parse_csi_u_encoded_key_code(buffer: &[u8]) -> io::Result<Option<E
                     // that, so \n no longer has any meaning - it's better to
                     // use Ctrl+J. Waiting to handle it here means it gets picked up later
                     // '\n' if !crate::terminal::sys::is_raw_mode_enabled() => KeyCode::Enter,
-                    '\t' => {
-                        if modifiers.contains(KeyModifiers::SHIFT) {
-                            KeyCode::BackTab
-                        } else {
-                            KeyCode::Tab
-                        }
-                    }
+                    '\t' => KeyCode::Tab,
                     '\x7F' => KeyCode::Backspace,
                     _ => KeyCode::Char(c),
                 },

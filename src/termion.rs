@@ -171,8 +171,8 @@ impl TryFrom<termion::event::Key> for KeyEvent {
                 state: KeyEventState::empty(),
             },
             termion::event::Key::BackTab => KeyEvent {
-                code: KeyCode::BackTab,
-                modifiers: KeyModifiers::NONE,
+                code: KeyCode::Tab,
+                modifiers: KeyModifiers::SHIFT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
@@ -312,8 +312,11 @@ impl TryFrom<KeyEvent> for termion::event::Key {
             KeyCode::End => termion::event::Key::End,
             KeyCode::PageUp => termion::event::Key::PageUp,
             KeyCode::PageDown => termion::event::Key::PageDown,
+            KeyCode::Tab if value.modifiers.intersects(KeyModifiers::SHIFT) => {
+                termion::event::Key::BackTab
+            }
             KeyCode::Tab => termion::event::Key::Char('\t'),
-            KeyCode::BackTab => termion::event::Key::BackTab,
+
             KeyCode::Delete => termion::event::Key::Delete,
             KeyCode::Insert => termion::event::Key::Insert,
             KeyCode::F(f) => termion::event::Key::F(f),

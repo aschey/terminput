@@ -61,7 +61,7 @@ impl KeyEvent {
     // modifies the KeyEvent,
     // so that KeyModifiers::SHIFT is present iff
     // an uppercase char is present.
-    fn normalize_case(mut self) -> KeyEvent {
+    pub fn normalize_case(mut self) -> KeyEvent {
         let c = match self.code {
             KeyCode::Char(c) => c,
             _ => return self,
@@ -146,8 +146,6 @@ pub enum KeyCode {
     PageDown,
     /// Tab key.
     Tab,
-    /// Shift + Tab key.
-    BackTab,
     /// Delete key.
     Delete,
     /// Insert key.
@@ -304,17 +302,18 @@ bitflags! {
     /// [`PushKeyboardEnhancementFlags`].
     #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
     pub struct KeyEventState: u8 {
+        const NONE = 0;
         /// The key event origins from the keypad.
-        const KEYPAD = 0b0000_0001;
+        const KEYPAD = 1;
         /// Caps Lock was enabled for this key event.
         ///
         /// **Note:** this is set for the initial press of Caps Lock itself.
-        const CAPS_LOCK = 0b0000_1000;
+        const CAPS_LOCK = 1<<1;
         /// Num Lock was enabled for this key event.
         ///
         /// **Note:** this is set for the initial press of Num Lock itself.
-        const NUM_LOCK = 0b0000_1000;
-        const NONE = 0b0000_0000;
+        const NUM_LOCK = 1<<2;
+
     }
 }
 

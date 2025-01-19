@@ -144,7 +144,10 @@ impl TryFrom<KeyEvent> for crossterm::event::KeyEvent {
 
     fn try_from(value: KeyEvent) -> Result<Self, Self::Error> {
         Ok(Self {
-            code: value.code.try_into()?,
+            code: convert_crossterm_key_code(
+                value.code,
+                value.modifiers.intersects(KeyModifiers::SHIFT),
+            )?,
             modifiers: value.modifiers.try_into()?,
             kind: value.kind.try_into()?,
             state: value.state.try_into()?,
@@ -168,7 +171,7 @@ impl TryFrom<crossterm::event::KeyCode> for KeyCode {
             crossterm::event::KeyCode::PageUp => KeyCode::PageUp,
             crossterm::event::KeyCode::PageDown => KeyCode::PageDown,
             crossterm::event::KeyCode::Tab => KeyCode::Tab,
-            crossterm::event::KeyCode::BackTab => KeyCode::BackTab,
+            crossterm::event::KeyCode::BackTab => KeyCode::Tab,
             crossterm::event::KeyCode::Delete => KeyCode::Delete,
             crossterm::event::KeyCode::Insert => KeyCode::Insert,
             crossterm::event::KeyCode::F(f) => KeyCode::F(f),
@@ -191,44 +194,42 @@ impl TryFrom<crossterm::event::KeyCode> for KeyCode {
     }
 }
 
-impl TryFrom<KeyCode> for crossterm::event::KeyCode {
-    type Error = UnsupportedEvent;
-
-    fn try_from(value: KeyCode) -> Result<Self, Self::Error> {
-        Ok(match value {
-            KeyCode::Backspace => crossterm::event::KeyCode::Backspace,
-            KeyCode::Enter => crossterm::event::KeyCode::Enter,
-            KeyCode::Left => crossterm::event::KeyCode::Left,
-            KeyCode::Right => crossterm::event::KeyCode::Right,
-            KeyCode::Up => crossterm::event::KeyCode::Up,
-            KeyCode::Down => crossterm::event::KeyCode::Down,
-            KeyCode::Home => crossterm::event::KeyCode::Home,
-            KeyCode::End => crossterm::event::KeyCode::End,
-            KeyCode::PageUp => crossterm::event::KeyCode::PageUp,
-            KeyCode::PageDown => crossterm::event::KeyCode::PageDown,
-            KeyCode::Tab => crossterm::event::KeyCode::Tab,
-            KeyCode::BackTab => crossterm::event::KeyCode::BackTab,
-            KeyCode::Delete => crossterm::event::KeyCode::Delete,
-            KeyCode::Insert => crossterm::event::KeyCode::Insert,
-            KeyCode::F(f) => crossterm::event::KeyCode::F(f),
-            KeyCode::Char(c) => crossterm::event::KeyCode::Char(c),
-            KeyCode::Null => crossterm::event::KeyCode::Null,
-            KeyCode::Esc => crossterm::event::KeyCode::Esc,
-            KeyCode::CapsLock => crossterm::event::KeyCode::CapsLock,
-            KeyCode::ScrollLock => crossterm::event::KeyCode::ScrollLock,
-            KeyCode::NumLock => crossterm::event::KeyCode::NumLock,
-            KeyCode::PrintScreen => crossterm::event::KeyCode::PrintScreen,
-            KeyCode::Pause => crossterm::event::KeyCode::Pause,
-            KeyCode::Menu => crossterm::event::KeyCode::Menu,
-            KeyCode::KeypadBegin => crossterm::event::KeyCode::KeypadBegin,
-            KeyCode::Media(m) => crossterm::event::KeyCode::Media(m.try_into()?),
-            KeyCode::Modifier(code, direction) => crossterm::event::KeyCode::Modifier(
-                convert_crossterm_modifier_key_code(code, direction),
-            ),
-        })
-    }
+fn convert_crossterm_key_code(
+    value: KeyCode,
+    shift: bool,
+) -> Result<crossterm::event::KeyCode, UnsupportedEvent> {
+    Ok(match value {
+        KeyCode::Backspace => crossterm::event::KeyCode::Backspace,
+        KeyCode::Enter => crossterm::event::KeyCode::Enter,
+        KeyCode::Left => crossterm::event::KeyCode::Left,
+        KeyCode::Right => crossterm::event::KeyCode::Right,
+        KeyCode::Up => crossterm::event::KeyCode::Up,
+        KeyCode::Down => crossterm::event::KeyCode::Down,
+        KeyCode::Home => crossterm::event::KeyCode::Home,
+        KeyCode::End => crossterm::event::KeyCode::End,
+        KeyCode::PageUp => crossterm::event::KeyCode::PageUp,
+        KeyCode::PageDown => crossterm::event::KeyCode::PageDown,
+        KeyCode::Tab if shift => crossterm::event::KeyCode::BackTab,
+        KeyCode::Tab => crossterm::event::KeyCode::Tab,
+        KeyCode::Delete => crossterm::event::KeyCode::Delete,
+        KeyCode::Insert => crossterm::event::KeyCode::Insert,
+        KeyCode::F(f) => crossterm::event::KeyCode::F(f),
+        KeyCode::Char(c) => crossterm::event::KeyCode::Char(c),
+        KeyCode::Null => crossterm::event::KeyCode::Null,
+        KeyCode::Esc => crossterm::event::KeyCode::Esc,
+        KeyCode::CapsLock => crossterm::event::KeyCode::CapsLock,
+        KeyCode::ScrollLock => crossterm::event::KeyCode::ScrollLock,
+        KeyCode::NumLock => crossterm::event::KeyCode::NumLock,
+        KeyCode::PrintScreen => crossterm::event::KeyCode::PrintScreen,
+        KeyCode::Pause => crossterm::event::KeyCode::Pause,
+        KeyCode::Menu => crossterm::event::KeyCode::Menu,
+        KeyCode::KeypadBegin => crossterm::event::KeyCode::KeypadBegin,
+        KeyCode::Media(m) => crossterm::event::KeyCode::Media(m.try_into()?),
+        KeyCode::Modifier(code, direction) => crossterm::event::KeyCode::Modifier(
+            convert_crossterm_modifier_key_code(code, direction),
+        ),
+    })
 }
-
 impl TryFrom<crossterm::event::KeyModifiers> for KeyModifiers {
     type Error = UnsupportedEvent;
 

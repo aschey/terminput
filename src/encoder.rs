@@ -3,13 +3,13 @@ use std::io::{self, Cursor, Seek, Write};
 use bitflags::bitflags;
 
 use crate::{
-    Event, KeyCode, KeyEventKind, KeyModifiers, MediaKeyCode, ModifierDirection, ModifierKeyCode,
-    MouseButton, MouseEventKind,
+    Event, KeyCode, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode, ModifierDirection,
+    ModifierKeyCode, MouseButton, MouseEventKind,
 };
 
 bitflags! {
     #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
-    pub struct KeyboardEnhancementFlags: u8 {
+    pub struct KittyFlags: u8 {
         /// Represent Escape and modified keys using CSI-u sequences, so they can be unambiguously
         /// read.
         const DISAMBIGUATE_ESCAPE_CODES = 1<<1;
@@ -27,8 +27,19 @@ bitflags! {
     }
 }
 
+pub enum Encoding {
+    Xterm,
+    Kitty(KittyFlags),
+}
+
 impl Event {
-    pub fn to_escape_sequence(&self, buf: &mut [u8]) -> io::Result<usize> {
+    pub fn encode(&self, buf: &mut [u8], encoding: Encoding) -> io::Result<usize> {
+        match encoding {
+            Encoding::Xterm => self.to_escape_sequence(buf),
+            Encoding::Kitty(flags) => self.to_kitty_escape_sequence(buf, flags),
+        }
+    }
+    fn to_escape_sequence(&self, buf: &mut [u8]) -> io::Result<usize> {
         let mut buf = Cursor::new(buf);
         match self {
             Event::FocusGained => {
@@ -40,6 +51,7 @@ impl Event {
                 Ok(buf.position() as usize)
             }
             Event::Key(key_event) => {
+                let key_event = key_event.normalize_case();
                 if key_event.kind != KeyEventKind::Press {
                     return Err(io::Error::new(
                         io::ErrorKind::Unsupported,
@@ -53,8 +65,7 @@ impl Event {
                         | KeyCode::Esc
                         | KeyCode::Backspace
                         | KeyCode::Enter
-                        | KeyCode::Tab
-                        | KeyCode::BackTab => {
+                        | KeyCode::Tab => {
                             buf.write_all(b"\x1B")?;
                         }
                         _ => {}
@@ -63,7 +74,7 @@ impl Event {
                 match key_event.code {
                     KeyCode::F(1..=4) => {
                         buf.write_all(b"\x1B")?;
-                        self.keycode_suffix(key_event.code, &mut buf)?;
+                        self.keycode_suffix(key_event.code, key_event.modifiers, true, &mut buf)?;
                     }
                     KeyCode::Left
                     | KeyCode::Right
@@ -73,15 +84,23 @@ impl Event {
                     | KeyCode::End
                     | KeyCode::PageUp
                     | KeyCode::PageDown
-                    | KeyCode::BackTab
                     | KeyCode::Delete
                     | KeyCode::Insert
                     | KeyCode::F(_) => {
                         buf.write_all(b"\x1B[")?;
-                        self.keycode_suffix(key_event.code, &mut buf)?;
+                        self.keycode_suffix(key_event.code, key_event.modifiers, true, &mut buf)?;
+                    }
+                    KeyCode::Tab if key_event.modifiers.intersects(KeyModifiers::SHIFT) => {
+                        buf.write_all(b"\x1B[")?;
+                        self.keycode_suffix(key_event.code, key_event.modifiers, true, &mut buf)?;
                     }
                     _ => {
-                        let handled = self.keycode_suffix(key_event.code, &mut buf)?;
+                        let handled = self.keycode_suffix(
+                            key_event.code,
+                            key_event.modifiers,
+                            true,
+                            &mut buf,
+                        )?;
                         if !handled {
                             return Err(io::Error::new(
                                 io::ErrorKind::Unsupported,
@@ -215,7 +234,13 @@ impl Event {
         }
     }
 
-    fn keycode_suffix(&self, key_code: KeyCode, buf: &mut Cursor<&mut [u8]>) -> io::Result<bool> {
+    fn keycode_suffix(
+        &self,
+        key_code: KeyCode,
+        modifiers: KeyModifiers,
+        special_backtab: bool,
+        buf: &mut Cursor<&mut [u8]>,
+    ) -> io::Result<bool> {
         match key_code {
             KeyCode::Backspace => buf.write_all(b"\x7F"),
             KeyCode::Enter => buf.write_all(b"\r"),
@@ -227,8 +252,10 @@ impl Event {
             KeyCode::End => buf.write_all(b"F"),
             KeyCode::PageUp => buf.write_all(b"5~"),
             KeyCode::PageDown => buf.write_all(b"6~"),
+            KeyCode::Tab if modifiers.intersects(KeyModifiers::SHIFT) && special_backtab => {
+                buf.write_all(b"Z")
+            }
             KeyCode::Tab => buf.write_all(b"\t"),
-            KeyCode::BackTab => buf.write_all(b"Z"),
             KeyCode::Delete => buf.write_all(b"3~"),
             KeyCode::Insert => buf.write_all(b"2~"),
             KeyCode::F(1) => buf.write_all(b"OP"),
@@ -254,18 +281,14 @@ impl Event {
         Ok(true)
     }
 
-    pub fn to_kitty_escape_sequence(
-        &self,
-        buf: &mut [u8],
-        flags: KeyboardEnhancementFlags,
-    ) -> io::Result<usize> {
+    fn to_kitty_escape_sequence(&self, buf: &mut [u8], flags: KittyFlags) -> io::Result<usize> {
         match self {
-            Event::Key(mut key_event) => {
-                if !flags.intersects(KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES) {
+            Event::Key(key_event) => {
+                if !flags.intersects(KittyFlags::DISAMBIGUATE_ESCAPE_CODES) {
                     return self.to_escape_sequence(buf);
                 }
 
-                if !flags.intersects(KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES)
+                if !flags.intersects(KittyFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES)
                     && key_event.kind == KeyEventKind::Press
                     && !key_event.modifiers.intersects(
                         KeyModifiers::CTRL
@@ -279,9 +302,37 @@ impl Event {
                     return self.to_escape_sequence(buf);
                 }
 
+                let mut key_event = key_event.normalize_case();
                 let mut buf = Cursor::new(buf);
                 buf.write_all(b"\x1B[")?;
+                let mut trailing_char = b'u';
+                let is_keypad = key_event.state.intersects(KeyEventState::KEYPAD);
+
                 match key_event.code {
+                    KeyCode::Home
+                    | KeyCode::End
+                    | KeyCode::Delete
+                    | KeyCode::Insert
+                    | KeyCode::Left
+                    | KeyCode::Right
+                    | KeyCode::Up
+                    | KeyCode::Down
+                    | KeyCode::F(1..=12)
+                        if !is_keypad =>
+                    {
+                        if key_event.kind == KeyEventKind::Press {
+                            buf.set_position(0);
+                            let pos = self.to_escape_sequence(buf.get_mut())?;
+                            return Ok(pos);
+                        }
+                        self.keycode_suffix(key_event.code, key_event.modifiers, false, &mut buf)?;
+                        let pos = buf.position();
+                        trailing_char = buf.get_ref()[pos as usize - 1];
+                        buf.set_position(pos - 1);
+                        if pos == 3 {
+                            buf.write_all(b"1")?;
+                        }
+                    }
                     KeyCode::CapsLock => buf.write_all(b"57358")?,
                     KeyCode::ScrollLock => buf.write_all(b"57359")?,
                     KeyCode::NumLock => buf.write_all(b"57360")?,
@@ -354,6 +405,28 @@ impl Event {
                     KeyCode::Null => {
                         return Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported"));
                     }
+                    KeyCode::Char(val @ '0'..='9') if is_keypad => {
+                        buf.write_all(&(57399 + (val as u16 - 48)).to_string().into_bytes())?
+                    }
+                    KeyCode::Char('.') if is_keypad => buf.write_all(b"57409")?,
+                    KeyCode::Char('/') if is_keypad => buf.write_all(b"57410")?,
+                    KeyCode::Char('*') if is_keypad => buf.write_all(b"57411")?,
+                    KeyCode::Char('-') if is_keypad => buf.write_all(b"57412")?,
+                    KeyCode::Char('+') if is_keypad => buf.write_all(b"57413")?,
+                    KeyCode::Enter if is_keypad => buf.write_all(b"57414")?,
+                    KeyCode::Char('=') if is_keypad => buf.write_all(b"57415")?,
+                    KeyCode::Char(',') if is_keypad => buf.write_all(b"57416")?,
+                    KeyCode::Left if is_keypad => buf.write_all(b"57417")?,
+                    KeyCode::Right if is_keypad => buf.write_all(b"57418")?,
+                    KeyCode::Up if is_keypad => buf.write_all(b"57419")?,
+                    KeyCode::Down if is_keypad => buf.write_all(b"57420")?,
+                    KeyCode::PageUp if is_keypad => buf.write_all(b"57421")?,
+                    KeyCode::PageDown if is_keypad => buf.write_all(b"57422")?,
+                    KeyCode::Home if is_keypad => buf.write_all(b"57423")?,
+                    KeyCode::End if is_keypad => buf.write_all(b"57424")?,
+                    KeyCode::Insert if is_keypad => buf.write_all(b"57425")?,
+                    KeyCode::Delete if is_keypad => buf.write_all(b"57426")?,
+                    KeyCode::KeypadBegin if is_keypad => buf.write_all(b"57427")?,
                     mut key_code => {
                         if let KeyCode::Char(c) = &mut key_code {
                             if !c.is_ascii_lowercase() {
@@ -363,22 +436,29 @@ impl Event {
                                 }
                             }
                         }
-                        let old_pos = buf.position() as usize;
-                        self.keycode_suffix(key_code, &mut buf)?;
-                        let new_pos = buf.position() as usize;
-                        let suffix_bytes = buf.get_ref()[old_pos..new_pos]
-                            .iter()
-                            .map(|b| b.to_string())
-                            .collect::<String>()
-                            .into_bytes();
-                        buf.seek_relative(old_pos as i64 - new_pos as i64)?;
 
                         match key_code {
                             KeyCode::Char(c) => {
+                                let old_pos = buf.position() as usize;
+                                self.keycode_suffix(
+                                    key_code,
+                                    key_event.modifiers,
+                                    false,
+                                    &mut buf,
+                                )?;
+                                let new_pos = buf.position() as usize;
+                                let suffix_bytes = buf.get_ref()[old_pos..new_pos]
+                                    .iter()
+                                    .map(|b| b.to_string())
+                                    .collect::<String>()
+                                    .into_bytes();
+                                buf.seek_relative(old_pos as i64 - new_pos as i64)?;
                                 buf.write_all(&suffix_bytes)?;
-                                if flags.intersects(KeyboardEnhancementFlags::REPORT_ALTERNATE_KEYS)
+                                if flags.intersects(KittyFlags::REPORT_ALTERNATE_KEYS)
                                     && key_event.modifiers.intersects(KeyModifiers::SHIFT)
                                 {
+                                    // Ideally we could do this for other chars besides just ascii,
+                                    // but that requires knowing the keyboard layout
                                     let upper = c.to_ascii_uppercase();
                                     if upper != c {
                                         buf.write_all(b":")?;
@@ -387,27 +467,63 @@ impl Event {
                                 }
                             }
                             KeyCode::F(1..=4) => {
-                                buf.write_all(&suffix_bytes[1..])?;
+                                self.keycode_suffix(
+                                    key_code,
+                                    key_event.modifiers,
+                                    false,
+                                    &mut buf,
+                                )?;
+                                // Remove second-last char and shift the last char one spot to the
+                                // left
+                                let last = buf.position() as usize;
+                                buf.seek_relative(-2)?;
+                                buf.write_all(&[buf.get_ref()[last], 0])?;
+                                buf.seek_relative(-1)?;
+                            }
+                            KeyCode::Esc | KeyCode::Enter | KeyCode::Tab => {
+                                let old_pos = buf.position() as usize;
+                                self.keycode_suffix(
+                                    key_code,
+                                    key_event.modifiers,
+                                    false,
+                                    &mut buf,
+                                )?;
+                                let new_pos = buf.position() as usize;
+                                let suffix_bytes = buf.get_ref()[old_pos..new_pos]
+                                    .iter()
+                                    .map(|b| b.to_string())
+                                    .collect::<String>()
+                                    .into_bytes();
+                                buf.seek_relative(old_pos as i64 - new_pos as i64)?;
+                                buf.write_all(&suffix_bytes)?;
                             }
                             _ => {
-                                buf.write_all(&suffix_bytes)?;
+                                self.keycode_suffix(
+                                    key_code,
+                                    key_event.modifiers,
+                                    false,
+                                    &mut buf,
+                                )?;
                             }
                         }
                     }
                 }
 
-                if !key_event.modifiers.is_empty() || key_event.kind != KeyEventKind::Press {
+                let report_event_types = flags.intersects(KittyFlags::REPORT_EVENT_TYPES);
+                let extra_modifiers = key_event
+                    .state
+                    .intersection(KeyEventState::CAPS_LOCK | KeyEventState::NUM_LOCK);
+
+                if !key_event.modifiers.is_empty()
+                    || !extra_modifiers.is_empty()
+                    || (key_event.kind != KeyEventKind::Press && report_event_types)
+                {
                     buf.write_all(b";")?;
-                    let pos = buf.position() as usize;
-                    (key_event.modifiers.bits() + 1)
-                        .to_string()
-                        .chars()
-                        .next()
-                        .expect("should have exactly one char")
-                        .encode_utf8(&mut buf.get_mut()[pos..]);
-                    buf.seek_relative(1)?;
+                    let modifier_sum =
+                        key_event.modifiers.bits() + (extra_modifiers.bits() << 5) + 1;
+                    buf.write_all(&modifier_sum.to_string().into_bytes())?;
                 }
-                if flags.intersects(KeyboardEnhancementFlags::REPORT_EVENT_TYPES) {
+                if report_event_types {
                     match key_event.kind {
                         KeyEventKind::Repeat => {
                             buf.write_all(b":2")?;
@@ -418,7 +534,7 @@ impl Event {
                         KeyEventKind::Press => {}
                     };
                 }
-                buf.write_all(b"u")?;
+                buf.write_all(&[trailing_char])?;
                 Ok(buf.position() as usize)
             }
             _ => self.to_escape_sequence(buf),
