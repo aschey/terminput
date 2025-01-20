@@ -30,12 +30,10 @@ jobs:
         run: cargo build --all-features --examples
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
-      - name: Install cargo-nextest
-        uses: taiki-e/install-action@cargo-nextest
       - name: Test
         run: |
           cargo test --doc
-          cargo llvm-cov nextest --all-features --codecov --ignore-filename-regex ".cargo|.*_test\.rs" > ./codecov.json
+          cargo llvm-cov test --all-features --codecov --ignore-filename-regex ".cargo|.*_test\.rs" > ./codecov.json
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         env:
@@ -87,7 +85,7 @@ jobs:
           toolchain: ${{ env.RUST_MIN }}
       - uses: Swatinem/rust-cache@v2
       - name: Cargo check
-        run: cargo check --workspace --all-features
+        run: cargo check --all-features
 
   lint:
     name: "Lint"
@@ -110,6 +108,7 @@ jobs:
           RUSTDOCFLAGS: --cfg docsrs -D warnings
       - name: Lint dependencies
         uses: EmbarkStudios/cargo-deny-action@v2
+      # disabling until https://github.com/rustsec/audit-check/issues/28 is fixed
       # - name: Security vulnerabilities audit
       #   uses: rustsec/audit-check@v2
       #   with:
