@@ -308,9 +308,7 @@ impl TryFrom<KeyEvent> for termion::event::Key {
             KeyCode::End => Self::End,
             KeyCode::PageUp => Self::PageUp,
             KeyCode::PageDown => Self::PageDown,
-            KeyCode::Tab if value.modifiers.intersects(KeyModifiers::SHIFT) => {
-                Self::BackTab
-            }
+            KeyCode::Tab if value.modifiers.intersects(KeyModifiers::SHIFT) => Self::BackTab,
             KeyCode::Tab => Self::Char('\t'),
 
             KeyCode::Delete => Self::Delete,
@@ -438,24 +436,18 @@ impl TryFrom<MouseEvent> for termion::event::MouseEvent {
             MouseEventKind::Up(_) => Self::Release(column, row),
             MouseEventKind::Drag(_) => Self::Hold(column, row),
             val @ MouseEventKind::Moved => Err(UnsupportedEvent(format!("{val:?}")))?,
-            MouseEventKind::ScrollDown => Self::Press(
-                termion::event::MouseButton::WheelDown,
-                column,
-                row,
-            ),
+            MouseEventKind::ScrollDown => {
+                Self::Press(termion::event::MouseButton::WheelDown, column, row)
+            }
             MouseEventKind::ScrollUp => {
                 Self::Press(termion::event::MouseButton::WheelUp, column, row)
             }
-            MouseEventKind::ScrollLeft => Self::Press(
-                termion::event::MouseButton::WheelLeft,
-                column,
-                row,
-            ),
-            MouseEventKind::ScrollRight => Self::Press(
-                termion::event::MouseButton::WheelRight,
-                column,
-                row,
-            ),
+            MouseEventKind::ScrollLeft => {
+                Self::Press(termion::event::MouseButton::WheelLeft, column, row)
+            }
+            MouseEventKind::ScrollRight => {
+                Self::Press(termion::event::MouseButton::WheelRight, column, row)
+            }
         })
     }
 }

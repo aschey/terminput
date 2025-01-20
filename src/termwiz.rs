@@ -449,14 +449,12 @@ impl TryFrom<MouseEvent> for termwiz::input::MouseEvent {
 
     fn try_from(value: MouseEvent) -> Result<Self, Self::Error> {
         Ok(match value.kind {
-            MouseEventKind::Down(MouseButton::Left | MouseButton::Unknown) => {
-                Self {
-                    mouse_buttons: termwiz::input::MouseButtons::LEFT,
-                    x: value.column + 1,
-                    y: value.row + 1,
-                    modifiers: value.modifiers.try_into()?,
-                }
-            }
+            MouseEventKind::Down(MouseButton::Left | MouseButton::Unknown) => Self {
+                mouse_buttons: termwiz::input::MouseButtons::LEFT,
+                x: value.column + 1,
+                y: value.row + 1,
+                modifiers: value.modifiers.try_into()?,
+            },
             MouseEventKind::Down(MouseButton::Right) => Self {
                 mouse_buttons: termwiz::input::MouseButtons::RIGHT,
                 x: value.column + 1,
