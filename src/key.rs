@@ -2,6 +2,7 @@ use std::hash::{Hash, Hasher};
 
 use bitflags::bitflags;
 
+/// A key input event.
 #[derive(Debug, PartialOrd, Clone, Copy)]
 pub struct KeyEvent {
     /// The key code.
@@ -15,6 +16,7 @@ pub struct KeyEvent {
 }
 
 impl KeyEvent {
+    /// Creates a new [`KeyEvent`] with the default state and no modifiers.
     pub const fn new(code: KeyCode) -> Self {
         Self {
             code,
@@ -24,16 +26,19 @@ impl KeyEvent {
         }
     }
 
+    /// Sets the [`KeyModifiers`].
     pub const fn modifiers(mut self, modifiers: KeyModifiers) -> Self {
         self.modifiers = modifiers;
         self
     }
 
+    /// Sets the [`KeyEventKind`].
     pub const fn kind(mut self, kind: KeyEventKind) -> Self {
         self.kind = kind;
         self
     }
 
+    /// Sets the [`KeyEventState`].
     pub fn state(mut self, state: KeyEventState) -> Self {
         self.state = state;
         self
@@ -93,10 +98,15 @@ impl Hash for KeyEvent {
     }
 }
 
+/// Represents whether the modifier came from the left or right side of the keyboard, where
+/// applicable.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum ModifierDirection {
+    /// Modifier came from the left side of the keyboard.
     Left,
+    /// Modifier came from the right side of the keyboard.
     Right,
+    /// Direction is unknown or not applicable.
     Unknown,
 }
 
@@ -140,87 +150,59 @@ pub enum KeyCode {
     /// Escape key.
     Esc,
     /// Caps Lock key.
-    ///
-    /// **Note:** this key can only be read if
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     CapsLock,
     /// Scroll Lock key.
-    ///
-    /// **Note:** this key can only be read if
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     ScrollLock,
     /// Num Lock key.
-    ///
-    /// **Note:** this key can only be read if
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     NumLock,
     /// Print Screen key.
-    ///
-    /// **Note:** this key can only be read if
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     PrintScreen,
     /// Pause key.
-    ///
-    /// **Note:** this key can only be read if
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     Pause,
     /// Menu key.
-    ///
-    /// **Note:** this key can only be read if
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     Menu,
     /// The "Begin" key (often mapped to the 5 key when Num Lock is turned on).
-    ///
-    /// **Note:** this key can only be read if
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     KeypadBegin,
     /// A media key.
-    ///
-    /// **Note:** these keys can only be read if
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     Media(MediaKeyCode),
     /// A modifier key.
-    ///
-    /// **Note:** these keys can only be read if **both**
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] and
-    /// [`KeyboardEnhancementFlags::REPORT_ALL_KEYS_AS_ESCAPE_CODES`] have been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     Modifier(ModifierKeyCode, ModifierDirection),
 }
 
 bitflags! {
     /// Represents key modifiers (shift, control, alt, etc.).
-    ///
-    /// **Note:** `SUPER`, `HYPER`, and `META` can only be read if
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
     pub struct KeyModifiers: u8 {
+        /// No modifiers.
         const NONE = 0;
+        /// Key was pressed with shift.
         const SHIFT = 1;
+        /// Key was pressed with alt.
         const ALT = 1<<1;
+        /// Key was pressed with control.
         const CTRL = 1<<2;
+        /// Key was pressed with super.
         const SUPER = 1<<3;
+        /// Key was pressed with hyper.
         const HYPER = 1<<4;
+        /// Key was pressed with meta.
         const META = 1<<5;
     }
 }
 
+/// Type of key event. Repeat and release events may not be emitted if the input source is not
+/// configured to do so.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum KeyEventKind {
+    /// Key press.
     Press,
+    /// Key repeat.
     Repeat,
+    /// Key release.
     Release,
 }
 
+/// Media keys.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum MediaKeyCode {
     /// Play media key.
@@ -251,6 +233,7 @@ pub enum MediaKeyCode {
     MuteVolume,
 }
 
+/// A modifier key event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum ModifierKeyCode {
     /// Left Shift key.
@@ -273,22 +256,15 @@ pub enum ModifierKeyCode {
 
 bitflags! {
     /// Represents extra state about the key event.
-    ///
-    /// **Note:** This state can only be read if
-    /// [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
     #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
     pub struct KeyEventState: u8 {
+        /// No extra state applicable.
         const NONE = 0;
-        /// The key event origins from the keypad.
+        /// The key event came from the keypad.
         const KEYPAD = 1;
         /// Caps Lock was enabled for this key event.
-        ///
-        /// **Note:** this is set for the initial press of Caps Lock itself.
         const CAPS_LOCK = 1<<1;
         /// Num Lock was enabled for this key event.
-        ///
-        /// **Note:** this is set for the initial press of Num Lock itself.
         const NUM_LOCK = 1<<2;
 
     }

@@ -1,5 +1,6 @@
 use crate::KeyModifiers;
 
+/// A mouse event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct MouseEvent {
     /// The kind of mouse event that was caused.
@@ -12,6 +13,7 @@ pub struct MouseEvent {
     pub modifiers: KeyModifiers,
 }
 
+/// The type of mouse event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum MouseEventKind {
     /// Pressed mouse button. Contains the button that was pressed.
@@ -26,12 +28,13 @@ pub enum MouseEventKind {
     ScrollDown,
     /// Scrolled mouse wheel upwards (away from the user).
     ScrollUp,
-    /// Scrolled mouse wheel left (mostly on a laptop touchpad).
+    /// Scrolled mouse wheel left (usually on a laptop touchpad).
     ScrollLeft,
-    /// Scrolled mouse wheel right (mostly on a laptop touchpad).
+    /// Scrolled mouse wheel right (usually on a laptop touchpad).
     ScrollRight,
 }
 
+/// The mouse button used for this event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum MouseButton {
     /// Left mouse button.
@@ -40,5 +43,6 @@ pub enum MouseButton {
     Right,
     /// Middle mouse button.
     Middle,
+    /// Mouse button could not be determined.
     Unknown,
 }

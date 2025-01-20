@@ -1,4 +1,4 @@
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 #![forbid(clippy::unwrap_used)]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![warn(clippy::semicolon_if_nothing_returned)]
