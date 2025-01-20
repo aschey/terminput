@@ -14,7 +14,7 @@ include = ["/src", "/examples", "/tests"]
 [dependencies]
 bitflags = "2.4"
 crossterm = { version = "0.28.1", optional = true }
-egui = { version = "0.30", optional = true }
+egui = { version = "0.30", default-features = false, optional = true }
 termion = { version = "4", optional = true }
 termwiz = { version = "0.22", optional = true }
 
