@@ -158,8 +158,6 @@ pub enum KeyCode {
     ///
     /// `KeyCode::Char('c')` represents `c` character, etc.
     Char(char),
-    /// Null.
-    Null,
     /// Escape key.
     Esc,
     /// Caps Lock key.

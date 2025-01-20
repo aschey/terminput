@@ -22,7 +22,9 @@ impl TryFrom<Event> for termion::event::Event {
         Ok(match value {
             Event::Key(key_event) => termion::event::Event::Key(key_event.try_into()?),
             Event::Mouse(mouse_event) => termion::event::Event::Mouse(mouse_event.try_into()?),
-            val => Err(UnsupportedEvent(format!("{val:?}")))?,
+            Event::FocusGained | Event::FocusLost | Event::Paste(_) | Event::Resize(_, _) => {
+                Err(UnsupportedEvent(format!("{value:?}")))?
+            }
         })
     }
 }
@@ -248,19 +250,13 @@ impl TryFrom<termion::event::Key> for KeyEvent {
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Null => KeyEvent {
-                code: KeyCode::Null,
-                modifiers: KeyModifiers::NONE,
-                kind: KeyEventKind::Press,
-                state: KeyEventState::empty(),
-            },
             termion::event::Key::Esc => KeyEvent {
                 code: KeyCode::Esc,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            val => Err(UnsupportedEvent(format!("{val:?}")))?,
+            _ => Err(UnsupportedEvent(format!("{value:?}")))?,
         })
     }
 }
@@ -321,7 +317,6 @@ impl TryFrom<KeyEvent> for termion::event::Key {
             KeyCode::Insert => termion::event::Key::Insert,
             KeyCode::F(f) => termion::event::Key::F(f),
             KeyCode::Char(c) => termion::event::Key::Char(c),
-            KeyCode::Null => termion::event::Key::Null,
             KeyCode::Esc => termion::event::Key::Esc,
             KeyCode::CapsLock
             | KeyCode::NumLock

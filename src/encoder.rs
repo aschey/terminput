@@ -401,9 +401,6 @@ fn write_kitty_encoding(
         KeyCode::Modifier(ModifierKeyCode::IsoLevel5Shift, ModifierDirection::Unknown) => {
             buf.write_all(b"57454")?
         }
-        KeyCode::Null => {
-            return Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported"));
-        }
         KeyCode::Char(val @ '0'..='9') if is_keypad => {
             buf.write_all(&(57399 + (val as u16 - 48)).to_string().into_bytes())?
         }

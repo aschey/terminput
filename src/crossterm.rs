@@ -176,7 +176,6 @@ impl TryFrom<crossterm::event::KeyCode> for KeyCode {
             crossterm::event::KeyCode::Insert => KeyCode::Insert,
             crossterm::event::KeyCode::F(f) => KeyCode::F(f),
             crossterm::event::KeyCode::Char(c) => KeyCode::Char(c),
-            crossterm::event::KeyCode::Null => KeyCode::Null,
             crossterm::event::KeyCode::Esc => KeyCode::Esc,
             crossterm::event::KeyCode::CapsLock => KeyCode::CapsLock,
             crossterm::event::KeyCode::ScrollLock => KeyCode::ScrollLock,
@@ -190,6 +189,7 @@ impl TryFrom<crossterm::event::KeyCode> for KeyCode {
                 let (code, direction) = convert_modifier_key_code(m);
                 KeyCode::Modifier(code, direction)
             }
+            crossterm::event::KeyCode::Null => Err(UnsupportedEvent(format!("{value:?}")))?,
         })
     }
 }
@@ -215,7 +215,6 @@ fn convert_crossterm_key_code(
         KeyCode::Insert => crossterm::event::KeyCode::Insert,
         KeyCode::F(f) => crossterm::event::KeyCode::F(f),
         KeyCode::Char(c) => crossterm::event::KeyCode::Char(c),
-        KeyCode::Null => crossterm::event::KeyCode::Null,
         KeyCode::Esc => crossterm::event::KeyCode::Esc,
         KeyCode::CapsLock => crossterm::event::KeyCode::CapsLock,
         KeyCode::ScrollLock => crossterm::event::KeyCode::ScrollLock,
