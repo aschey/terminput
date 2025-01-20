@@ -7,18 +7,28 @@ use crossterm::event::{
 };
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{execute, queue};
-use terminput::{Event, KeyCode, UnsupportedEvent};
+use terminput::{Encoding, Event, KeyCode, KittyFlags, UnsupportedEvent, parse_event};
 
-fn print_events() -> io::Result<()> {
+fn print_events(encoding: Encoding) -> io::Result<()> {
+    let mut buf = [0; 16];
     loop {
         let event: Result<terminput::Event, UnsupportedEvent> = read()?.try_into();
 
-        println!("Event: {:?}\r", event);
         if let Ok(event) = event {
+            println!("Event:   {:?}\r", event);
+            let written = event.encode(&mut buf, encoding);
+            if let Ok(written) = written {
+                println!("Encoded: {:?}\r", &buf[..written]);
+                if let Ok(Some(decoded)) = parse_event(&buf[..written]) {
+                    println!("Decoded: {:?}\r", decoded);
+                }
+            }
+
             if event == Event::Key(KeyCode::Esc.into()) {
                 break;
             }
         }
+        println!();
     }
 
     Ok(())
@@ -50,7 +60,11 @@ fn main() -> io::Result<()> {
         EnableMouseCapture,
     )?;
 
-    print_events()?;
+    print_events(if supports_keyboard_enhancement {
+        Encoding::Kitty(KittyFlags::all())
+    } else {
+        Encoding::Xterm
+    })?;
 
     if supports_keyboard_enhancement {
         execute!(stdout, PopKeyboardEnhancementFlags)?;

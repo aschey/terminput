@@ -1,8 +1,7 @@
-use terminput::encoder::{Encoding, KittyFlags};
-use terminput::parser::parse_event;
 use terminput::{
-    Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
-    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind,
+    Encoding, Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, KittyFlags,
+    MediaKeyCode, ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind,
+    parse_event,
 };
 
 #[test]
@@ -474,6 +473,70 @@ fn test_kitty_arrow() {
     .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
     .unwrap();
     assert_eq!(buf[..written], *b"\x1B[1;3:3D");
+}
+
+#[test]
+fn test_space_key() {
+    assert_eq!(
+        parse_event(b"\x20").unwrap(),
+        Some(Event::Key(KeyCode::Char(' ').into())),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyCode::Char(' ').into())
+        .encode(&mut buf, Encoding::Xterm)
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x20");
+
+    assert_eq!(
+        parse_event(b"\x00").unwrap(),
+        Some(Event::Key(
+            KeyEvent::new(KeyCode::Char(' ')).modifiers(KeyModifiers::CTRL)
+        )),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::Char(' ')).modifiers(KeyModifiers::CTRL))
+        .encode(&mut buf, Encoding::Xterm)
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x00");
+
+    assert_eq!(
+        parse_event(b"\x1B\x20").unwrap(),
+        Some(Event::Key(
+            KeyEvent::new(KeyCode::Char(' ')).modifiers(KeyModifiers::ALT)
+        )),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::Char(' ')).modifiers(KeyModifiers::ALT))
+        .encode(&mut buf, Encoding::Xterm)
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B\x20");
+
+    assert_eq!(
+        parse_event(b"\x1B\x00").unwrap(),
+        Some(Event::Key(
+            KeyEvent::new(KeyCode::Char(' ')).modifiers(KeyModifiers::CTRL | KeyModifiers::ALT)
+        )),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(
+        KeyEvent::new(KeyCode::Char(' ')).modifiers(KeyModifiers::CTRL | KeyModifiers::ALT),
+    )
+    .encode(&mut buf, Encoding::Xterm)
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B\x00");
+}
+
+#[test]
+fn test_kitty_space_key() {
+    assert_eq!(
+        parse_event(b"\x1B[32u").unwrap(),
+        Some(Event::Key(KeyCode::Char(' ').into())),
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyCode::Char(' ').into())
+        .encode(&mut buf, Encoding::Kitty(KittyFlags::all()))
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1B[32u");
 }
 
 #[test]
@@ -2623,18 +2686,47 @@ fn test_parse_csi_u_encoded_key_code_with_extra_state() {
         parse_event(b"\x1B[97;65u").unwrap(),
         Some(Event::Key(
             KeyEvent::new(KeyCode::Char('a'))
-                .modifiers(KeyModifiers::empty(),)
-                .state(KeyEventState::CAPS_LOCK,)
+                .modifiers(KeyModifiers::empty())
+                .state(KeyEventState::CAPS_LOCK)
         )),
     );
     assert_eq!(
         parse_event(b"\x1B[49;129u").unwrap(),
         Some(Event::Key(
             KeyEvent::new(KeyCode::Char('1'))
-                .modifiers(KeyModifiers::empty(),)
-                .state(KeyEventState::NUM_LOCK,)
+                .modifiers(KeyModifiers::empty())
+                .state(KeyEventState::NUM_LOCK)
         )),
     );
+}
+
+#[test]
+fn test_numbers_with_modifiers() {
+    assert_eq!(
+        parse_event(b"\x1C").unwrap(),
+        Some(Event::Key(
+            KeyEvent::new(KeyCode::Char('4')).modifiers(KeyModifiers::CTRL)
+        ))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(KeyEvent::new(KeyCode::Char('4')).modifiers(KeyModifiers::CTRL))
+        .encode(&mut buf, Encoding::Xterm)
+        .unwrap();
+    assert_eq!(buf[..written], *b"\x1C");
+
+    assert_eq!(
+        parse_event(b"\x1B\x1C").unwrap(),
+        Some(Event::Key(
+            KeyEvent::new(KeyCode::Char('4')).modifiers(KeyModifiers::CTRL | KeyModifiers::ALT)
+        ))
+    );
+    let mut buf = [0; 8];
+    let written = Event::Key(
+        KeyEvent::new(KeyCode::Char('4')).modifiers(KeyModifiers::CTRL | KeyModifiers::ALT),
+    )
+    .encode(&mut buf, Encoding::Xterm)
+    .unwrap();
+    assert_eq!(buf[..written], *b"\x1B\x1C");
 }
 
 #[test]

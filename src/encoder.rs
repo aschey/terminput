@@ -8,37 +8,43 @@ use crate::{
 };
 
 bitflags! {
-    #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
+    /// Controls which keyboard enhancement flags will be considered during encoding.
+    /// These flags are described in Kitty's documentation on [progressive enhancement](https://sw.kovidgoyal.net/kitty/keyboard-protocol/#progressive-enhancement).
+    #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
     pub struct KittyFlags: u8 {
-        /// Represent Escape and modified keys using CSI-u sequences, so they can be unambiguously
-        /// read.
+        /// Represent escape and modified keys using CSI-u sequences.
         const DISAMBIGUATE_ESCAPE_CODES = 1<<1;
-        /// Add extra events with [`KeyEvent.kind`] set to [`KeyEventKind::Repeat`] or
-        /// [`KeyEventKind::Release`] when keys are autorepeated or released.
+        /// Report release and repeat events.
         const REPORT_EVENT_TYPES = 1<<2;
         /// Send [alternate keycodes](https://sw.kovidgoyal.net/kitty/keyboard-protocol/#key-codes)
-        /// in addition to the base keycode. The alternate keycode overrides the base keycode in
-        /// resulting `KeyEvent`s.
+        /// in addition to the base keycode. The encoder currently only supports this for
+        /// alphabetic keys since applying this to other types of keys requires knowledge of the
+        /// keyboard layout used to type the key.
         const REPORT_ALTERNATE_KEYS = 1<<3;
-        /// Represent all keyboard events as CSI-u sequences. This is required to get repeat/release
-        /// events for plain-text keys.
+        /// Represent all keyboard events as CSI-u sequences.
         const REPORT_ALL_KEYS_AS_ESCAPE_CODES = 1<<4;
 
     }
 }
 
+/// Encoding protocol used to control the output of [`Event::encode`]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum Encoding {
+    /// Encode using the legacy Xterm protocol.
     Xterm,
+    /// Encode using the Kitty protocol.
     Kitty(KittyFlags),
 }
 
 impl Event {
+    /// Encode the event into the given buffer using the supplied [`Encoding`] mode.
     pub fn encode(&self, buf: &mut [u8], encoding: Encoding) -> io::Result<usize> {
         match encoding {
             Encoding::Xterm => self.to_escape_sequence(buf),
             Encoding::Kitty(flags) => self.to_kitty_escape_sequence(buf, flags),
         }
     }
+
     fn to_escape_sequence(&self, buf: &mut [u8]) -> io::Result<usize> {
         let mut buf = Cursor::new(buf);
         match self {
@@ -58,7 +64,7 @@ impl Event {
                 buf.write_all(b"\x1B[201~")?;
                 Ok(buf.position() as usize)
             }
-            Self::Resize(_, _) => Err(io::Error::new(
+            Self::Resize { .. } => Err(io::Error::new(
                 io::ErrorKind::Unsupported,
                 "Resize events cannot be encoded",
             )),
@@ -168,7 +174,11 @@ fn encode_key_event(key_event: &KeyEvent, buf: &mut Cursor<&mut [u8]>) -> io::Re
         ));
     }
 
-    if key_event.modifiers.intersects(KeyModifiers::ALT) {
+    let is_shift = key_event.modifiers.intersects(KeyModifiers::SHIFT);
+    let is_ctrl = key_event.modifiers.intersects(KeyModifiers::CTRL);
+    let is_alt = key_event.modifiers.intersects(KeyModifiers::ALT);
+
+    if is_alt {
         match key_event.code {
             KeyCode::Char(_)
             | KeyCode::Esc
@@ -199,9 +209,15 @@ fn encode_key_event(key_event: &KeyEvent, buf: &mut Cursor<&mut [u8]>) -> io::Re
             buf.write_all(b"\x1B[")?;
             write_keycode_suffix(key_event.code, key_event.modifiers, true, buf)?;
         }
-        KeyCode::Tab if key_event.modifiers.intersects(KeyModifiers::SHIFT) => {
+        KeyCode::Tab if is_shift => {
             buf.write_all(b"\x1B[")?;
             write_keycode_suffix(key_event.code, key_event.modifiers, true, buf)?;
+        }
+        KeyCode::Char(' ') if is_ctrl => {
+            buf.write_all(b"\x00")?;
+        }
+        KeyCode::Char(c @ '4'..='7') if is_ctrl => {
+            buf.write_all(&[c as u8 - b'4' + b'\x1C'])?;
         }
         _ => {
             let handled = write_keycode_suffix(key_event.code, key_event.modifiers, true, buf)?;
@@ -218,11 +234,19 @@ fn encode_key_event(key_event: &KeyEvent, buf: &mut Cursor<&mut [u8]>) -> io::Re
         write_modifier_prefix(key_event.code, buf)?;
     }
 
-    if key_event.modifiers.intersects(KeyModifiers::CTRL) {
+    if is_ctrl {
         match key_event.code {
+            KeyCode::Char(' ' | '4'..='7') if is_ctrl => {}
             KeyCode::Char(c) => {
                 let pos = buf.position() as usize;
-                buf.get_mut()[pos - 1] = (c as u8) + 0x1 - b'a';
+                let base = (c as u8) + 0x1;
+                if base < b'a' {
+                    return Err(io::Error::new(
+                        io::ErrorKind::Unsupported,
+                        "unsupported key",
+                    ));
+                }
+                buf.get_mut()[pos - 1] = base - b'a';
             }
             KeyCode::Backspace => {
                 let pos = buf.position() as usize;

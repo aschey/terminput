@@ -12,6 +12,13 @@ fn could_not_parse_event_error() -> io::Error {
     io::Error::new(io::ErrorKind::Other, "Could not parse an event.")
 }
 
+/// Attempts to parse a byte sequence into an input event.
+/// Supports both the legacy Xterm input protocol and the newer enhanced protocols from fixterms
+/// and Kitty.
+///
+/// Returns [`None`] if the input could be a valid event, but is incomplete.
+///
+/// Returns an [`io::Error`] if the input cannot be parsed into an input event.
 pub fn parse_event(buffer: &[u8]) -> io::Result<Option<Event>> {
     if buffer.is_empty() {
         return Ok(None);
@@ -152,8 +159,10 @@ pub(crate) fn parse_csi(buffer: &[u8]) -> io::Result<Option<Event>> {
         b'R' => Some(Event::Key(KeyCode::F(3).into())),
         b'S' => Some(Event::Key(KeyCode::F(4).into())),
         b'?' => match buffer[buffer.len() - 1] {
-            b'u' => return Ok(None), //return parse_csi_keyboard_enhancement_flags(buffer),
-            b'c' => return Ok(None), //return parse_csi_primary_device_attributes(buffer),
+            // Keyboard enhancement flags, not a valid input event
+            b'u' => return Err(could_not_parse_event_error()),
+            // Primary device attributes, not a valid input event
+            b'c' => return Err(could_not_parse_event_error()),
             _ => None,
         },
         b'0'..=b'9' => {
@@ -174,7 +183,6 @@ pub(crate) fn parse_csi(buffer: &[u8]) -> io::Result<Option<Event>> {
                         b'M' => return parse_csi_rxvt_mouse(buffer),
                         b'~' => return parse_csi_special_key_code(buffer),
                         b'u' => return parse_csi_u_encoded_key_code(buffer),
-                        //  b'R' => return Ok(None), //parse_csi_cursor_position(buffer),
                         _ => return parse_csi_modifier_key_code(buffer),
                     }
                 }
@@ -258,7 +266,7 @@ fn parse_key_event_kind(kind: u8) -> KeyEventKind {
 
 pub(crate) fn parse_csi_modifier_key_code(buffer: &[u8]) -> io::Result<Option<Event>> {
     assert!(buffer.starts_with(b"\x1B[")); // ESC [
-    //
+
     let s = std::str::from_utf8(&buffer[2..buffer.len() - 1])
         .map_err(|_| could_not_parse_event_error())?;
     let mut split = s.split(';');

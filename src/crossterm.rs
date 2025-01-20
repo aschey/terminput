@@ -13,7 +13,10 @@ impl TryFrom<crossterm::event::Event> for Event {
             crossterm::event::Event::Key(key_event) => Self::Key(key_event.try_into()?),
             crossterm::event::Event::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
             crossterm::event::Event::Paste(value) => Self::Paste(value),
-            crossterm::event::Event::Resize(cols, rows) => Self::Resize(cols, rows),
+            crossterm::event::Event::Resize(cols, rows) => Self::Resize {
+                cols: cols as u32,
+                rows: rows as u32,
+            },
         })
     }
 }
@@ -28,7 +31,12 @@ impl TryFrom<Event> for crossterm::event::Event {
             Event::Key(key_event) => Self::Key(key_event.try_into()?),
             Event::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
             Event::Paste(value) => Self::Paste(value),
-            Event::Resize(cols, rows) => Self::Resize(cols, rows),
+            Event::Resize { cols, rows } => Self::Resize(
+                cols.try_into()
+                    .map_err(|e| UnsupportedEvent(format!("{e:?}")))?,
+                rows.try_into()
+                    .map_err(|e| UnsupportedEvent(format!("{e:?}")))?,
+            ),
         })
     }
 }

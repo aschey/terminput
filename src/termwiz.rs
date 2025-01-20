@@ -10,9 +10,10 @@ impl TryFrom<termwiz::input::InputEvent> for Event {
         Ok(match value {
             termwiz::input::InputEvent::Key(key_event) => Self::Key(key_event.try_into()?),
             termwiz::input::InputEvent::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
-            termwiz::input::InputEvent::Resized { cols, rows } => {
-                Self::Resize(cols as u16, rows as u16)
-            }
+            termwiz::input::InputEvent::Resized { cols, rows } => Self::Resize {
+                cols: cols as u32,
+                rows: rows as u32,
+            },
             termwiz::input::InputEvent::Paste(val) => Self::Paste(val),
             termwiz::input::InputEvent::PixelMouse(_) | termwiz::input::InputEvent::Wake => {
                 Err(UnsupportedEvent(format!("{value:?}")))?
@@ -29,7 +30,10 @@ impl TryFrom<Event> for termwiz::input::InputEvent {
             Event::Key(key_event) => Self::Key(key_event.try_into()?),
             Event::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
             Event::Paste(val) => Self::Paste(val),
-            Event::Resize(_, _) => todo!(),
+            Event::Resize { cols, rows } => Self::Resized {
+                cols: cols as usize,
+                rows: rows as usize,
+            },
             Event::FocusGained | Event::FocusLost => Err(UnsupportedEvent(format!("{value:?}")))?,
         })
     }

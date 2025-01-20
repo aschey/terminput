@@ -22,7 +22,7 @@ impl TryFrom<Event> for termion::event::Event {
         Ok(match value {
             Event::Key(key_event) => Self::Key(key_event.try_into()?),
             Event::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
-            Event::FocusGained | Event::FocusLost | Event::Paste(_) | Event::Resize(_, _) => {
+            Event::FocusGained | Event::FocusLost | Event::Paste(_) | Event::Resize { .. } => {
                 Err(UnsupportedEvent(format!("{value:?}")))?
             }
         })
