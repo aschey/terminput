@@ -8,12 +8,12 @@ impl TryFrom<crossterm::event::Event> for Event {
 
     fn try_from(value: crossterm::event::Event) -> Result<Self, Self::Error> {
         Ok(match value {
-            crossterm::event::Event::FocusGained => Event::FocusGained,
-            crossterm::event::Event::FocusLost => Event::FocusLost,
-            crossterm::event::Event::Key(key_event) => Event::Key(key_event.try_into()?),
-            crossterm::event::Event::Mouse(mouse_event) => Event::Mouse(mouse_event.try_into()?),
-            crossterm::event::Event::Paste(value) => Event::Paste(value),
-            crossterm::event::Event::Resize(cols, rows) => Event::Resize(cols, rows),
+            crossterm::event::Event::FocusGained => Self::FocusGained,
+            crossterm::event::Event::FocusLost => Self::FocusLost,
+            crossterm::event::Event::Key(key_event) => Self::Key(key_event.try_into()?),
+            crossterm::event::Event::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
+            crossterm::event::Event::Paste(value) => Self::Paste(value),
+            crossterm::event::Event::Resize(cols, rows) => Self::Resize(cols, rows),
         })
     }
 }
@@ -23,12 +23,12 @@ impl TryFrom<Event> for crossterm::event::Event {
 
     fn try_from(value: Event) -> Result<Self, Self::Error> {
         Ok(match value {
-            Event::FocusGained => crossterm::event::Event::FocusGained,
-            Event::FocusLost => crossterm::event::Event::FocusLost,
-            Event::Key(key_event) => crossterm::event::Event::Key(key_event.try_into()?),
-            Event::Mouse(mouse_event) => crossterm::event::Event::Mouse(mouse_event.try_into()?),
-            Event::Paste(value) => crossterm::event::Event::Paste(value),
-            Event::Resize(cols, rows) => crossterm::event::Event::Resize(cols, rows),
+            Event::FocusGained => Self::FocusGained,
+            Event::FocusLost => Self::FocusLost,
+            Event::Key(key_event) => Self::Key(key_event.try_into()?),
+            Event::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
+            Event::Paste(value) => Self::Paste(value),
+            Event::Resize(cols, rows) => Self::Resize(cols, rows),
         })
     }
 }
@@ -64,18 +64,14 @@ impl TryFrom<crossterm::event::MouseEventKind> for MouseEventKind {
 
     fn try_from(value: crossterm::event::MouseEventKind) -> Result<Self, Self::Error> {
         Ok(match value {
-            crossterm::event::MouseEventKind::Down(button) => {
-                MouseEventKind::Down(button.try_into()?)
-            }
-            crossterm::event::MouseEventKind::Up(button) => MouseEventKind::Up(button.try_into()?),
-            crossterm::event::MouseEventKind::Drag(button) => {
-                MouseEventKind::Drag(button.try_into()?)
-            }
-            crossterm::event::MouseEventKind::Moved => MouseEventKind::Moved,
-            crossterm::event::MouseEventKind::ScrollDown => MouseEventKind::ScrollDown,
-            crossterm::event::MouseEventKind::ScrollUp => MouseEventKind::ScrollUp,
-            crossterm::event::MouseEventKind::ScrollLeft => MouseEventKind::ScrollLeft,
-            crossterm::event::MouseEventKind::ScrollRight => MouseEventKind::ScrollRight,
+            crossterm::event::MouseEventKind::Down(button) => Self::Down(button.try_into()?),
+            crossterm::event::MouseEventKind::Up(button) => Self::Up(button.try_into()?),
+            crossterm::event::MouseEventKind::Drag(button) => Self::Drag(button.try_into()?),
+            crossterm::event::MouseEventKind::Moved => Self::Moved,
+            crossterm::event::MouseEventKind::ScrollDown => Self::ScrollDown,
+            crossterm::event::MouseEventKind::ScrollUp => Self::ScrollUp,
+            crossterm::event::MouseEventKind::ScrollLeft => Self::ScrollLeft,
+            crossterm::event::MouseEventKind::ScrollRight => Self::ScrollRight,
         })
     }
 }
@@ -85,18 +81,14 @@ impl TryFrom<MouseEventKind> for crossterm::event::MouseEventKind {
 
     fn try_from(value: MouseEventKind) -> Result<Self, Self::Error> {
         Ok(match value {
-            MouseEventKind::Down(button) => {
-                crossterm::event::MouseEventKind::Down(button.try_into()?)
-            }
-            MouseEventKind::Up(button) => crossterm::event::MouseEventKind::Up(button.try_into()?),
-            MouseEventKind::Drag(button) => {
-                crossterm::event::MouseEventKind::Drag(button.try_into()?)
-            }
-            MouseEventKind::Moved => crossterm::event::MouseEventKind::Moved,
-            MouseEventKind::ScrollDown => crossterm::event::MouseEventKind::ScrollDown,
-            MouseEventKind::ScrollUp => crossterm::event::MouseEventKind::ScrollUp,
-            MouseEventKind::ScrollLeft => crossterm::event::MouseEventKind::ScrollLeft,
-            MouseEventKind::ScrollRight => crossterm::event::MouseEventKind::ScrollRight,
+            MouseEventKind::Down(button) => Self::Down(button.try_into()?),
+            MouseEventKind::Up(button) => Self::Up(button.try_into()?),
+            MouseEventKind::Drag(button) => Self::Drag(button.try_into()?),
+            MouseEventKind::Moved => Self::Moved,
+            MouseEventKind::ScrollDown => Self::ScrollDown,
+            MouseEventKind::ScrollUp => Self::ScrollUp,
+            MouseEventKind::ScrollLeft => Self::ScrollLeft,
+            MouseEventKind::ScrollRight => Self::ScrollRight,
         })
     }
 }
@@ -106,9 +98,9 @@ impl TryFrom<crossterm::event::MouseButton> for MouseButton {
 
     fn try_from(value: crossterm::event::MouseButton) -> Result<Self, Self::Error> {
         Ok(match value {
-            crossterm::event::MouseButton::Left => MouseButton::Left,
-            crossterm::event::MouseButton::Right => MouseButton::Right,
-            crossterm::event::MouseButton::Middle => MouseButton::Middle,
+            crossterm::event::MouseButton::Left => Self::Left,
+            crossterm::event::MouseButton::Right => Self::Right,
+            crossterm::event::MouseButton::Middle => Self::Middle,
         })
     }
 }
@@ -118,9 +110,9 @@ impl TryFrom<MouseButton> for crossterm::event::MouseButton {
 
     fn try_from(value: MouseButton) -> Result<Self, Self::Error> {
         Ok(match value {
-            MouseButton::Left => crossterm::event::MouseButton::Left,
-            MouseButton::Right => crossterm::event::MouseButton::Right,
-            MouseButton::Middle => crossterm::event::MouseButton::Middle,
+            MouseButton::Left => Self::Left,
+            MouseButton::Right => Self::Right,
+            MouseButton::Middle => Self::Middle,
             val @ MouseButton::Unknown => Err(UnsupportedEvent(format!("{val:?}")))?,
         })
     }
@@ -160,34 +152,34 @@ impl TryFrom<crossterm::event::KeyCode> for KeyCode {
 
     fn try_from(value: crossterm::event::KeyCode) -> Result<Self, Self::Error> {
         Ok(match value {
-            crossterm::event::KeyCode::Backspace => KeyCode::Backspace,
-            crossterm::event::KeyCode::Enter => KeyCode::Enter,
-            crossterm::event::KeyCode::Left => KeyCode::Left,
-            crossterm::event::KeyCode::Right => KeyCode::Right,
-            crossterm::event::KeyCode::Up => KeyCode::Up,
-            crossterm::event::KeyCode::Down => KeyCode::Down,
-            crossterm::event::KeyCode::Home => KeyCode::Home,
-            crossterm::event::KeyCode::End => KeyCode::End,
-            crossterm::event::KeyCode::PageUp => KeyCode::PageUp,
-            crossterm::event::KeyCode::PageDown => KeyCode::PageDown,
-            crossterm::event::KeyCode::Tab => KeyCode::Tab,
-            crossterm::event::KeyCode::BackTab => KeyCode::Tab,
-            crossterm::event::KeyCode::Delete => KeyCode::Delete,
-            crossterm::event::KeyCode::Insert => KeyCode::Insert,
-            crossterm::event::KeyCode::F(f) => KeyCode::F(f),
-            crossterm::event::KeyCode::Char(c) => KeyCode::Char(c),
-            crossterm::event::KeyCode::Esc => KeyCode::Esc,
-            crossterm::event::KeyCode::CapsLock => KeyCode::CapsLock,
-            crossterm::event::KeyCode::ScrollLock => KeyCode::ScrollLock,
-            crossterm::event::KeyCode::NumLock => KeyCode::NumLock,
-            crossterm::event::KeyCode::PrintScreen => KeyCode::PrintScreen,
-            crossterm::event::KeyCode::Pause => KeyCode::Pause,
-            crossterm::event::KeyCode::Menu => KeyCode::Menu,
-            crossterm::event::KeyCode::KeypadBegin => KeyCode::KeypadBegin,
-            crossterm::event::KeyCode::Media(m) => KeyCode::Media(m.try_into()?),
+            crossterm::event::KeyCode::Backspace => Self::Backspace,
+            crossterm::event::KeyCode::Enter => Self::Enter,
+            crossterm::event::KeyCode::Left => Self::Left,
+            crossterm::event::KeyCode::Right => Self::Right,
+            crossterm::event::KeyCode::Up => Self::Up,
+            crossterm::event::KeyCode::Down => Self::Down,
+            crossterm::event::KeyCode::Home => Self::Home,
+            crossterm::event::KeyCode::End => Self::End,
+            crossterm::event::KeyCode::PageUp => Self::PageUp,
+            crossterm::event::KeyCode::PageDown => Self::PageDown,
+            crossterm::event::KeyCode::Tab => Self::Tab,
+            crossterm::event::KeyCode::BackTab => Self::Tab,
+            crossterm::event::KeyCode::Delete => Self::Delete,
+            crossterm::event::KeyCode::Insert => Self::Insert,
+            crossterm::event::KeyCode::F(f) => Self::F(f),
+            crossterm::event::KeyCode::Char(c) => Self::Char(c),
+            crossterm::event::KeyCode::Esc => Self::Esc,
+            crossterm::event::KeyCode::CapsLock => Self::CapsLock,
+            crossterm::event::KeyCode::ScrollLock => Self::ScrollLock,
+            crossterm::event::KeyCode::NumLock => Self::NumLock,
+            crossterm::event::KeyCode::PrintScreen => Self::PrintScreen,
+            crossterm::event::KeyCode::Pause => Self::Pause,
+            crossterm::event::KeyCode::Menu => Self::Menu,
+            crossterm::event::KeyCode::KeypadBegin => Self::KeypadBegin,
+            crossterm::event::KeyCode::Media(m) => Self::Media(m.try_into()?),
             crossterm::event::KeyCode::Modifier(m) => {
                 let (code, direction) = convert_modifier_key_code(m);
-                KeyCode::Modifier(code, direction)
+                Self::Modifier(code, direction)
             }
             crossterm::event::KeyCode::Null => Err(UnsupportedEvent(format!("{value:?}")))?,
         })
@@ -233,18 +225,18 @@ impl TryFrom<crossterm::event::KeyModifiers> for KeyModifiers {
     type Error = UnsupportedEvent;
 
     fn try_from(value: crossterm::event::KeyModifiers) -> Result<Self, Self::Error> {
-        let mut res = KeyModifiers::empty();
+        let mut res = Self::empty();
         if value.intersects(crossterm::event::KeyModifiers::ALT) {
-            res |= KeyModifiers::ALT;
+            res |= Self::ALT;
         }
         if value.intersects(crossterm::event::KeyModifiers::SHIFT) {
-            res |= KeyModifiers::SHIFT;
+            res |= Self::SHIFT;
         }
         if value.intersects(crossterm::event::KeyModifiers::CONTROL) {
-            res |= KeyModifiers::CTRL;
+            res |= Self::CTRL;
         }
         if value.intersects(crossterm::event::KeyModifiers::SUPER) {
-            res |= KeyModifiers::SUPER;
+            res |= Self::SUPER;
         }
 
         Ok(res)
@@ -255,18 +247,18 @@ impl TryFrom<KeyModifiers> for crossterm::event::KeyModifiers {
     type Error = UnsupportedEvent;
 
     fn try_from(value: KeyModifiers) -> Result<Self, Self::Error> {
-        let mut res = crossterm::event::KeyModifiers::empty();
+        let mut res = Self::empty();
         if value.intersects(KeyModifiers::ALT) {
-            res |= crossterm::event::KeyModifiers::ALT;
+            res |= Self::ALT;
         }
         if value.intersects(KeyModifiers::SHIFT) {
-            res |= crossterm::event::KeyModifiers::SHIFT;
+            res |= Self::SHIFT;
         }
         if value.intersects(KeyModifiers::CTRL) {
-            res |= crossterm::event::KeyModifiers::CONTROL;
+            res |= Self::CONTROL;
         }
         if value.intersects(KeyModifiers::SUPER) {
-            res |= crossterm::event::KeyModifiers::SUPER;
+            res |= Self::SUPER;
         }
 
         Ok(res)
@@ -278,9 +270,9 @@ impl TryFrom<crossterm::event::KeyEventKind> for KeyEventKind {
 
     fn try_from(value: crossterm::event::KeyEventKind) -> Result<Self, Self::Error> {
         Ok(match value {
-            crossterm::event::KeyEventKind::Press => KeyEventKind::Press,
-            crossterm::event::KeyEventKind::Repeat => KeyEventKind::Repeat,
-            crossterm::event::KeyEventKind::Release => KeyEventKind::Release,
+            crossterm::event::KeyEventKind::Press => Self::Press,
+            crossterm::event::KeyEventKind::Repeat => Self::Repeat,
+            crossterm::event::KeyEventKind::Release => Self::Release,
         })
     }
 }
@@ -290,9 +282,9 @@ impl TryFrom<KeyEventKind> for crossterm::event::KeyEventKind {
 
     fn try_from(value: KeyEventKind) -> Result<Self, Self::Error> {
         Ok(match value {
-            KeyEventKind::Press => crossterm::event::KeyEventKind::Press,
-            KeyEventKind::Repeat => crossterm::event::KeyEventKind::Repeat,
-            KeyEventKind::Release => crossterm::event::KeyEventKind::Release,
+            KeyEventKind::Press => Self::Press,
+            KeyEventKind::Repeat => Self::Repeat,
+            KeyEventKind::Release => Self::Release,
         })
     }
 }
@@ -302,19 +294,19 @@ impl TryFrom<crossterm::event::MediaKeyCode> for MediaKeyCode {
 
     fn try_from(value: crossterm::event::MediaKeyCode) -> Result<Self, Self::Error> {
         Ok(match value {
-            crossterm::event::MediaKeyCode::Play => MediaKeyCode::Play,
-            crossterm::event::MediaKeyCode::Pause => MediaKeyCode::Pause,
-            crossterm::event::MediaKeyCode::PlayPause => MediaKeyCode::PlayPause,
-            crossterm::event::MediaKeyCode::Reverse => MediaKeyCode::Reverse,
-            crossterm::event::MediaKeyCode::Stop => MediaKeyCode::Stop,
-            crossterm::event::MediaKeyCode::FastForward => MediaKeyCode::FastForward,
-            crossterm::event::MediaKeyCode::Rewind => MediaKeyCode::Rewind,
-            crossterm::event::MediaKeyCode::TrackNext => MediaKeyCode::TrackNext,
-            crossterm::event::MediaKeyCode::TrackPrevious => MediaKeyCode::TrackPrevious,
-            crossterm::event::MediaKeyCode::Record => MediaKeyCode::Record,
-            crossterm::event::MediaKeyCode::LowerVolume => MediaKeyCode::LowerVolume,
-            crossterm::event::MediaKeyCode::RaiseVolume => MediaKeyCode::RaiseVolume,
-            crossterm::event::MediaKeyCode::MuteVolume => MediaKeyCode::MuteVolume,
+            crossterm::event::MediaKeyCode::Play => Self::Play,
+            crossterm::event::MediaKeyCode::Pause => Self::Pause,
+            crossterm::event::MediaKeyCode::PlayPause => Self::PlayPause,
+            crossterm::event::MediaKeyCode::Reverse => Self::Reverse,
+            crossterm::event::MediaKeyCode::Stop => Self::Stop,
+            crossterm::event::MediaKeyCode::FastForward => Self::FastForward,
+            crossterm::event::MediaKeyCode::Rewind => Self::Rewind,
+            crossterm::event::MediaKeyCode::TrackNext => Self::TrackNext,
+            crossterm::event::MediaKeyCode::TrackPrevious => Self::TrackPrevious,
+            crossterm::event::MediaKeyCode::Record => Self::Record,
+            crossterm::event::MediaKeyCode::LowerVolume => Self::LowerVolume,
+            crossterm::event::MediaKeyCode::RaiseVolume => Self::RaiseVolume,
+            crossterm::event::MediaKeyCode::MuteVolume => Self::MuteVolume,
         })
     }
 }
@@ -324,19 +316,19 @@ impl TryFrom<MediaKeyCode> for crossterm::event::MediaKeyCode {
 
     fn try_from(value: MediaKeyCode) -> Result<Self, Self::Error> {
         Ok(match value {
-            MediaKeyCode::Play => crossterm::event::MediaKeyCode::Play,
-            MediaKeyCode::Pause => crossterm::event::MediaKeyCode::Pause,
-            MediaKeyCode::PlayPause => crossterm::event::MediaKeyCode::PlayPause,
-            MediaKeyCode::Reverse => crossterm::event::MediaKeyCode::Reverse,
-            MediaKeyCode::Stop => crossterm::event::MediaKeyCode::Stop,
-            MediaKeyCode::FastForward => crossterm::event::MediaKeyCode::FastForward,
-            MediaKeyCode::Rewind => crossterm::event::MediaKeyCode::Rewind,
-            MediaKeyCode::TrackNext => crossterm::event::MediaKeyCode::TrackNext,
-            MediaKeyCode::TrackPrevious => crossterm::event::MediaKeyCode::TrackPrevious,
-            MediaKeyCode::Record => crossterm::event::MediaKeyCode::Record,
-            MediaKeyCode::LowerVolume => crossterm::event::MediaKeyCode::LowerVolume,
-            MediaKeyCode::RaiseVolume => crossterm::event::MediaKeyCode::RaiseVolume,
-            MediaKeyCode::MuteVolume => crossterm::event::MediaKeyCode::MuteVolume,
+            MediaKeyCode::Play => Self::Play,
+            MediaKeyCode::Pause => Self::Pause,
+            MediaKeyCode::PlayPause => Self::PlayPause,
+            MediaKeyCode::Reverse => Self::Reverse,
+            MediaKeyCode::Stop => Self::Stop,
+            MediaKeyCode::FastForward => Self::FastForward,
+            MediaKeyCode::Rewind => Self::Rewind,
+            MediaKeyCode::TrackNext => Self::TrackNext,
+            MediaKeyCode::TrackPrevious => Self::TrackPrevious,
+            MediaKeyCode::Record => Self::Record,
+            MediaKeyCode::LowerVolume => Self::LowerVolume,
+            MediaKeyCode::RaiseVolume => Self::RaiseVolume,
+            MediaKeyCode::MuteVolume => Self::MuteVolume,
         })
     }
 }

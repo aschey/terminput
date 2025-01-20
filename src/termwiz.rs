@@ -8,12 +8,12 @@ impl TryFrom<termwiz::input::InputEvent> for Event {
 
     fn try_from(value: termwiz::input::InputEvent) -> Result<Self, UnsupportedEvent> {
         Ok(match value {
-            termwiz::input::InputEvent::Key(key_event) => Event::Key(key_event.try_into()?),
-            termwiz::input::InputEvent::Mouse(mouse_event) => Event::Mouse(mouse_event.try_into()?),
+            termwiz::input::InputEvent::Key(key_event) => Self::Key(key_event.try_into()?),
+            termwiz::input::InputEvent::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
             termwiz::input::InputEvent::Resized { cols, rows } => {
-                Event::Resize(cols as u16, rows as u16)
+                Self::Resize(cols as u16, rows as u16)
             }
-            termwiz::input::InputEvent::Paste(val) => Event::Paste(val),
+            termwiz::input::InputEvent::Paste(val) => Self::Paste(val),
             termwiz::input::InputEvent::PixelMouse(_) | termwiz::input::InputEvent::Wake => {
                 Err(UnsupportedEvent(format!("{value:?}")))?
             }
@@ -26,9 +26,9 @@ impl TryFrom<Event> for termwiz::input::InputEvent {
 
     fn try_from(value: Event) -> Result<Self, Self::Error> {
         Ok(match value {
-            Event::Key(key_event) => termwiz::input::InputEvent::Key(key_event.try_into()?),
-            Event::Mouse(mouse_event) => termwiz::input::InputEvent::Mouse(mouse_event.try_into()?),
-            Event::Paste(val) => termwiz::input::InputEvent::Paste(val),
+            Event::Key(key_event) => Self::Key(key_event.try_into()?),
+            Event::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
+            Event::Paste(val) => Self::Paste(val),
             Event::Resize(_, _) => todo!(),
             Event::FocusGained | Event::FocusLost => Err(UnsupportedEvent(format!("{value:?}")))?,
         })
@@ -287,7 +287,7 @@ impl TryFrom<KeyEvent> for termwiz::input::KeyEvent {
             }
         };
 
-        Ok(termwiz::input::KeyEvent {
+        Ok(Self {
             key,
             modifiers: value.modifiers.try_into()?,
         })
@@ -298,20 +298,20 @@ impl TryFrom<termwiz::input::Modifiers> for KeyModifiers {
     type Error = UnsupportedEvent;
 
     fn try_from(value: termwiz::input::Modifiers) -> Result<Self, Self::Error> {
-        let mut res = KeyModifiers::empty();
+        let mut res = Self::empty();
         if value.intersects(
             termwiz::input::Modifiers::ALT
                 | termwiz::input::Modifiers::LEFT_ALT
                 | termwiz::input::Modifiers::RIGHT_ALT,
         ) {
-            res |= KeyModifiers::ALT;
+            res |= Self::ALT;
         }
         if value.intersects(
             termwiz::input::Modifiers::SHIFT
                 | termwiz::input::Modifiers::LEFT_SHIFT
                 | termwiz::input::Modifiers::RIGHT_SHIFT,
         ) {
-            res |= KeyModifiers::SHIFT;
+            res |= Self::SHIFT;
         }
 
         if value.intersects(
@@ -319,10 +319,10 @@ impl TryFrom<termwiz::input::Modifiers> for KeyModifiers {
                 | termwiz::input::Modifiers::LEFT_CTRL
                 | termwiz::input::Modifiers::RIGHT_CTRL,
         ) {
-            res |= KeyModifiers::CTRL;
+            res |= Self::CTRL;
         }
         if value.intersects(termwiz::input::Modifiers::SUPER) {
-            res |= KeyModifiers::SUPER;
+            res |= Self::SUPER;
         }
 
         Ok(res)
@@ -333,18 +333,18 @@ impl TryFrom<KeyModifiers> for termwiz::input::Modifiers {
     type Error = UnsupportedEvent;
 
     fn try_from(value: KeyModifiers) -> Result<Self, Self::Error> {
-        let mut res = termwiz::input::Modifiers::empty();
+        let mut res = Self::empty();
         if value.intersects(KeyModifiers::ALT) {
-            res |= termwiz::input::Modifiers::ALT;
+            res |= Self::ALT;
         }
         if value.intersects(KeyModifiers::SHIFT) {
-            res |= termwiz::input::Modifiers::SHIFT;
+            res |= Self::SHIFT;
         }
         if value.intersects(KeyModifiers::CTRL) {
-            res |= termwiz::input::Modifiers::CTRL;
+            res |= Self::CTRL;
         }
         if value.intersects(KeyModifiers::SUPER) {
-            res |= termwiz::input::Modifiers::SUPER;
+            res |= Self::SUPER;
         }
 
         Ok(res)
@@ -359,7 +359,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             .mouse_buttons
             .contains(termwiz::input::MouseButtons::LEFT)
         {
-            return Ok(MouseEvent {
+            return Ok(Self {
                 kind: MouseEventKind::Down(MouseButton::Left),
                 column: value.x - 1,
                 row: value.y - 1,
@@ -370,7 +370,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             .mouse_buttons
             .contains(termwiz::input::MouseButtons::RIGHT)
         {
-            return Ok(MouseEvent {
+            return Ok(Self {
                 kind: MouseEventKind::Down(MouseButton::Right),
                 column: value.x - 1,
                 row: value.y - 1,
@@ -381,7 +381,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             .mouse_buttons
             .contains(termwiz::input::MouseButtons::MIDDLE)
         {
-            return Ok(MouseEvent {
+            return Ok(Self {
                 kind: MouseEventKind::Down(MouseButton::Middle),
                 column: value.x - 1,
                 row: value.y - 1,
@@ -392,7 +392,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
         if value.mouse_buttons.contains(
             termwiz::input::MouseButtons::VERT_WHEEL | termwiz::input::MouseButtons::WHEEL_POSITIVE,
         ) {
-            return Ok(MouseEvent {
+            return Ok(Self {
                 kind: MouseEventKind::ScrollUp,
                 column: value.x - 1,
                 row: value.y - 1,
@@ -403,7 +403,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             .mouse_buttons
             .contains(termwiz::input::MouseButtons::VERT_WHEEL)
         {
-            return Ok(MouseEvent {
+            return Ok(Self {
                 kind: MouseEventKind::ScrollDown,
                 column: value.x - 1,
                 row: value.y - 1,
@@ -413,7 +413,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
         if value.mouse_buttons.contains(
             termwiz::input::MouseButtons::HORZ_WHEEL | termwiz::input::MouseButtons::WHEEL_POSITIVE,
         ) {
-            return Ok(MouseEvent {
+            return Ok(Self {
                 kind: MouseEventKind::ScrollLeft,
                 column: value.x - 1,
                 row: value.y - 1,
@@ -424,7 +424,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             .mouse_buttons
             .contains(termwiz::input::MouseButtons::HORZ_WHEEL)
         {
-            return Ok(MouseEvent {
+            return Ok(Self {
                 kind: MouseEventKind::ScrollRight,
                 column: value.x - 1,
                 row: value.y - 1,
@@ -432,7 +432,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             });
         }
         if value.mouse_buttons == termwiz::input::MouseButtons::NONE {
-            return Ok(MouseEvent {
+            return Ok(Self {
                 kind: MouseEventKind::Moved,
                 column: value.x - 1,
                 row: value.y - 1,
@@ -450,20 +450,20 @@ impl TryFrom<MouseEvent> for termwiz::input::MouseEvent {
     fn try_from(value: MouseEvent) -> Result<Self, Self::Error> {
         Ok(match value.kind {
             MouseEventKind::Down(MouseButton::Left | MouseButton::Unknown) => {
-                termwiz::input::MouseEvent {
+                Self {
                     mouse_buttons: termwiz::input::MouseButtons::LEFT,
                     x: value.column + 1,
                     y: value.row + 1,
                     modifiers: value.modifiers.try_into()?,
                 }
             }
-            MouseEventKind::Down(MouseButton::Right) => termwiz::input::MouseEvent {
+            MouseEventKind::Down(MouseButton::Right) => Self {
                 mouse_buttons: termwiz::input::MouseButtons::RIGHT,
                 x: value.column + 1,
                 y: value.row + 1,
                 modifiers: value.modifiers.try_into()?,
             },
-            MouseEventKind::Down(MouseButton::Middle) => termwiz::input::MouseEvent {
+            MouseEventKind::Down(MouseButton::Middle) => Self {
                 mouse_buttons: termwiz::input::MouseButtons::MIDDLE,
                 x: value.column + 1,
                 y: value.row + 1,
@@ -472,32 +472,32 @@ impl TryFrom<MouseEvent> for termwiz::input::MouseEvent {
             MouseEventKind::Up(_) | MouseEventKind::Drag(_) => {
                 Err(UnsupportedEvent(format!("{value:?}")))?
             }
-            MouseEventKind::Moved => termwiz::input::MouseEvent {
+            MouseEventKind::Moved => Self {
                 mouse_buttons: termwiz::input::MouseButtons::NONE,
                 x: value.column + 1,
                 y: value.row + 1,
                 modifiers: value.modifiers.try_into()?,
             },
-            MouseEventKind::ScrollDown => termwiz::input::MouseEvent {
+            MouseEventKind::ScrollDown => Self {
                 mouse_buttons: termwiz::input::MouseButtons::VERT_WHEEL,
                 x: value.column + 1,
                 y: value.row + 1,
                 modifiers: value.modifiers.try_into()?,
             },
-            MouseEventKind::ScrollUp => termwiz::input::MouseEvent {
+            MouseEventKind::ScrollUp => Self {
                 mouse_buttons: termwiz::input::MouseButtons::VERT_WHEEL
                     | termwiz::input::MouseButtons::WHEEL_POSITIVE,
                 x: value.column + 1,
                 y: value.row + 1,
                 modifiers: value.modifiers.try_into()?,
             },
-            MouseEventKind::ScrollLeft => termwiz::input::MouseEvent {
+            MouseEventKind::ScrollLeft => Self {
                 mouse_buttons: termwiz::input::MouseButtons::HORZ_WHEEL,
                 x: value.column + 1,
                 y: value.row + 1,
                 modifiers: value.modifiers.try_into()?,
             },
-            MouseEventKind::ScrollRight => termwiz::input::MouseEvent {
+            MouseEventKind::ScrollRight => Self {
                 mouse_buttons: termwiz::input::MouseButtons::HORZ_WHEEL
                     | termwiz::input::MouseButtons::WHEEL_POSITIVE,
                 x: value.column + 1,

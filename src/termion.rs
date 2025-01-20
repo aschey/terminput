@@ -8,8 +8,8 @@ impl TryFrom<termion::event::Event> for Event {
 
     fn try_from(value: termion::event::Event) -> Result<Self, Self::Error> {
         Ok(match value {
-            termion::event::Event::Key(key_event) => Event::Key(key_event.try_into()?),
-            termion::event::Event::Mouse(mouse_event) => Event::Mouse(mouse_event.try_into()?),
+            termion::event::Event::Key(key_event) => Self::Key(key_event.try_into()?),
+            termion::event::Event::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
             termion::event::Event::Unsupported(val) => Err(UnsupportedEvent(format!("{val:?}")))?,
         })
     }
@@ -20,8 +20,8 @@ impl TryFrom<Event> for termion::event::Event {
 
     fn try_from(value: Event) -> Result<Self, Self::Error> {
         Ok(match value {
-            Event::Key(key_event) => termion::event::Event::Key(key_event.try_into()?),
-            Event::Mouse(mouse_event) => termion::event::Event::Mouse(mouse_event.try_into()?),
+            Event::Key(key_event) => Self::Key(key_event.try_into()?),
+            Event::Mouse(mouse_event) => Self::Mouse(mouse_event.try_into()?),
             Event::FocusGained | Event::FocusLost | Event::Paste(_) | Event::Resize(_, _) => {
                 Err(UnsupportedEvent(format!("{value:?}")))?
             }
@@ -34,223 +34,223 @@ impl TryFrom<termion::event::Key> for KeyEvent {
 
     fn try_from(value: termion::event::Key) -> Result<Self, Self::Error> {
         Ok(match value {
-            termion::event::Key::Backspace => KeyEvent {
+            termion::event::Key::Backspace => Self {
                 code: KeyCode::Backspace,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Left => KeyEvent {
+            termion::event::Key::Left => Self {
                 code: KeyCode::Left,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::ShiftLeft => KeyEvent {
+            termion::event::Key::ShiftLeft => Self {
                 code: KeyCode::Left,
                 modifiers: KeyModifiers::SHIFT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::AltLeft => KeyEvent {
+            termion::event::Key::AltLeft => Self {
                 code: KeyCode::Left,
                 modifiers: KeyModifiers::ALT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::CtrlLeft => KeyEvent {
+            termion::event::Key::CtrlLeft => Self {
                 code: KeyCode::Left,
                 modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Right => KeyEvent {
+            termion::event::Key::Right => Self {
                 code: KeyCode::Right,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::ShiftRight => KeyEvent {
+            termion::event::Key::ShiftRight => Self {
                 code: KeyCode::Right,
                 modifiers: KeyModifiers::SHIFT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::AltRight => KeyEvent {
+            termion::event::Key::AltRight => Self {
                 code: KeyCode::Right,
                 modifiers: KeyModifiers::ALT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::CtrlRight => KeyEvent {
+            termion::event::Key::CtrlRight => Self {
                 code: KeyCode::Right,
                 modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Up => KeyEvent {
+            termion::event::Key::Up => Self {
                 code: KeyCode::Up,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::ShiftUp => KeyEvent {
+            termion::event::Key::ShiftUp => Self {
                 code: KeyCode::Up,
                 modifiers: KeyModifiers::SHIFT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::AltUp => KeyEvent {
+            termion::event::Key::AltUp => Self {
                 code: KeyCode::Up,
                 modifiers: KeyModifiers::ALT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::CtrlUp => KeyEvent {
+            termion::event::Key::CtrlUp => Self {
                 code: KeyCode::Up,
                 modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Down => KeyEvent {
+            termion::event::Key::Down => Self {
                 code: KeyCode::Down,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::ShiftDown => KeyEvent {
+            termion::event::Key::ShiftDown => Self {
                 code: KeyCode::Down,
                 modifiers: KeyModifiers::SHIFT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::AltDown => KeyEvent {
+            termion::event::Key::AltDown => Self {
                 code: KeyCode::Down,
                 modifiers: KeyModifiers::ALT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::CtrlDown => KeyEvent {
+            termion::event::Key::CtrlDown => Self {
                 code: KeyCode::Down,
                 modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Home => KeyEvent {
+            termion::event::Key::Home => Self {
                 code: KeyCode::Home,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::CtrlHome => KeyEvent {
+            termion::event::Key::CtrlHome => Self {
                 code: KeyCode::Home,
                 modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::End => KeyEvent {
+            termion::event::Key::End => Self {
                 code: KeyCode::End,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::CtrlEnd => KeyEvent {
+            termion::event::Key::CtrlEnd => Self {
                 code: KeyCode::End,
                 modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::PageUp => KeyEvent {
+            termion::event::Key::PageUp => Self {
                 code: KeyCode::PageUp,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::PageDown => KeyEvent {
+            termion::event::Key::PageDown => Self {
                 code: KeyCode::PageDown,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::BackTab => KeyEvent {
+            termion::event::Key::BackTab => Self {
                 code: KeyCode::Tab,
                 modifiers: KeyModifiers::SHIFT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Delete => KeyEvent {
+            termion::event::Key::Delete => Self {
                 code: KeyCode::Delete,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Insert => KeyEvent {
+            termion::event::Key::Insert => Self {
                 code: KeyCode::Insert,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::F(f) => KeyEvent {
+            termion::event::Key::F(f) => Self {
                 code: KeyCode::F(f),
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Char('\n') => KeyEvent {
+            termion::event::Key::Char('\n') => Self {
                 code: KeyCode::Enter,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Char('\t') => KeyEvent {
+            termion::event::Key::Char('\t') => Self {
                 code: KeyCode::Tab,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Char(c) => KeyEvent {
+            termion::event::Key::Char(c) => Self {
                 code: KeyCode::Char(c),
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Alt('\n') => KeyEvent {
+            termion::event::Key::Alt('\n') => Self {
                 code: KeyCode::Enter,
                 modifiers: KeyModifiers::ALT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Alt('\t') => KeyEvent {
+            termion::event::Key::Alt('\t') => Self {
                 code: KeyCode::Tab,
                 modifiers: KeyModifiers::ALT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Alt(c) => KeyEvent {
+            termion::event::Key::Alt(c) => Self {
                 code: KeyCode::Char(c),
                 modifiers: KeyModifiers::ALT,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Ctrl('\n') => KeyEvent {
+            termion::event::Key::Ctrl('\n') => Self {
                 code: KeyCode::Enter,
                 modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Ctrl('\t') => KeyEvent {
+            termion::event::Key::Ctrl('\t') => Self {
                 code: KeyCode::Tab,
                 modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Ctrl(c) => KeyEvent {
+            termion::event::Key::Ctrl(c) => Self {
                 code: KeyCode::Char(c),
                 modifiers: KeyModifiers::CTRL,
                 kind: KeyEventKind::Press,
                 state: KeyEventState::empty(),
             },
-            termion::event::Key::Esc => KeyEvent {
+            termion::event::Key::Esc => Self {
                 code: KeyCode::Esc,
                 modifiers: KeyModifiers::NONE,
                 kind: KeyEventKind::Press,
@@ -270,54 +270,54 @@ impl TryFrom<KeyEvent> for termion::event::Key {
         }
         if value.modifiers.intersects(KeyModifiers::CTRL) {
             match value.code {
-                KeyCode::Char(c) => return Ok(termion::event::Key::Ctrl(c)),
-                KeyCode::Left => return Ok(termion::event::Key::CtrlLeft),
-                KeyCode::Right => return Ok(termion::event::Key::CtrlRight),
-                KeyCode::Up => return Ok(termion::event::Key::CtrlUp),
-                KeyCode::Down => return Ok(termion::event::Key::CtrlDown),
+                KeyCode::Char(c) => return Ok(Self::Ctrl(c)),
+                KeyCode::Left => return Ok(Self::CtrlLeft),
+                KeyCode::Right => return Ok(Self::CtrlRight),
+                KeyCode::Up => return Ok(Self::CtrlUp),
+                KeyCode::Down => return Ok(Self::CtrlDown),
                 _ => {}
             }
         }
         if value.modifiers.intersects(KeyModifiers::ALT) {
             match value.code {
-                KeyCode::Char(c) => return Ok(termion::event::Key::Alt(c)),
-                KeyCode::Left => return Ok(termion::event::Key::AltLeft),
-                KeyCode::Right => return Ok(termion::event::Key::AltRight),
-                KeyCode::Up => return Ok(termion::event::Key::AltUp),
-                KeyCode::Down => return Ok(termion::event::Key::AltDown),
+                KeyCode::Char(c) => return Ok(Self::Alt(c)),
+                KeyCode::Left => return Ok(Self::AltLeft),
+                KeyCode::Right => return Ok(Self::AltRight),
+                KeyCode::Up => return Ok(Self::AltUp),
+                KeyCode::Down => return Ok(Self::AltDown),
                 _ => {}
             }
         }
         if value.modifiers.intersects(KeyModifiers::SHIFT) {
             match value.code {
-                KeyCode::Left => return Ok(termion::event::Key::ShiftLeft),
-                KeyCode::Right => return Ok(termion::event::Key::ShiftRight),
-                KeyCode::Up => return Ok(termion::event::Key::ShiftUp),
-                KeyCode::Down => return Ok(termion::event::Key::ShiftDown),
+                KeyCode::Left => return Ok(Self::ShiftLeft),
+                KeyCode::Right => return Ok(Self::ShiftRight),
+                KeyCode::Up => return Ok(Self::ShiftUp),
+                KeyCode::Down => return Ok(Self::ShiftDown),
                 _ => {}
             }
         }
         Ok(match value.code {
-            KeyCode::Backspace => termion::event::Key::Backspace,
-            KeyCode::Enter => termion::event::Key::Char('\n'),
-            KeyCode::Left => termion::event::Key::Left,
-            KeyCode::Right => termion::event::Key::Right,
-            KeyCode::Up => termion::event::Key::Up,
-            KeyCode::Down => termion::event::Key::Down,
-            KeyCode::Home => termion::event::Key::Home,
-            KeyCode::End => termion::event::Key::End,
-            KeyCode::PageUp => termion::event::Key::PageUp,
-            KeyCode::PageDown => termion::event::Key::PageDown,
+            KeyCode::Backspace => Self::Backspace,
+            KeyCode::Enter => Self::Char('\n'),
+            KeyCode::Left => Self::Left,
+            KeyCode::Right => Self::Right,
+            KeyCode::Up => Self::Up,
+            KeyCode::Down => Self::Down,
+            KeyCode::Home => Self::Home,
+            KeyCode::End => Self::End,
+            KeyCode::PageUp => Self::PageUp,
+            KeyCode::PageDown => Self::PageDown,
             KeyCode::Tab if value.modifiers.intersects(KeyModifiers::SHIFT) => {
-                termion::event::Key::BackTab
+                Self::BackTab
             }
-            KeyCode::Tab => termion::event::Key::Char('\t'),
+            KeyCode::Tab => Self::Char('\t'),
 
-            KeyCode::Delete => termion::event::Key::Delete,
-            KeyCode::Insert => termion::event::Key::Insert,
-            KeyCode::F(f) => termion::event::Key::F(f),
-            KeyCode::Char(c) => termion::event::Key::Char(c),
-            KeyCode::Esc => termion::event::Key::Esc,
+            KeyCode::Delete => Self::Delete,
+            KeyCode::Insert => Self::Insert,
+            KeyCode::F(f) => Self::F(f),
+            KeyCode::Char(c) => Self::Char(c),
+            KeyCode::Esc => Self::Esc,
             KeyCode::CapsLock
             | KeyCode::NumLock
             | KeyCode::ScrollLock
@@ -337,7 +337,7 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
     fn try_from(value: termion::event::MouseEvent) -> Result<Self, Self::Error> {
         Ok(match value {
             termion::event::MouseEvent::Press(termion::event::MouseButton::Left, column, row) => {
-                MouseEvent {
+                Self {
                     kind: MouseEventKind::Down(MouseButton::Left),
                     row: row - 1,
                     column: column - 1,
@@ -345,7 +345,7 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 }
             }
             termion::event::MouseEvent::Press(termion::event::MouseButton::Right, column, row) => {
-                MouseEvent {
+                Self {
                     kind: MouseEventKind::Down(MouseButton::Right),
                     row: row - 1,
                     column: column - 1,
@@ -353,7 +353,7 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 }
             }
             termion::event::MouseEvent::Press(termion::event::MouseButton::Middle, column, row) => {
-                MouseEvent {
+                Self {
                     kind: MouseEventKind::Down(MouseButton::Right),
                     row: row - 1,
                     column: column - 1,
@@ -364,7 +364,7 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 termion::event::MouseButton::WheelDown,
                 row,
                 column,
-            ) => MouseEvent {
+            ) => Self {
                 kind: MouseEventKind::ScrollDown,
                 row: row - 1,
                 column: column - 1,
@@ -374,7 +374,7 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 termion::event::MouseButton::WheelUp,
                 row,
                 column,
-            ) => MouseEvent {
+            ) => Self {
                 kind: MouseEventKind::ScrollUp,
                 row: row - 1,
                 column: column - 1,
@@ -384,7 +384,7 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 termion::event::MouseButton::WheelLeft,
                 row,
                 column,
-            ) => MouseEvent {
+            ) => Self {
                 kind: MouseEventKind::ScrollLeft,
                 row: row - 1,
                 column: column - 1,
@@ -394,19 +394,19 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 termion::event::MouseButton::WheelRight,
                 row,
                 column,
-            ) => MouseEvent {
+            ) => Self {
                 kind: MouseEventKind::ScrollRight,
                 row: row - 1,
                 column: column - 1,
                 modifiers: KeyModifiers::NONE,
             },
-            termion::event::MouseEvent::Release(column, row) => MouseEvent {
+            termion::event::MouseEvent::Release(column, row) => Self {
                 kind: MouseEventKind::Up(MouseButton::Unknown),
                 row: row - 1,
                 column: column - 1,
                 modifiers: KeyModifiers::NONE,
             },
-            termion::event::MouseEvent::Hold(column, row) => MouseEvent {
+            termion::event::MouseEvent::Hold(column, row) => Self {
                 kind: MouseEventKind::Drag(MouseButton::Unknown),
                 row: row - 1,
                 column: column - 1,
@@ -424,34 +424,34 @@ impl TryFrom<MouseEvent> for termion::event::MouseEvent {
         let row = value.row + 1;
         Ok(match value.kind {
             MouseEventKind::Down(MouseButton::Left) => {
-                termion::event::MouseEvent::Press(termion::event::MouseButton::Left, column, row)
+                Self::Press(termion::event::MouseButton::Left, column, row)
             }
             MouseEventKind::Down(MouseButton::Right) => {
-                termion::event::MouseEvent::Press(termion::event::MouseButton::Right, column, row)
+                Self::Press(termion::event::MouseButton::Right, column, row)
             }
             MouseEventKind::Down(MouseButton::Middle) => {
-                termion::event::MouseEvent::Press(termion::event::MouseButton::Middle, column, row)
+                Self::Press(termion::event::MouseButton::Middle, column, row)
             }
             val @ MouseEventKind::Down(MouseButton::Unknown) => {
                 Err(UnsupportedEvent(format!("{val:?}")))?
             }
-            MouseEventKind::Up(_) => termion::event::MouseEvent::Release(column, row),
-            MouseEventKind::Drag(_) => termion::event::MouseEvent::Hold(column, row),
+            MouseEventKind::Up(_) => Self::Release(column, row),
+            MouseEventKind::Drag(_) => Self::Hold(column, row),
             val @ MouseEventKind::Moved => Err(UnsupportedEvent(format!("{val:?}")))?,
-            MouseEventKind::ScrollDown => termion::event::MouseEvent::Press(
+            MouseEventKind::ScrollDown => Self::Press(
                 termion::event::MouseButton::WheelDown,
                 column,
                 row,
             ),
             MouseEventKind::ScrollUp => {
-                termion::event::MouseEvent::Press(termion::event::MouseButton::WheelUp, column, row)
+                Self::Press(termion::event::MouseButton::WheelUp, column, row)
             }
-            MouseEventKind::ScrollLeft => termion::event::MouseEvent::Press(
+            MouseEventKind::ScrollLeft => Self::Press(
                 termion::event::MouseButton::WheelLeft,
                 column,
                 row,
             ),
-            MouseEventKind::ScrollRight => termion::event::MouseEvent::Press(
+            MouseEventKind::ScrollRight => Self::Press(
                 termion::event::MouseButton::WheelRight,
                 column,
                 row,

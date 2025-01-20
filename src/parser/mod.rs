@@ -45,16 +45,15 @@ pub fn parse_event(buffer: &[u8]) -> io::Result<Option<Event>> {
                     b'[' => parse_csi(buffer),
                     b'\x1B' => {
                         if buffer.len() == 2 {
-                            Ok(Some(Event::Key(KeyEvent::new(
-                                KeyCode::Esc,
-                                KeyModifiers::ALT,
-                            ))))
+                            Ok(Some(Event::Key(
+                                KeyEvent::new(KeyCode::Esc).modifiers(KeyModifiers::ALT),
+                            )))
                         } else {
                             match &buffer[2..] {
-                                b"[Z" => Ok(Some(Event::Key(KeyEvent::new(
-                                    KeyCode::Tab,
-                                    KeyModifiers::SHIFT | KeyModifiers::ALT,
-                                )))),
+                                b"[Z" => Ok(Some(Event::Key(
+                                    KeyEvent::new(KeyCode::Tab)
+                                        .modifiers(KeyModifiers::SHIFT | KeyModifiers::ALT),
+                                ))),
                                 _ => Err(could_not_parse_event_error()),
                             }
                         }
@@ -83,18 +82,15 @@ pub fn parse_event(buffer: &[u8]) -> io::Result<Option<Event>> {
         // }
         b'\t' => Ok(Some(Event::Key(KeyCode::Tab.into()))),
         b'\x7F' => Ok(Some(Event::Key(KeyCode::Backspace.into()))),
-        c @ b'\x01'..=b'\x1A' => Ok(Some(Event::Key(KeyEvent::new(
-            KeyCode::Char((c - 0x1 + b'a') as char),
-            KeyModifiers::CTRL,
-        )))),
-        c @ b'\x1C'..=b'\x1F' => Ok(Some(Event::Key(KeyEvent::new(
-            KeyCode::Char((c - 0x1C + b'4') as char),
-            KeyModifiers::CTRL,
-        )))),
-        b'\0' => Ok(Some(Event::Key(KeyEvent::new(
-            KeyCode::Char(' '),
-            KeyModifiers::CTRL,
-        )))),
+        c @ b'\x01'..=b'\x1A' => Ok(Some(Event::Key(
+            KeyEvent::new(KeyCode::Char((c - 0x1 + b'a') as char)).modifiers(KeyModifiers::CTRL),
+        ))),
+        c @ b'\x1C'..=b'\x1F' => Ok(Some(Event::Key(
+            KeyEvent::new(KeyCode::Char((c - 0x1C + b'4') as char)).modifiers(KeyModifiers::CTRL),
+        ))),
+        b'\0' => Ok(Some(Event::Key(
+            KeyEvent::new(KeyCode::Char(' ')).modifiers(KeyModifiers::CTRL),
+        ))),
         _ => parse_utf8_char(buffer).map(|maybe_char| {
             maybe_char
                 .map(KeyCode::Char)
@@ -110,7 +106,7 @@ fn char_code_to_event(code: KeyCode) -> KeyEvent {
         KeyCode::Char(c) if c.is_uppercase() => KeyModifiers::SHIFT,
         _ => KeyModifiers::empty(),
     };
-    KeyEvent::new(code, modifiers)
+    KeyEvent::new(code).modifiers(modifiers)
 }
 
 pub(crate) fn parse_csi(buffer: &[u8]) -> io::Result<Option<Event>> {
@@ -139,11 +135,9 @@ pub(crate) fn parse_csi(buffer: &[u8]) -> io::Result<Option<Event>> {
         b'B' => Some(Event::Key(KeyCode::Down.into())),
         b'H' => Some(Event::Key(KeyCode::Home.into())),
         b'F' => Some(Event::Key(KeyCode::End.into())),
-        b'Z' => Some(Event::Key(KeyEvent::new_with_kind(
-            KeyCode::Tab,
-            KeyModifiers::SHIFT,
-            KeyEventKind::Press,
-        ))),
+        b'Z' => Some(Event::Key(
+            KeyEvent::new(KeyCode::Tab).modifiers(KeyModifiers::SHIFT),
+        )),
         b'M' => return parse_csi_normal_mouse(buffer),
         b'<' => return parse_csi_sgr_mouse(buffer),
         b'I' => Some(Event::FocusGained),
@@ -305,7 +299,7 @@ pub(crate) fn parse_csi_modifier_key_code(buffer: &[u8]) -> io::Result<Option<Ev
         _ => return Err(could_not_parse_event_error()),
     };
 
-    let input_event = Event::Key(KeyEvent::new_with_kind(keycode, modifiers, kind));
+    let input_event = Event::Key(KeyEvent::new(keycode).modifiers(modifiers).kind(kind));
 
     Ok(Some(input_event))
 }
@@ -560,12 +554,12 @@ pub(crate) fn parse_csi_u_encoded_key_code(buffer: &[u8]) -> io::Result<Option<E
         }
     }
 
-    let input_event = Event::Key(KeyEvent::new_with_kind_and_state(
-        keycode,
-        modifiers,
-        kind,
-        state_from_keycode | state_from_modifiers,
-    ));
+    let input_event = Event::Key(
+        KeyEvent::new(keycode)
+            .modifiers(modifiers)
+            .kind(kind)
+            .state(state_from_keycode | state_from_modifiers),
+    );
 
     Ok(Some(input_event))
 }
@@ -607,9 +601,12 @@ pub(crate) fn parse_csi_special_key_code(buffer: &[u8]) -> io::Result<Option<Eve
         _ => return Err(could_not_parse_event_error()),
     };
 
-    let input_event = Event::Key(KeyEvent::new_with_kind_and_state(
-        keycode, modifiers, kind, state,
-    ));
+    let input_event = Event::Key(
+        KeyEvent::new(keycode)
+            .modifiers(modifiers)
+            .kind(kind)
+            .state(state),
+    );
 
     Ok(Some(input_event))
 }

@@ -4,64 +4,43 @@ use bitflags::bitflags;
 
 #[derive(Debug, PartialOrd, Clone, Copy)]
 pub struct KeyEvent {
-    /// The key itself.
+    /// The key code.
     pub code: KeyCode,
-    /// Additional key modifiers.
+    /// Key modifiers.
     pub modifiers: KeyModifiers,
-    /// Kind of event.
-    ///
-    /// Only set if:
-    /// - Unix: [`KeyboardEnhancementFlags::REPORT_EVENT_TYPES`] has been enabled with
-    ///   [`PushKeyboardEnhancementFlags`].
-    /// - Windows: always
+    /// Type of key event - press, release, or repeat.
     pub kind: KeyEventKind,
-    /// Keyboard state.
-    ///
-    /// Only set if [`KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES`] has been enabled with
-    /// [`PushKeyboardEnhancementFlags`].
+    /// Other keyboard properties.
     pub state: KeyEventState,
 }
 
 impl KeyEvent {
-    pub const fn new(code: KeyCode, modifiers: KeyModifiers) -> KeyEvent {
-        KeyEvent {
+    pub const fn new(code: KeyCode) -> Self {
+        Self {
             code,
-            modifiers,
+            modifiers: KeyModifiers::empty(),
             kind: KeyEventKind::Press,
             state: KeyEventState::empty(),
         }
     }
 
-    pub const fn new_with_kind(
-        code: KeyCode,
-        modifiers: KeyModifiers,
-        kind: KeyEventKind,
-    ) -> KeyEvent {
-        KeyEvent {
-            code,
-            modifiers,
-            kind,
-            state: KeyEventState::empty(),
-        }
+    pub const fn modifiers(mut self, modifiers: KeyModifiers) -> Self {
+        self.modifiers = modifiers;
+        self
     }
 
-    pub const fn new_with_kind_and_state(
-        code: KeyCode,
-        modifiers: KeyModifiers,
-        kind: KeyEventKind,
-        state: KeyEventState,
-    ) -> KeyEvent {
-        KeyEvent {
-            code,
-            modifiers,
-            kind,
-            state,
-        }
+    pub const fn kind(mut self, kind: KeyEventKind) -> Self {
+        self.kind = kind;
+        self
     }
-    // modifies the KeyEvent,
-    // so that KeyModifiers::SHIFT is present iff
-    // an uppercase char is present.
-    pub fn normalize_case(mut self) -> KeyEvent {
+
+    pub fn state(mut self, state: KeyEventState) -> Self {
+        self.state = state;
+        self
+    }
+
+    /// Normalizes the event so the shift modifier is applied appropriately.
+    pub fn normalize_case(mut self) -> Self {
         let c = match self.code {
             KeyCode::Char(c) => c,
             _ => return self,
@@ -70,21 +49,21 @@ impl KeyEvent {
         if c.is_ascii_uppercase() {
             self.modifiers.insert(KeyModifiers::SHIFT);
         } else if self.modifiers.contains(KeyModifiers::SHIFT) {
-            self.code = KeyCode::Char(c.to_ascii_uppercase())
+            self.code = KeyCode::Char(c.to_ascii_uppercase());
         }
         self
     }
 }
 
 impl PartialEq for KeyEvent {
-    fn eq(&self, other: &KeyEvent) -> bool {
-        let KeyEvent {
+    fn eq(&self, other: &Self) -> bool {
+        let Self {
             code: lhs_code,
             modifiers: lhs_modifiers,
             kind: lhs_kind,
             state: lhs_state,
         } = self.normalize_case();
-        let KeyEvent {
+        let Self {
             code: rhs_code,
             modifiers: rhs_modifiers,
             kind: rhs_kind,
@@ -101,7 +80,7 @@ impl Eq for KeyEvent {}
 
 impl Hash for KeyEvent {
     fn hash<H: Hasher>(&self, hash_state: &mut H) {
-        let KeyEvent {
+        let Self {
             code,
             modifiers,
             kind,
@@ -317,7 +296,7 @@ bitflags! {
 
 impl From<KeyCode> for KeyEvent {
     fn from(code: KeyCode) -> Self {
-        KeyEvent {
+        Self {
             code,
             modifiers: KeyModifiers::empty(),
             kind: KeyEventKind::Press,

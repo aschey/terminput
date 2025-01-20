@@ -2,9 +2,17 @@
 name = "terminput"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.80"
+authors = ["Austin Schey <aschey13@gmail.com>"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/aschey/terminput"
+homepage = "https://github.com/aschey/terminput"
+description = "TUI-based input parser and abstraction over multiple backends"
+include = ["/src", "/examples", "/tests"]
 
 [dependencies]
-bitflags = "2"
+bitflags = "2.4"
 crossterm = { version = "0.28.1", optional = true }
 egui = { version = "0.30", optional = true }
 termion = { version = "4", optional = true }
