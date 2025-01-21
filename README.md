@@ -22,16 +22,16 @@ The `Event` struct provided in this library is an attempt to provide a superset
 of the input functionality that TUI apps may be interested in. Not all backends
 support all features provided.
 
-The following table shows the matri✓ of supported features:
+The following table shows the matrix of supported features:
 
-|                    | crossterm | termion | termwiz | egui |
-| ------------------ | --------- | ------- | ------- | ---- |
-| keypress           | ✓         | ✓       | ✓       | ✓    |
-| key release/repeat | ✓         |         |         | ✓    |
-| mouse down         | ✓         | ✓       | ✓       | ✓    |
-| mouse up           | ✓         | ✓       |         | ✓    |
-| mouse move         | ✓         |         | ✓       | ✓    |
-| mouse drag         | ✓         | ✓       |         |      |
-| focus              | ✓         |         |         | ✓    |
-| paste              | ✓         |         | ✓       | ✓    |
-| resize             | ✓         |         | ✓       |      |
+|                        | crossterm | termion | termwiz | egui |
+| ---------------------- | --------- | ------- | ------- | ---- |
+| **keypress**           | ✓         | ✓       | ✓       | ✓    |
+| **key release/repeat** | ✓         |         |         | ✓    |
+| **mouse down**         | ✓         | ✓       | ✓       | ✓    |
+| **mouse up**           | ✓         | ✓       |         | ✓    |
+| **mouse move**         | ✓         |         | ✓       | ✓    |
+| **mouse drag**         | ✓         | ✓       |         |      |
+| **focus**              | ✓         |         |         | ✓    |
+| **paste**              | ✓         |         | ✓       | ✓    |
+| **resize**             | ✓         |         | ✓       |      |
