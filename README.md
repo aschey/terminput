@@ -5,9 +5,9 @@ sources such as key and mouse events. This was mainly created as a common
 interface to the terminal backends that
 [Ratatui](https://crates.io/crates/ratatui) supports.
 
-Many TUI libraries want to support input from multiple backends, but mapping all
-of the input types into a common interface is a very tedious process. This
-library aims to provide a uniform interface to these types.
+Many TUI libraries want to support input from multiple backends, but mapping
+each backend's input types into a common interface can be tedious. This library
+aims to provide a uniform interface to these types.
 
 Additionally, we supply methods for parsing and encoding ANSI escape sequences
 for events.
@@ -36,7 +36,8 @@ fn main() -> io::Result<()> {
 
 ## Backends
 
-The following backends are currently supported:
+The following backends are currently supported. All backends are disabled by
+default and each can be enabled with a feature flag of the same name.
 
 - [`crossterm`](https://crates.io/crates/crossterm)
 - [`termion`](https://crates.io/crates/termion)
@@ -44,14 +45,13 @@ The following backends are currently supported:
 - [`egui`](https://crates.io/crates/egui)
 
 The `Event` struct provided in this library is an attempt to provide a superset
-of the input functionality that TUI apps may be interested in. Not all backends
-support all features provided.
+of all supported backend functionality that TUI apps may be interested in.
 
 The following table shows the matrix of supported features:
 
 |                        | crossterm | termion | termwiz | egui |
 | ---------------------- | --------- | ------- | ------- | ---- |
-| **keypress**           | ✓         | ✓       | ✓       | ✓    |
+| **key press**          | ✓         | ✓       | ✓       | ✓    |
 | **key release/repeat** | ✓         |         |         | ✓    |
 | **mouse down**         | ✓         | ✓       | ✓       | ✓    |
 | **mouse up**           | ✓         | ✓       |         | ✓    |
@@ -93,7 +93,7 @@ fn read_input(input: &[u8]) {
 ## Encoding
 
 `Input` structs can also be encoded into ANSI escape sequences. This can be
-useful if you're controlling a child PTY and need to send it some encoded input.
+useful if you're controlling a child pty and need to send it some encoded input.
 
 ```rust
 use terminput::{Encoding, Event, KeyCode, KeyEvent, KittyFlags};

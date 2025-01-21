@@ -8,8 +8,10 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/aschey/terminput"
 homepage = "https://github.com/aschey/terminput"
-description = "TUI-based input parser and abstraction over multiple backends"
+description = "TUI input parser/encoder and abstraction over multiple backends"
 include = ["/src", "/examples", "/tests"]
+categories = ["command-line-interface", "encoding"]
+keywords = ["tui", "terminal", "input", "ratatui"]
 
 [dependencies]
 bitflags = "2.4"
