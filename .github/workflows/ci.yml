@@ -32,7 +32,7 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
       - name: Test
         run: |
-          cargo test --doc
+          cargo test --doc --all-features
           cargo llvm-cov test --all-features --codecov --ignore-filename-regex ".cargo|.*_test\.rs" > ./codecov.json
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
