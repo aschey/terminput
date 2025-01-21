@@ -38,6 +38,23 @@ pub enum Encoding {
 
 impl Event {
     /// Encode the event into the given buffer using the supplied [`Encoding`] mode.
+    /// Returns the number of bytes written, following the semantics of [`std::io::Write::write`].
+    ///
+    /// The supplied buffer needs enough space to hold the encoded sequence. If you're unsure of
+    /// how large the result will be, 16 bytes is more than sufficient.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use terminput::{Encoding, Event, KeyCode, KeyEvent};
+    ///
+    /// let event = Event::Key(KeyEvent::new(KeyCode::Char('a')));
+    /// let mut buf = [0; 16];
+    /// let written = event.encode(&mut buf, Encoding::Xterm);
+    /// if let Ok(written) = written {
+    ///     println!("Encoded: {:?}", &buf[..written]);
+    /// }
+    /// ````
     pub fn encode(&self, buf: &mut [u8], encoding: Encoding) -> io::Result<usize> {
         match encoding {
             Encoding::Xterm => self.to_escape_sequence(buf),

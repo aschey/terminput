@@ -7,12 +7,12 @@ use crossterm::event::{
 };
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{execute, queue};
-use terminput::{Encoding, Event, KeyCode, KittyFlags, UnsupportedEvent, parse_event};
+use terminput::{Encoding, Event, KeyCode, KittyFlags, parse_event};
 
 fn print_events(encoding: Encoding) -> io::Result<()> {
     let mut buf = [0; 16];
     loop {
-        let event: Result<terminput::Event, UnsupportedEvent> = read()?.try_into();
+        let event: Result<Event, _> = read()?.try_into();
 
         if let Ok(event) = event {
             println!("Event:   {:?}\r", event);

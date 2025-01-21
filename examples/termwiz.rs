@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use terminput::{Encoding, Event, KeyCode, UnsupportedEvent, parse_event};
+use terminput::{Encoding, Event, KeyCode, parse_event};
 use termwiz::caps::Capabilities;
 use termwiz::terminal::buffered::BufferedTerminal;
 use termwiz::terminal::{SystemTerminal, Terminal};
@@ -25,7 +25,7 @@ fn print_events(mut terminal: BufferedTerminal<SystemTerminal>) {
             .terminal()
             .poll_input(Some(Duration::from_millis(10)))
         {
-            let event: Result<Event, UnsupportedEvent> = event.try_into();
+            let event: Result<Event, _> = event.try_into();
 
             if let Ok(event) = event {
                 println!("Event:   {:?}\r", event);
