@@ -22,23 +22,16 @@ The `Event` struct provided in this library is an attempt to provide a superset
 of the input functionality that TUI apps may be interested in. Not all backends
 support all features provided.
 
-The following table shows the matrix of supported features:
+The following table shows the matri✓ of supported features:
 
 |                    | crossterm | termion | termwiz | egui |
 | ------------------ | --------- | ------- | ------- | ---- |
-| keypress           | [x]       | [x]     | [x]     | [x]  |
-| key release/repeat | [x]       | []      | []      | [x]  |
-| mouse down         | [x]       | [x]     | [x]     | [x]  |
-| mouse up           | [x]       | [x]     | []      | [x]  |
-| mouse move         | [x]       | []      | [x]     | [x]  |
-| mouse drag         | [x]       | [x]     | []      | []   |
-| focus              | [x]       | []      | []      | [x]  |
-| paste              | [x]       | []      | [x]     | [x]  |
-| resize             | [x]       | []      | [x]     | []   |
-
-| Backend   | key press | key release/repeat | mouse down | mouse up | mouse moved | focus | paste | resize |
-| --------- | --------- | ------------------ | ---------- | -------- | ----------- | ----- | ----- | ------ |
-| crossterm | yes       | yes                | yes        | yes      | yes         | yes   | yes   | yes    |
-| termion   | yes       | no                 | yes        | yes      | no          | no    | no    | no     |
-| termwiz   | yes       | no                 | yes        | no       | yes         | no    | yes   | yes    |
-| egui      | yes       | yes                | yes        | yes      | yes         | yes   | yes   | no     |
+| keypress           | ✓         | ✓       | ✓       | ✓    |
+| key release/repeat | ✓         |         |         | ✓    |
+| mouse down         | ✓         | ✓       | ✓       | ✓    |
+| mouse up           | ✓         | ✓       |         | ✓    |
+| mouse move         | ✓         |         | ✓       | ✓    |
+| mouse drag         | ✓         | ✓       |         |      |
+| focus              | ✓         |         |         | ✓    |
+| paste              | ✓         |         | ✓       | ✓    |
+| resize             | ✓         |         | ✓       |      |
