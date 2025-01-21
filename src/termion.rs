@@ -1,6 +1,6 @@
 use crate::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseButton, MouseEvent,
-    MouseEventKind, UnsupportedEvent,
+    MouseEventKind, ScrollDirection, UnsupportedEvent,
 };
 
 impl TryFrom<termion::event::Event> for Event {
@@ -363,7 +363,7 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 row,
                 column,
             ) => Self {
-                kind: MouseEventKind::ScrollDown,
+                kind: MouseEventKind::Scroll(ScrollDirection::Down),
                 row: row - 1,
                 column: column - 1,
                 modifiers: KeyModifiers::NONE,
@@ -373,7 +373,7 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 row,
                 column,
             ) => Self {
-                kind: MouseEventKind::ScrollUp,
+                kind: MouseEventKind::Scroll(ScrollDirection::Up),
                 row: row - 1,
                 column: column - 1,
                 modifiers: KeyModifiers::NONE,
@@ -383,7 +383,7 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 row,
                 column,
             ) => Self {
-                kind: MouseEventKind::ScrollLeft,
+                kind: MouseEventKind::Scroll(ScrollDirection::Left),
                 row: row - 1,
                 column: column - 1,
                 modifiers: KeyModifiers::NONE,
@@ -393,7 +393,7 @@ impl TryFrom<termion::event::MouseEvent> for MouseEvent {
                 row,
                 column,
             ) => Self {
-                kind: MouseEventKind::ScrollRight,
+                kind: MouseEventKind::Scroll(ScrollDirection::Right),
                 row: row - 1,
                 column: column - 1,
                 modifiers: KeyModifiers::NONE,
@@ -436,16 +436,16 @@ impl TryFrom<MouseEvent> for termion::event::MouseEvent {
             MouseEventKind::Up(_) => Self::Release(column, row),
             MouseEventKind::Drag(_) => Self::Hold(column, row),
             val @ MouseEventKind::Moved => Err(UnsupportedEvent(format!("{val:?}")))?,
-            MouseEventKind::ScrollDown => {
+            MouseEventKind::Scroll(ScrollDirection::Down) => {
                 Self::Press(termion::event::MouseButton::WheelDown, column, row)
             }
-            MouseEventKind::ScrollUp => {
+            MouseEventKind::Scroll(ScrollDirection::Up) => {
                 Self::Press(termion::event::MouseButton::WheelUp, column, row)
             }
-            MouseEventKind::ScrollLeft => {
+            MouseEventKind::Scroll(ScrollDirection::Left) => {
                 Self::Press(termion::event::MouseButton::WheelLeft, column, row)
             }
-            MouseEventKind::ScrollRight => {
+            MouseEventKind::Scroll(ScrollDirection::Right) => {
                 Self::Press(termion::event::MouseButton::WheelRight, column, row)
             }
         })

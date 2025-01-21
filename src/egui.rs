@@ -1,6 +1,6 @@
 use crate::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseButton, MouseEvent,
-    MouseEventKind, UnsupportedEvent,
+    MouseEventKind, ScrollDirection, UnsupportedEvent,
 };
 
 impl TryFrom<egui::Event> for Event {
@@ -8,7 +8,7 @@ impl TryFrom<egui::Event> for Event {
     fn try_from(value: egui::Event) -> Result<Self, Self::Error> {
         match value {
             egui::Event::Paste(text) => Ok(Self::Paste(text)),
-            egui::Event::Text(text) => Ok(Self::Paste(text)),
+            egui::Event::Text(_) => Err(UnsupportedEvent(format!("{value:?}"))),
             egui::Event::Key {
                 key,
                 physical_key: _,
@@ -49,6 +49,24 @@ impl TryFrom<egui::Event> for Event {
                 row: pos.y as u16,
                 modifiers: modifiers.try_into()?,
             })),
+            egui::Event::MouseWheel {
+                unit: _,
+                delta,
+                modifiers,
+            } => Ok(Self::Mouse(MouseEvent {
+                kind: MouseEventKind::Scroll(if delta.y < 0.0 {
+                    ScrollDirection::Down
+                } else if delta.y > 0.0 {
+                    ScrollDirection::Up
+                } else if delta.x < 0.0 {
+                    ScrollDirection::Left
+                } else {
+                    ScrollDirection::Right
+                }),
+                column: 0,
+                row: 0,
+                modifiers: modifiers.try_into()?,
+            })),
             egui::Event::WindowFocused(true) => Ok(Self::FocusGained),
             egui::Event::WindowFocused(false) => Ok(Self::FocusLost),
             egui::Event::Copy
@@ -57,10 +75,63 @@ impl TryFrom<egui::Event> for Event {
             | egui::Event::Ime(_)
             | egui::Event::PointerGone
             | egui::Event::Zoom(_)
-            | egui::Event::MouseWheel { .. }
             | egui::Event::Touch { .. }
             | egui::Event::Screenshot { .. } => Err(UnsupportedEvent(format!("{value:?}"))),
         }
+    }
+}
+
+impl TryFrom<Event> for egui::Event {
+    type Error = UnsupportedEvent;
+
+    fn try_from(value: Event) -> Result<Self, Self::Error> {
+        Ok(match value {
+            Event::Key(key_event) => Self::Key {
+                key: key_event.code.try_into()?,
+                physical_key: None,
+                pressed: key_event.kind != KeyEventKind::Release,
+                repeat: key_event.kind == KeyEventKind::Repeat,
+                modifiers: key_event.modifiers.try_into()?,
+            },
+            Event::Mouse(mouse_event) => match mouse_event.kind {
+                MouseEventKind::Down(mouse_button) | MouseEventKind::Drag(mouse_button) => {
+                    Self::PointerButton {
+                        pos: egui::Pos2 {
+                            x: mouse_event.column as f32,
+                            y: mouse_event.row as f32,
+                        },
+                        button: mouse_button.try_into()?,
+                        pressed: true,
+                        modifiers: mouse_event.modifiers.try_into()?,
+                    }
+                }
+                MouseEventKind::Up(mouse_button) => Self::PointerButton {
+                    pos: egui::Pos2 {
+                        x: mouse_event.column as f32,
+                        y: mouse_event.row as f32,
+                    },
+                    button: mouse_button.try_into()?,
+                    pressed: false,
+                    modifiers: mouse_event.modifiers.try_into()?,
+                },
+                MouseEventKind::Moved => Self::PointerMoved(egui::Pos2 {
+                    x: mouse_event.column as f32,
+                    y: mouse_event.row as f32,
+                }),
+                MouseEventKind::Scroll(scroll_direction) => Self::MouseWheel {
+                    unit: egui::MouseWheelUnit::Line,
+                    delta: egui::Vec2 {
+                        x: scroll_direction.delta().x as f32,
+                        y: scroll_direction.delta().y as f32,
+                    },
+                    modifiers: mouse_event.modifiers.try_into()?,
+                },
+            },
+            Event::Paste(text) => Self::Paste(text),
+            Event::FocusGained => Self::WindowFocused(true),
+            Event::FocusLost => Self::WindowFocused(false),
+            Event::Resize { .. } => Err(UnsupportedEvent(format!("{value:?}")))?,
+        })
     }
 }
 
@@ -84,9 +155,6 @@ impl TryFrom<egui::Key> for KeyCode {
             egui::Key::End => Ok(Self::End),
             egui::Key::PageUp => Ok(Self::PageUp),
             egui::Key::PageDown => Ok(Self::PageDown),
-            egui::Key::Copy => Err(UnsupportedEvent(format!("{value:?}"))),
-            egui::Key::Cut => Err(UnsupportedEvent(format!("{value:?}"))),
-            egui::Key::Paste => Err(UnsupportedEvent(format!("{value:?}"))),
             egui::Key::Colon => Ok(Self::Char(':')),
             egui::Key::Comma => Ok(Self::Char(',')),
             egui::Key::Backslash => Ok(Self::Char('\\')),
@@ -173,7 +241,131 @@ impl TryFrom<egui::Key> for KeyCode {
             egui::Key::F33 => Ok(Self::F(33)),
             egui::Key::F34 => Ok(Self::F(34)),
             egui::Key::F35 => Ok(Self::F(35)),
+            egui::Key::Copy | egui::Key::Cut | egui::Key::Paste => {
+                Err(UnsupportedEvent(format!("{value:?}")))
+            }
         }
+    }
+}
+
+impl TryFrom<KeyCode> for egui::Key {
+    type Error = UnsupportedEvent;
+
+    fn try_from(value: KeyCode) -> Result<Self, Self::Error> {
+        Ok(match value {
+            KeyCode::Backspace => Self::Backspace,
+            KeyCode::Enter => Self::Enter,
+            KeyCode::Left => Self::ArrowLeft,
+            KeyCode::Right => Self::ArrowRight,
+            KeyCode::Up => Self::ArrowUp,
+            KeyCode::Down => Self::ArrowDown,
+            KeyCode::Home => Self::Home,
+            KeyCode::End => Self::End,
+            KeyCode::PageUp => Self::PageUp,
+            KeyCode::PageDown => Self::PageDown,
+            KeyCode::Tab => Self::Tab,
+            KeyCode::Delete => Self::Delete,
+            KeyCode::Insert => Self::Insert,
+            KeyCode::F(1) => Self::F1,
+            KeyCode::F(2) => Self::F2,
+            KeyCode::F(3) => Self::F3,
+            KeyCode::F(4) => Self::F4,
+            KeyCode::F(5) => Self::F5,
+            KeyCode::F(6) => Self::F6,
+            KeyCode::F(7) => Self::F7,
+            KeyCode::F(8) => Self::F8,
+            KeyCode::F(9) => Self::F9,
+            KeyCode::F(10) => Self::F10,
+            KeyCode::F(11) => Self::F11,
+            KeyCode::F(12) => Self::F12,
+            KeyCode::F(13) => Self::F13,
+            KeyCode::F(14) => Self::F14,
+            KeyCode::F(15) => Self::F15,
+            KeyCode::F(16) => Self::F16,
+            KeyCode::F(17) => Self::F17,
+            KeyCode::F(18) => Self::F18,
+            KeyCode::F(19) => Self::F19,
+            KeyCode::F(20) => Self::F20,
+            KeyCode::F(21) => Self::F21,
+            KeyCode::F(22) => Self::F22,
+            KeyCode::F(23) => Self::F23,
+            KeyCode::F(24) => Self::F24,
+            KeyCode::F(25) => Self::F25,
+            KeyCode::F(26) => Self::F26,
+            KeyCode::F(27) => Self::F27,
+            KeyCode::F(28) => Self::F28,
+            KeyCode::F(29) => Self::F29,
+            KeyCode::F(30) => Self::F30,
+            KeyCode::F(31) => Self::F31,
+            KeyCode::F(32) => Self::F32,
+            KeyCode::F(33) => Self::F33,
+            KeyCode::F(34) => Self::F34,
+            KeyCode::F(35) => Self::F35,
+            KeyCode::F(_) => Err(UnsupportedEvent(format!("{value:?}")))?,
+            KeyCode::Char('a' | 'A') => Self::A,
+            KeyCode::Char('b' | 'B') => Self::B,
+            KeyCode::Char('c' | 'C') => Self::C,
+            KeyCode::Char('d' | 'D') => Self::D,
+            KeyCode::Char('e' | 'E') => Self::E,
+            KeyCode::Char('f' | 'F') => Self::F,
+            KeyCode::Char('g' | 'G') => Self::G,
+            KeyCode::Char('h' | 'H') => Self::H,
+            KeyCode::Char('i' | 'I') => Self::I,
+            KeyCode::Char('j' | 'J') => Self::J,
+            KeyCode::Char('k' | 'K') => Self::K,
+            KeyCode::Char('l' | 'L') => Self::L,
+            KeyCode::Char('m' | 'M') => Self::M,
+            KeyCode::Char('n' | 'N') => Self::N,
+            KeyCode::Char('o' | 'O') => Self::O,
+            KeyCode::Char('p' | 'P') => Self::P,
+            KeyCode::Char('q' | 'Q') => Self::Q,
+            KeyCode::Char('r' | 'R') => Self::R,
+            KeyCode::Char('s' | 'S') => Self::S,
+            KeyCode::Char('t' | 'T') => Self::T,
+            KeyCode::Char('u' | 'U') => Self::U,
+            KeyCode::Char('v' | 'V') => Self::V,
+            KeyCode::Char('w' | 'W') => Self::W,
+            KeyCode::Char('x' | 'X') => Self::X,
+            KeyCode::Char('y' | 'Y') => Self::Y,
+            KeyCode::Char('z' | 'Z') => Self::Z,
+            KeyCode::Char('0') => Self::Num0,
+            KeyCode::Char('1') => Self::Num1,
+            KeyCode::Char('2') => Self::Num2,
+            KeyCode::Char('3') => Self::Num3,
+            KeyCode::Char('4') => Self::Num4,
+            KeyCode::Char('5') => Self::Num5,
+            KeyCode::Char('6') => Self::Num6,
+            KeyCode::Char('7') => Self::Num7,
+            KeyCode::Char('8') => Self::Num8,
+            KeyCode::Char('9') => Self::Num9,
+            KeyCode::Char(' ') => Self::Space,
+            KeyCode::Char(':') => Self::Colon,
+            KeyCode::Char(',') => Self::Comma,
+            KeyCode::Char('\\') => Self::Backslash,
+            KeyCode::Char('/') => Self::Slash,
+            KeyCode::Char('|') => Self::Pipe,
+            KeyCode::Char('?') => Self::Questionmark,
+            KeyCode::Char('[') => Self::OpenBracket,
+            KeyCode::Char(']') => Self::CloseBracket,
+            KeyCode::Char('`') => Self::Backtick,
+            KeyCode::Char('-') => Self::Minus,
+            KeyCode::Char('.') => Self::Period,
+            KeyCode::Char('+') => Self::Plus,
+            KeyCode::Char('=') => Self::Equals,
+            KeyCode::Char(';') => Self::Semicolon,
+            KeyCode::Char('\'') => Self::Quote,
+            KeyCode::Char(_) => Err(UnsupportedEvent(format!("{value:?}")))?,
+            KeyCode::Esc => Self::Escape,
+            KeyCode::CapsLock
+            | KeyCode::ScrollLock
+            | KeyCode::NumLock
+            | KeyCode::PrintScreen
+            | KeyCode::Pause
+            | KeyCode::Menu
+            | KeyCode::KeypadBegin
+            | KeyCode::Media(_)
+            | KeyCode::Modifier(_, _) => Err(UnsupportedEvent(format!("{value:?}")))?,
+        })
     }
 }
 
@@ -195,6 +387,20 @@ impl TryFrom<egui::Modifiers> for KeyModifiers {
     }
 }
 
+impl TryFrom<KeyModifiers> for egui::Modifiers {
+    type Error = UnsupportedEvent;
+
+    fn try_from(value: KeyModifiers) -> Result<Self, Self::Error> {
+        Ok(Self {
+            alt: value.intersects(KeyModifiers::ALT),
+            ctrl: value.intersects(KeyModifiers::CTRL),
+            shift: value.intersects(KeyModifiers::SHIFT),
+            mac_cmd: false,
+            command: false,
+        })
+    }
+}
+
 impl TryFrom<egui::PointerButton> for MouseButton {
     type Error = UnsupportedEvent;
 
@@ -203,8 +409,19 @@ impl TryFrom<egui::PointerButton> for MouseButton {
             egui::PointerButton::Primary => Self::Left,
             egui::PointerButton::Secondary => Self::Right,
             egui::PointerButton::Middle => Self::Middle,
-            egui::PointerButton::Extra1 => Self::Unknown,
-            egui::PointerButton::Extra2 => Self::Unknown,
+            egui::PointerButton::Extra1 | egui::PointerButton::Extra2 => Self::Unknown,
+        })
+    }
+}
+
+impl TryFrom<MouseButton> for egui::PointerButton {
+    type Error = UnsupportedEvent;
+
+    fn try_from(value: MouseButton) -> Result<Self, Self::Error> {
+        Ok(match value {
+            MouseButton::Left | MouseButton::Unknown => Self::Primary,
+            MouseButton::Right => Self::Secondary,
+            MouseButton::Middle => Self::Middle,
         })
     }
 }

@@ -13,6 +13,41 @@ pub struct MouseEvent {
     pub modifiers: KeyModifiers,
 }
 
+/// Mouse scroll direction.
+#[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
+pub enum ScrollDirection {
+    /// Scrolled mouse wheel upwards (away from the user).
+    Up,
+    /// Scrolled mouse wheel downwards (towards the user).
+    Down,
+    /// Scrolled mouse wheel left (usually on a laptop touchpad).
+    Left,
+    /// Scrolled mouse wheel right (usually on a laptop touchpad).
+    Right,
+}
+
+impl ScrollDirection {
+    /// Convenience method for applying a change in the vertical or horizontal direction in response
+    /// to a scroll event.
+    pub fn delta(&self) -> ScrollDelta {
+        match self {
+            Self::Up => ScrollDelta { x: 0, y: 1 },
+            Self::Down => ScrollDelta { x: 0, y: -1 },
+            Self::Left => ScrollDelta { x: 1, y: 0 },
+            Self::Right => ScrollDelta { x: -1, y: 0 },
+        }
+    }
+}
+
+/// Represents the change that should be applied to the content in response to a scroll event.
+#[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
+pub struct ScrollDelta {
+    /// Change in the x (horizontal) direction.
+    pub x: i32,
+    /// Change in the y (vertical) direction.
+    pub y: i32,
+}
+
 /// The type of mouse event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum MouseEventKind {
@@ -25,13 +60,7 @@ pub enum MouseEventKind {
     /// Moved the mouse cursor while not pressing a mouse button.
     Moved,
     /// Scrolled mouse wheel downwards (towards the user).
-    ScrollDown,
-    /// Scrolled mouse wheel upwards (away from the user).
-    ScrollUp,
-    /// Scrolled mouse wheel left (usually on a laptop touchpad).
-    ScrollLeft,
-    /// Scrolled mouse wheel right (usually on a laptop touchpad).
-    ScrollRight,
+    Scroll(ScrollDirection),
 }
 
 /// The mouse button used for this event.

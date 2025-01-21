@@ -5,7 +5,7 @@ use std::io;
 
 use crate::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
-    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind,
+    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, ScrollDirection,
 };
 
 fn could_not_parse_event_error() -> io::Error {
@@ -745,10 +745,10 @@ fn parse_cb(cb: u8) -> io::Result<(MouseEventKind, KeyModifiers)> {
         (2, true) => MouseEventKind::Drag(MouseButton::Right),
         (3, false) => MouseEventKind::Up(MouseButton::Left),
         (3, true) | (4, true) | (5, true) => MouseEventKind::Moved,
-        (4, false) => MouseEventKind::ScrollUp,
-        (5, false) => MouseEventKind::ScrollDown,
-        (6, false) => MouseEventKind::ScrollLeft,
-        (7, false) => MouseEventKind::ScrollRight,
+        (4, false) => MouseEventKind::Scroll(ScrollDirection::Up),
+        (5, false) => MouseEventKind::Scroll(ScrollDirection::Down),
+        (6, false) => MouseEventKind::Scroll(ScrollDirection::Left),
+        (7, false) => MouseEventKind::Scroll(ScrollDirection::Right),
         // We do not support other buttons.
         _ => return Err(could_not_parse_event_error()),
     };

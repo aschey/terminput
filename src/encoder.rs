@@ -4,7 +4,7 @@ use bitflags::bitflags;
 
 use crate::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
-    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind,
+    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, ScrollDirection,
 };
 
 bitflags! {
@@ -287,10 +287,10 @@ fn encode_mouse_event(mouse_event: &MouseEvent, buf: &mut Cursor<&mut [u8]>) -> 
         MouseEventKind::Drag(MouseButton::Left | MouseButton::Unknown) => 32,
         MouseEventKind::Drag(MouseButton::Middle) => 33,
         MouseEventKind::Drag(MouseButton::Right) => 34,
-        MouseEventKind::ScrollDown => 65,
-        MouseEventKind::ScrollUp => 64,
-        MouseEventKind::ScrollLeft => 66,
-        MouseEventKind::ScrollRight => 67,
+        MouseEventKind::Scroll(ScrollDirection::Down) => 65,
+        MouseEventKind::Scroll(ScrollDirection::Up) => 64,
+        MouseEventKind::Scroll(ScrollDirection::Left) => 66,
+        MouseEventKind::Scroll(ScrollDirection::Right) => 67,
     };
     if mouse_event.modifiers.intersects(KeyModifiers::SHIFT) {
         base += 4;

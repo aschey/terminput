@@ -1,6 +1,7 @@
 use crate::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
-    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, UnsupportedEvent,
+    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, ScrollDirection,
+    UnsupportedEvent,
 };
 
 impl TryFrom<termwiz::input::InputEvent> for Event {
@@ -397,7 +398,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             termwiz::input::MouseButtons::VERT_WHEEL | termwiz::input::MouseButtons::WHEEL_POSITIVE,
         ) {
             return Ok(Self {
-                kind: MouseEventKind::ScrollUp,
+                kind: MouseEventKind::Scroll(ScrollDirection::Up),
                 column: value.x - 1,
                 row: value.y - 1,
                 modifiers: value.modifiers.try_into()?,
@@ -408,7 +409,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             .contains(termwiz::input::MouseButtons::VERT_WHEEL)
         {
             return Ok(Self {
-                kind: MouseEventKind::ScrollDown,
+                kind: MouseEventKind::Scroll(ScrollDirection::Down),
                 column: value.x - 1,
                 row: value.y - 1,
                 modifiers: value.modifiers.try_into()?,
@@ -418,7 +419,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             termwiz::input::MouseButtons::HORZ_WHEEL | termwiz::input::MouseButtons::WHEEL_POSITIVE,
         ) {
             return Ok(Self {
-                kind: MouseEventKind::ScrollLeft,
+                kind: MouseEventKind::Scroll(ScrollDirection::Left),
                 column: value.x - 1,
                 row: value.y - 1,
                 modifiers: value.modifiers.try_into()?,
@@ -429,7 +430,7 @@ impl TryFrom<termwiz::input::MouseEvent> for MouseEvent {
             .contains(termwiz::input::MouseButtons::HORZ_WHEEL)
         {
             return Ok(Self {
-                kind: MouseEventKind::ScrollRight,
+                kind: MouseEventKind::Scroll(ScrollDirection::Right),
                 column: value.x - 1,
                 row: value.y - 1,
                 modifiers: value.modifiers.try_into()?,
@@ -480,26 +481,26 @@ impl TryFrom<MouseEvent> for termwiz::input::MouseEvent {
                 y: value.row + 1,
                 modifiers: value.modifiers.try_into()?,
             },
-            MouseEventKind::ScrollDown => Self {
+            MouseEventKind::Scroll(ScrollDirection::Down) => Self {
                 mouse_buttons: termwiz::input::MouseButtons::VERT_WHEEL,
                 x: value.column + 1,
                 y: value.row + 1,
                 modifiers: value.modifiers.try_into()?,
             },
-            MouseEventKind::ScrollUp => Self {
+            MouseEventKind::Scroll(ScrollDirection::Up) => Self {
                 mouse_buttons: termwiz::input::MouseButtons::VERT_WHEEL
                     | termwiz::input::MouseButtons::WHEEL_POSITIVE,
                 x: value.column + 1,
                 y: value.row + 1,
                 modifiers: value.modifiers.try_into()?,
             },
-            MouseEventKind::ScrollLeft => Self {
+            MouseEventKind::Scroll(ScrollDirection::Left) => Self {
                 mouse_buttons: termwiz::input::MouseButtons::HORZ_WHEEL,
                 x: value.column + 1,
                 y: value.row + 1,
                 modifiers: value.modifiers.try_into()?,
             },
-            MouseEventKind::ScrollRight => Self {
+            MouseEventKind::Scroll(ScrollDirection::Right) => Self {
                 mouse_buttons: termwiz::input::MouseButtons::HORZ_WHEEL
                     | termwiz::input::MouseButtons::WHEEL_POSITIVE,
                 x: value.column + 1,

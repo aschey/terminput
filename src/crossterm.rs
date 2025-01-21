@@ -1,6 +1,7 @@
 use crate::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
-    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, UnsupportedEvent,
+    ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, ScrollDirection,
+    UnsupportedEvent,
 };
 
 impl TryFrom<crossterm::event::Event> for Event {
@@ -76,10 +77,10 @@ impl TryFrom<crossterm::event::MouseEventKind> for MouseEventKind {
             crossterm::event::MouseEventKind::Up(button) => Self::Up(button.try_into()?),
             crossterm::event::MouseEventKind::Drag(button) => Self::Drag(button.try_into()?),
             crossterm::event::MouseEventKind::Moved => Self::Moved,
-            crossterm::event::MouseEventKind::ScrollDown => Self::ScrollDown,
-            crossterm::event::MouseEventKind::ScrollUp => Self::ScrollUp,
-            crossterm::event::MouseEventKind::ScrollLeft => Self::ScrollLeft,
-            crossterm::event::MouseEventKind::ScrollRight => Self::ScrollRight,
+            crossterm::event::MouseEventKind::ScrollDown => Self::Scroll(ScrollDirection::Down),
+            crossterm::event::MouseEventKind::ScrollUp => Self::Scroll(ScrollDirection::Up),
+            crossterm::event::MouseEventKind::ScrollLeft => Self::Scroll(ScrollDirection::Left),
+            crossterm::event::MouseEventKind::ScrollRight => Self::Scroll(ScrollDirection::Right),
         })
     }
 }
@@ -93,10 +94,10 @@ impl TryFrom<MouseEventKind> for crossterm::event::MouseEventKind {
             MouseEventKind::Up(button) => Self::Up(button.try_into()?),
             MouseEventKind::Drag(button) => Self::Drag(button.try_into()?),
             MouseEventKind::Moved => Self::Moved,
-            MouseEventKind::ScrollDown => Self::ScrollDown,
-            MouseEventKind::ScrollUp => Self::ScrollUp,
-            MouseEventKind::ScrollLeft => Self::ScrollLeft,
-            MouseEventKind::ScrollRight => Self::ScrollRight,
+            MouseEventKind::Scroll(ScrollDirection::Down) => Self::ScrollDown,
+            MouseEventKind::Scroll(ScrollDirection::Up) => Self::ScrollUp,
+            MouseEventKind::Scroll(ScrollDirection::Left) => Self::ScrollLeft,
+            MouseEventKind::Scroll(ScrollDirection::Right) => Self::ScrollRight,
         })
     }
 }
