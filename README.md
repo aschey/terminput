@@ -1,5 +1,14 @@
 # terminput
 
+[![crates.io](https://img.shields.io/crates/v/terminput.svg?logo=rust)](https://crates.io/crates/terminput)
+[![docs.rs](https://img.shields.io/docsrs/terminput?logo=rust)](https://docs.rs/terminput)
+[![Dependency Status](https://deps.rs/repo/github/aschey/terminput/status.svg?style=flat-square)](https://deps.rs/repo/github/aschey/terminput)
+![license](https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg)
+[![CI](https://github.com/aschey/terminput/actions/workflows/ci.yml/badge.svg)](https://github.com/aschey/terminput/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/aschey/terminput/graph/badge.svg?token=Q0tOXGhWPY)](https://codecov.io/gh/aschey/terminput)
+![GitHub repo size](https://img.shields.io/github/repo-size/aschey/terminput)
+![Lines of Code](https://aschey.tech/tokei/github/aschey/terminput)
+
 A library to provide an abstraction over various backends that provide input
 sources such as key and mouse events. This was mainly created as a common
 interface to the terminal backends that
@@ -98,20 +107,19 @@ useful if you're controlling a child pty and need to send it some encoded input.
 ```rust
 use terminput::{Encoding, Event, KeyCode, KeyEvent, KittyFlags};
 
-fn main() {
-    let event = Event::Key(KeyEvent::new(KeyCode::Char('a')));
-    let mut buf = [0; 16];
-    // Legacy encoding
-    let written = event.encode(&mut buf, Encoding::Xterm);
-    if let Ok(written) = written {
-        println!("Encoded: {:?}", &buf[..written]);
-    }
+let event = Event::Key(KeyEvent::new(KeyCode::Char('a')));
+let mut buf = [0; 16];
 
-    // Kitty encoding
-    let mut buf = [0; 16];
-    let written = event.encode(&mut buf, Encoding::Kitty(KittyFlags::all()));
-    if let Ok(written) = written {
-        println!("Encoded: {:?}", &buf[..written]);
-    }
+// Legacy encoding
+let written = event.encode(&mut buf, Encoding::Xterm);
+if let Ok(written) = written {
+    println!("Encoded: {:?}", &buf[..written]);
+}
+
+// Kitty encoding
+let mut buf = [0; 16];
+let written = event.encode(&mut buf, Encoding::Kitty(KittyFlags::all()));
+if let Ok(written) = written {
+    println!("Encoded: {:?}", &buf[..written]);
 }
 ```
