@@ -7,7 +7,7 @@ use crossterm::event::{
 };
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{execute, queue};
-use terminput::{Encoding, Event, KeyCode, KittyFlags, parse_event};
+use terminput::{Encoding, Event, KeyCode, KittyFlags};
 
 fn print_events(encoding: Encoding) -> io::Result<()> {
     let mut buf = [0; 16];
@@ -19,7 +19,7 @@ fn print_events(encoding: Encoding) -> io::Result<()> {
             let written = event.encode(&mut buf, encoding);
             if let Ok(written) = written {
                 println!("Encoded: {:?}\r", &buf[..written]);
-                if let Ok(Some(decoded)) = parse_event(&buf[..written]) {
+                if let Ok(Some(decoded)) = Event::parse_from(&buf[..written]) {
                     println!("Decoded: {:?}\r", decoded);
                 }
             }
