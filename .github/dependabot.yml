@@ -13,7 +13,7 @@ updates:
       # ignore minor updates for stable crates that have reached 1.0
       - dependency-name: "bitflags"
         update-types: ["version-update:semver-minor"]
-      - package-ecosystem: "github-actions"
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
