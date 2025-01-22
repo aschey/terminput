@@ -75,7 +75,7 @@ The following table shows the matrix of supported features:
 ## Parsing
 
 Use the
-[`Event::parse_from`](https://docs.rs/terminput/latest/terminput/enum.Event.html#method.parse_from.html)
+[`Event::parse_from`](https://docs.rs/terminput/latest/terminput/enum.Event.html#method.parse_from)
 method to parse an ANSI-encoded sequence of bytes into an event struct. This can
 be helpful for usage with
 [SSH](https://docs.rs/russh/latest/russh/server/trait.Handler.html#method.data)
