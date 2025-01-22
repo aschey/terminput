@@ -75,9 +75,9 @@ The following table shows the matrix of supported features:
 ## Parsing
 
 Use the
-[`parse_event`](https://docs.rs/terminput/latest/terminput/fn.parse_event.html)
-function to parse an ANSI-encoded sequence of bytes into an event struct. This
-can be helpful for usage with
+[`Event::parse_from`](https://docs.rs/terminput/latest/terminput/enum.Event.html#method.parse_from.html)
+method to parse an ANSI-encoded sequence of bytes into an event struct. This can
+be helpful for usage with
 [SSH](https://docs.rs/russh/latest/russh/server/trait.Handler.html#method.data)
 or other situations where you need to read raw input from something other than a
 normal TTY device.
@@ -86,10 +86,10 @@ The input parser used here was extracted from
 [crossterm's implementation](https://github.com/crossterm-rs/crossterm/blob/master/src/event/sys/unix/parse.rs).
 
 ```rust,no_run
-use terminput::parse_event;
+use terminput::Event;
 
 fn read_input(input: &[u8]) {
-    let event = parse_event(input);
+    let event = Event::parse_from(input);
 
     match event {
         Ok(Some(event)) => {

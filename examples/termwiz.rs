@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use terminput::{Encoding, Event, KeyCode, parse_event};
+use terminput::{Encoding, Event, KeyCode};
 use termwiz::caps::Capabilities;
 use termwiz::terminal::buffered::BufferedTerminal;
 use termwiz::terminal::{SystemTerminal, Terminal};
@@ -34,7 +34,7 @@ fn print_events(mut terminal: BufferedTerminal<SystemTerminal>) {
                 let written = event.encode(&mut buf, Encoding::Xterm);
                 if let Ok(written) = written {
                     println!("Encoded: {:?}\r", &buf[..written]);
-                    if let Ok(Some(decoded)) = parse_event(&buf[..written]) {
+                    if let Ok(Some(decoded)) = Event::parse_from(&buf[..written]) {
                         println!("Decoded: {:?}\r", decoded);
                     }
                 }

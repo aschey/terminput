@@ -1,6 +1,6 @@
 use std::io;
 
-use terminput::{Encoding, Event, KeyCode, parse_event};
+use terminput::{Encoding, Event, KeyCode};
 use termion::input::{MouseTerminal, TermRead};
 use termion::raw::IntoRawMode;
 
@@ -16,7 +16,7 @@ fn print_events() -> io::Result<()> {
             let written = event.encode(&mut buf, Encoding::Xterm);
             if let Ok(written) = written {
                 println!("Encoded: {:?}\r", &buf[..written]);
-                if let Ok(Some(decoded)) = parse_event(&buf[..written]) {
+                if let Ok(Some(decoded)) = Event::parse_from(&buf[..written]) {
                     println!("Decoded: {:?}\r", decoded);
                 }
             }

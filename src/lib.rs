@@ -30,7 +30,6 @@ use std::error::Error;
 pub use encoder::*;
 pub use key::*;
 pub use mouse::*;
-pub use parser::*;
 
 /// The supplied event could not be converted into the requested type.
 #[derive(Debug)]

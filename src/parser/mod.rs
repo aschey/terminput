@@ -12,98 +12,102 @@ fn could_not_parse_event_error() -> io::Error {
     io::Error::new(io::ErrorKind::Other, "Could not parse event.")
 }
 
-/// Attempts to parse a byte sequence into an input event.
-/// Supports both the legacy Xterm input protocol and the newer enhanced protocols from fixterms
-/// and Kitty.
-///
-/// Returns [`None`] if the input could be a valid event, but is incomplete.
-///
-/// Returns an [`io::Error`] if the input cannot be parsed into an input event.
-pub fn parse_event(buffer: &[u8]) -> io::Result<Option<Event>> {
-    if buffer.is_empty() {
-        return Ok(None);
-    }
+impl Event {
+    /// Attempts to parse a byte sequence into an input event.
+    /// Supports both the legacy Xterm input protocol and the newer enhanced protocols from fixterms
+    /// and Kitty.
+    ///
+    /// Returns [`None`] if the input could be a valid event, but is incomplete.
+    ///
+    /// Returns an [`io::Error`] if the input cannot be parsed into a valid event.
+    pub fn parse_from(buffer: &[u8]) -> io::Result<Option<Self>> {
+        if buffer.is_empty() {
+            return Ok(None);
+        }
 
-    match buffer[0] {
-        b'\x1B' => {
-            if buffer.len() == 1 {
-                Ok(Some(Event::Key(KeyCode::Esc.into())))
-            } else {
-                match buffer[1] {
-                    b'O' => {
-                        if buffer.len() == 2 {
-                            Ok(None)
-                        } else {
-                            match buffer[2] {
-                                b'D' => Ok(Some(Event::Key(KeyCode::Left.into()))),
-                                b'C' => Ok(Some(Event::Key(KeyCode::Right.into()))),
-                                b'A' => Ok(Some(Event::Key(KeyCode::Up.into()))),
-                                b'B' => Ok(Some(Event::Key(KeyCode::Down.into()))),
-                                b'H' => Ok(Some(Event::Key(KeyCode::Home.into()))),
-                                b'F' => Ok(Some(Event::Key(KeyCode::End.into()))),
-                                // F1-F4
-                                val @ b'P'..=b'S' => {
-                                    Ok(Some(Event::Key(KeyCode::F(1 + val - b'P').into())))
-                                }
-                                _ => Err(could_not_parse_event_error()),
-                            }
-                        }
-                    }
-                    b'[' => parse_csi(buffer),
-                    b'\x1B' => {
-                        if buffer.len() == 2 {
-                            Ok(Some(Event::Key(
-                                KeyEvent::new(KeyCode::Esc).modifiers(KeyModifiers::ALT),
-                            )))
-                        } else {
-                            match &buffer[2..] {
-                                b"[Z" => Ok(Some(Event::Key(
-                                    KeyEvent::new(KeyCode::Tab)
-                                        .modifiers(KeyModifiers::SHIFT | KeyModifiers::ALT),
-                                ))),
-                                _ => Err(could_not_parse_event_error()),
-                            }
-                        }
-                    }
-                    _ => parse_event(&buffer[1..]).map(|event_option| {
-                        event_option.map(|event| {
-                            if let Event::Key(key_event) = event {
-                                let mut alt_key_event = key_event;
-                                alt_key_event.modifiers |= KeyModifiers::ALT;
-                                Event::Key(alt_key_event)
+        match buffer[0] {
+            b'\x1B' => {
+                if buffer.len() == 1 {
+                    Ok(Some(Self::Key(KeyCode::Esc.into())))
+                } else {
+                    match buffer[1] {
+                        b'O' => {
+                            if buffer.len() == 2 {
+                                Ok(None)
                             } else {
-                                event
+                                match buffer[2] {
+                                    b'D' => Ok(Some(Self::Key(KeyCode::Left.into()))),
+                                    b'C' => Ok(Some(Self::Key(KeyCode::Right.into()))),
+                                    b'A' => Ok(Some(Self::Key(KeyCode::Up.into()))),
+                                    b'B' => Ok(Some(Self::Key(KeyCode::Down.into()))),
+                                    b'H' => Ok(Some(Self::Key(KeyCode::Home.into()))),
+                                    b'F' => Ok(Some(Self::Key(KeyCode::End.into()))),
+                                    // F1-F4
+                                    val @ b'P'..=b'S' => {
+                                        Ok(Some(Self::Key(KeyCode::F(1 + val - b'P').into())))
+                                    }
+                                    _ => Err(could_not_parse_event_error()),
+                                }
                             }
-                        })
-                    }),
+                        }
+                        b'[' => parse_csi(buffer),
+                        b'\x1B' => {
+                            if buffer.len() == 2 {
+                                Ok(Some(Self::Key(
+                                    KeyEvent::new(KeyCode::Esc).modifiers(KeyModifiers::ALT),
+                                )))
+                            } else {
+                                match &buffer[2..] {
+                                    b"[Z" => Ok(Some(Self::Key(
+                                        KeyEvent::new(KeyCode::Tab)
+                                            .modifiers(KeyModifiers::SHIFT | KeyModifiers::ALT),
+                                    ))),
+                                    _ => Err(could_not_parse_event_error()),
+                                }
+                            }
+                        }
+                        _ => Self::parse_from(&buffer[1..]).map(|event_option| {
+                            event_option.map(|event| {
+                                if let Self::Key(key_event) = event {
+                                    let mut alt_key_event = key_event;
+                                    alt_key_event.modifiers |= KeyModifiers::ALT;
+                                    Self::Key(alt_key_event)
+                                } else {
+                                    event
+                                }
+                            })
+                        }),
+                    }
                 }
             }
+            b'\r' => Ok(Some(Self::Key(KeyCode::Enter.into()))),
+            // Issue #371: \n = 0xA, which is also the keycode for Ctrl+J. The only reason we get
+            // newlines as input is because the terminal converts \r into \n for us. When we
+            // enter raw mode, we disable that, so \n no longer has any meaning - it's better to
+            // use Ctrl+J. Waiting to handle it here means it gets picked up later
+            // b'\n' if !crate::terminal::sys::is_raw_mode_enabled() => {
+            //     Ok(Some(Event::Key(KeyCode::Enter.into())))
+            // }
+            b'\t' => Ok(Some(Self::Key(KeyCode::Tab.into()))),
+            b'\x7F' => Ok(Some(Self::Key(KeyCode::Backspace.into()))),
+            c @ b'\x01'..=b'\x1A' => Ok(Some(Self::Key(
+                KeyEvent::new(KeyCode::Char((c - 0x1 + b'a') as char))
+                    .modifiers(KeyModifiers::CTRL),
+            ))),
+            c @ b'\x1C'..=b'\x1F' => Ok(Some(Self::Key(
+                KeyEvent::new(KeyCode::Char((c - 0x1C + b'4') as char))
+                    .modifiers(KeyModifiers::CTRL),
+            ))),
+            b'\0' => Ok(Some(Self::Key(
+                KeyEvent::new(KeyCode::Char(' ')).modifiers(KeyModifiers::CTRL),
+            ))),
+            _ => parse_utf8_char(buffer).map(|maybe_char| {
+                maybe_char
+                    .map(KeyCode::Char)
+                    .map(char_code_to_event)
+                    .map(Event::Key)
+            }),
         }
-        b'\r' => Ok(Some(Event::Key(KeyCode::Enter.into()))),
-        // Issue #371: \n = 0xA, which is also the keycode for Ctrl+J. The only reason we get
-        // newlines as input is because the terminal converts \r into \n for us. When we
-        // enter raw mode, we disable that, so \n no longer has any meaning - it's better to
-        // use Ctrl+J. Waiting to handle it here means it gets picked up later
-        // b'\n' if !crate::terminal::sys::is_raw_mode_enabled() => {
-        //     Ok(Some(Event::Key(KeyCode::Enter.into())))
-        // }
-        b'\t' => Ok(Some(Event::Key(KeyCode::Tab.into()))),
-        b'\x7F' => Ok(Some(Event::Key(KeyCode::Backspace.into()))),
-        c @ b'\x01'..=b'\x1A' => Ok(Some(Event::Key(
-            KeyEvent::new(KeyCode::Char((c - 0x1 + b'a') as char)).modifiers(KeyModifiers::CTRL),
-        ))),
-        c @ b'\x1C'..=b'\x1F' => Ok(Some(Event::Key(
-            KeyEvent::new(KeyCode::Char((c - 0x1C + b'4') as char)).modifiers(KeyModifiers::CTRL),
-        ))),
-        b'\0' => Ok(Some(Event::Key(
-            KeyEvent::new(KeyCode::Char(' ')).modifiers(KeyModifiers::CTRL),
-        ))),
-        _ => parse_utf8_char(buffer).map(|maybe_char| {
-            maybe_char
-                .map(KeyCode::Char)
-                .map(char_code_to_event)
-                .map(Event::Key)
-        }),
     }
 }
 
