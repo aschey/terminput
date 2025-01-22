@@ -22,6 +22,8 @@ for events.
 
 ## Usage
 
+Use `try_into` to convert to and from `terminput`'s event types.
+
 ```rust,no_run
 use crossterm::event::read;
 use std::io;
