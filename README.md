@@ -9,14 +9,13 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/aschey/terminput)
 ![Lines of Code](https://aschey.tech/tokei/github/aschey/terminput)
 
-A library to provide an abstraction over various backends that provide input
-sources such as key and mouse events. This was mainly created as a common
-interface to the terminal backends that
-[Ratatui](https://crates.io/crates/ratatui) supports.
+A library to abstract over various backends that provide input events, such as
+key presses and mouse clicks. This was mainly created as a common interface to
+the terminal backends that [Ratatui](https://crates.io/crates/ratatui) supports.
 
 Many TUI libraries want to support input from multiple backends, but mapping
-each backend's input types into a common interface can be tedious. This library
-aims to provide a uniform interface to these types.
+each backend's input structure into a common interface can be tedious. This
+library aims to provide a uniform interface to these types.
 
 Additionally, we supply methods for parsing and encoding ANSI escape sequences
 for events.
@@ -53,8 +52,9 @@ default and each can be enabled with a feature flag of the same name.
 - [`termwiz`](https://crates.io/crates/termwiz)
 - [`egui`](https://crates.io/crates/egui)
 
-The `Event` struct provided in this library is an attempt to provide a superset
-of all supported backend functionality that TUI apps may be interested in.
+The [`Event`](https://docs.rs/terminput/latest/terminput/enum.Event.html) struct
+provided by this library is an attempt to create a superset of all supported
+backend functionality that TUI apps may be interested in.
 
 The following table shows the matrix of supported features:
 
@@ -72,9 +72,13 @@ The following table shows the matrix of supported features:
 
 ## Parsing
 
-Use the `parse_event` function to parse an ANSI-encoded sequence of bytes into
-an event instance. This can be helpful for usage with SSH or other situations
-where you need to read raw input from something other than a normal TTY device.
+Use the
+[`parse_event`](https://docs.rs/terminput/latest/terminput/fn.parse_event.html)
+function to parse an ANSI-encoded sequence of bytes into an event struct. This
+can be helpful for usage with
+[SSH](https://docs.rs/russh/latest/russh/server/trait.Handler.html#method.data)
+or other situations where you need to read raw input from something other than a
+normal TTY device.
 
 The input parser used here was extracted from
 [crossterm's implementation](https://github.com/crossterm-rs/crossterm/blob/master/src/event/sys/unix/parse.rs).
@@ -101,8 +105,11 @@ fn read_input(input: &[u8]) {
 
 ## Encoding
 
-`Input` structs can also be encoded into ANSI escape sequences. This can be
-useful if you're controlling a child pty and need to send it some encoded input.
+`Input` structs can also be encoded into ANSI escape sequences using
+[`Event::encode`](https://docs.rs/terminput/latest/terminput/enum.Event.html#method.encode).
+This can be useful if you're
+[controlling a child pty](https://docs.rs/portable-pty/0.8.1/portable_pty/) and
+need to send it some encoded input.
 
 ```rust
 use terminput::{Encoding, Event, KeyCode, KeyEvent, KittyFlags};

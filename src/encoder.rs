@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::io::{self, Cursor, Seek, Write};
 
 use bitflags::bitflags;
@@ -34,6 +35,16 @@ pub enum Encoding {
     Xterm,
     /// Encode using the Kitty protocol.
     Kitty(KittyFlags),
+}
+
+fn unsupported_error<T>(event: T) -> io::Result<usize>
+where
+    T: Debug,
+{
+    Err(io::Error::new(
+        io::ErrorKind::Unsupported,
+        format!("Unsupported event: {event:?}"),
+    ))
 }
 
 impl Event {
@@ -81,10 +92,7 @@ impl Event {
                 buf.write_all(b"\x1B[201~")?;
                 Ok(buf.position() as usize)
             }
-            Self::Resize { .. } => Err(io::Error::new(
-                io::ErrorKind::Unsupported,
-                "Resize events cannot be encoded",
-            )),
+            Self::Resize { .. } => unsupported_error("Resize"),
         }
     }
 
@@ -185,10 +193,7 @@ impl Event {
 fn encode_key_event(key_event: &KeyEvent, buf: &mut Cursor<&mut [u8]>) -> io::Result<usize> {
     let key_event = key_event.normalize_case();
     if key_event.kind != KeyEventKind::Press {
-        return Err(io::Error::new(
-            io::ErrorKind::Unsupported,
-            "Only keypress events can be encoded.",
-        ));
+        return unsupported_error(key_event.kind);
     }
 
     let is_shift = key_event.modifiers.intersects(KeyModifiers::SHIFT);
@@ -236,13 +241,10 @@ fn encode_key_event(key_event: &KeyEvent, buf: &mut Cursor<&mut [u8]>) -> io::Re
         KeyCode::Char(c @ '4'..='7') if is_ctrl => {
             buf.write_all(&[c as u8 - b'4' + b'\x1C'])?;
         }
-        _ => {
+        key_code => {
             let handled = write_keycode_suffix(key_event.code, key_event.modifiers, true, buf)?;
             if !handled {
-                return Err(io::Error::new(
-                    io::ErrorKind::Unsupported,
-                    "unsupported key",
-                ));
+                return unsupported_error(key_code);
             }
         }
     }
@@ -258,10 +260,7 @@ fn encode_key_event(key_event: &KeyEvent, buf: &mut Cursor<&mut [u8]>) -> io::Re
                 let pos = buf.position() as usize;
                 let base = (c as u8) + 0x1;
                 if base < b'a' {
-                    return Err(io::Error::new(
-                        io::ErrorKind::Unsupported,
-                        "unsupported key",
-                    ));
+                    return unsupported_error(key_event);
                 }
                 buf.get_mut()[pos - 1] = base - b'a';
             }
@@ -396,9 +395,7 @@ fn write_kitty_encoding(
         KeyCode::F(val @ 13..=35) => {
             buf.write_all(&(57376 + (val as u16 - 13)).to_string().into_bytes())?;
         }
-        KeyCode::F(36..) => {
-            return Err(io::Error::new(io::ErrorKind::Unsupported, "unsupported"));
-        }
+        KeyCode::F(36..) => return unsupported_error(key_event).map(|_| ()),
         KeyCode::Media(MediaKeyCode::Play) => {
             buf.write_all(b"57428")?;
         }
