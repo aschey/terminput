@@ -45,6 +45,7 @@ impl Error for UnsupportedEvent {}
 
 /// An application event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Event {
     /// The application gained focus.
     FocusGained,
