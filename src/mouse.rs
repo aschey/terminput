@@ -2,6 +2,7 @@ use crate::KeyModifiers;
 
 /// A mouse event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct MouseEvent {
     /// The kind of mouse event that was caused.
     pub kind: MouseEventKind,
@@ -15,6 +16,7 @@ pub struct MouseEvent {
 
 /// Mouse scroll direction.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ScrollDirection {
     /// Scrolled mouse wheel upwards (away from the user).
     Up,
@@ -41,6 +43,7 @@ impl ScrollDirection {
 
 /// Represents the change that should be applied to the content in response to a scroll event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ScrollDelta {
     /// Change in the x (horizontal) direction.
     pub x: i32,
@@ -50,6 +53,7 @@ pub struct ScrollDelta {
 
 /// The type of mouse event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MouseEventKind {
     /// Pressed mouse button. Contains the button that was pressed.
     Down(MouseButton),
@@ -65,6 +69,7 @@ pub enum MouseEventKind {
 
 /// The mouse button used for this event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MouseButton {
     /// Left mouse button.
     Left,

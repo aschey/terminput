@@ -12,6 +12,7 @@ bitflags! {
     /// Controls which keyboard enhancement flags will be considered during encoding.
     /// These flags are described in Kitty's documentation on [progressive enhancement](https://sw.kovidgoyal.net/kitty/keyboard-protocol/#progressive-enhancement).
     #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+    #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize), serde(transparent))]
     pub struct KittyFlags: u8 {
         /// Represent escape and modified keys using CSI-u sequences.
         const DISAMBIGUATE_ESCAPE_CODES = 1<<1;
@@ -30,6 +31,7 @@ bitflags! {
 
 /// Encoding protocol used to control the output of [`Event::encode`]
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Encoding {
     /// Encode using the legacy Xterm protocol.
     Xterm,

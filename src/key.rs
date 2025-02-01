@@ -4,6 +4,7 @@ use bitflags::bitflags;
 
 /// A key input event.
 #[derive(Debug, PartialOrd, Ord, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct KeyEvent {
     /// The key code.
     pub code: KeyCode,
@@ -101,6 +102,7 @@ impl Hash for KeyEvent {
 /// Represents whether the modifier came from the left or right side of the keyboard, where
 /// applicable.
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ModifierDirection {
     /// Modifier came from the left side of the keyboard.
     Left,
@@ -112,6 +114,7 @@ pub enum ModifierDirection {
 
 /// Represents a key.
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum KeyCode {
     /// Backspace key.
     Backspace,
@@ -172,6 +175,7 @@ pub enum KeyCode {
 bitflags! {
     /// Represents key modifiers (shift, control, alt, etc.).
     #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Hash)]
+    #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize), serde(transparent))]
     pub struct KeyModifiers: u8 {
         /// No modifiers.
         const NONE = 0;
@@ -193,6 +197,7 @@ bitflags! {
 /// Type of key event. Repeat and release events may not be emitted if the input source is not
 /// configured to do so.
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum KeyEventKind {
     /// Key press.
     Press,
@@ -204,6 +209,7 @@ pub enum KeyEventKind {
 
 /// Media keys.
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum MediaKeyCode {
     /// Play media key.
     Play,
@@ -235,6 +241,7 @@ pub enum MediaKeyCode {
 
 /// A modifier key event.
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum ModifierKeyCode {
     /// Left Shift key.
     Shift,
@@ -257,6 +264,7 @@ pub enum ModifierKeyCode {
 bitflags! {
     /// Represents extra state about the key event.
     #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Hash)]
+    #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize), serde(transparent))]
     pub struct KeyEventState: u8 {
         /// No extra state applicable.
         const NONE = 0;
