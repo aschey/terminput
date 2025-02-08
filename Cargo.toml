@@ -16,7 +16,7 @@ keywords = ["tui", "terminal", "input", "ratatui"]
 [dependencies]
 bitflags = "2.4"
 crossterm = { version = "0.28.1", optional = true }
-egui = { version = "0.30", default-features = false, optional = true }
+egui = { version = "0.31", default-features = false, optional = true }
 serde = { version = "1.0.134", optional = true, features = ["derive"] }
 termion = { version = "4", optional = true }
 termwiz = { version = "0.22", optional = true }
