@@ -53,7 +53,7 @@ fn main() -> io::Result<()> {
         )?;
     }
 
-    queue!(
+    execute!(
         stdout,
         EnableBracketedPaste,
         EnableFocusChange,
@@ -67,7 +67,7 @@ fn main() -> io::Result<()> {
     })?;
 
     if supports_keyboard_enhancement {
-        execute!(stdout, PopKeyboardEnhancementFlags)?;
+        queue!(stdout, PopKeyboardEnhancementFlags)?;
     }
 
     execute!(
