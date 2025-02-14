@@ -40,7 +40,7 @@ impl KeyEvent {
     }
 
     /// Sets the [`KeyEventState`].
-    pub fn state(mut self, state: KeyEventState) -> Self {
+    pub const fn state(mut self, state: KeyEventState) -> Self {
         self.state = state;
         self
     }
@@ -194,6 +194,19 @@ bitflags! {
     }
 }
 
+/// Shift modifier.
+pub const SHIFT: KeyModifiers = KeyModifiers::SHIFT;
+/// Alt modifier.
+pub const ALT: KeyModifiers = KeyModifiers::ALT;
+/// Ctrl modifier.
+pub const CTRL: KeyModifiers = KeyModifiers::CTRL;
+/// Super modifier.
+pub const SUPER: KeyModifiers = KeyModifiers::SUPER;
+/// Hyper modifier.
+pub const HYPER: KeyModifiers = KeyModifiers::HYPER;
+/// Meta modifier.
+pub const META: KeyModifiers = KeyModifiers::META;
+
 /// Type of key event. Repeat and release events may not be emitted if the input source is not
 /// configured to do so.
 #[derive(Debug, PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Hash)]
@@ -278,6 +291,13 @@ bitflags! {
     }
 }
 
+/// Keypad event state.
+pub const KEYPAD: KeyEventState = KeyEventState::KEYPAD;
+/// Caps lock event state.
+pub const CAPS_LOCK: KeyEventState = KeyEventState::CAPS_LOCK;
+/// Num lock event state.
+pub const NUM_LOCK: KeyEventState = KeyEventState::NUM_LOCK;
+
 impl From<KeyCode> for KeyEvent {
     fn from(code: KeyCode) -> Self {
         Self {
@@ -287,4 +307,105 @@ impl From<KeyCode> for KeyEvent {
             state: KeyEventState::empty(),
         }
     }
+}
+
+/// Pattern matching for key events.
+///
+/// There are three forms:
+/// - `key!(keyCode)`
+/// - `key!(modifiers, keyCode)`
+/// - `key!(eventState, modifiers, keyCode)`
+///
+/// If `modifiers` is omitted, only events with no modifiers are matched.
+///
+/// If `eventState` is omitted, any event state will be matched.
+///
+/// # Example
+///
+/// ```
+/// use terminput::KeyCode::*;
+/// use terminput::{ALT, CTRL, Event, KeyModifiers, Repeats, key, modifiers};
+///
+/// fn handle_event(event: Event) {
+///     if let Some(key_event) = event.as_key_press(Repeats::Include) {
+///         const CTRL_ALT: KeyModifiers = modifiers!(CTRL, ALT);
+///
+///         match key_event {
+///             key!(Char('a')) => {
+///                 println!("'a' pressed");
+///             }
+///             key!(CTRL | ALT, Char('d')) => {
+///                 println!("'ctrl+d' or 'alt+d' pressed");
+///             }
+///             key!(CTRL_ALT, Char('c')) => {
+///                 println!("'ctrl+alt+c' pressed");
+///             }
+///             key!(CAPS_LOCK, KeyModifiers::NONE, Char('d')) => {
+///                 println!("'d' pressed with caps lock");
+///             }
+///             _ => {}
+///         }
+///     }
+/// }
+/// ```
+#[macro_export]
+macro_rules! key {
+    ($state:pat, $mods:pat, $code:pat) => {
+        $crate::KeyEvent {
+            code: $code,
+            modifiers: $mods,
+            state: $state,
+            ..
+        }
+    };
+    ($mods:pat, $code:pat) => {
+        $crate::KeyEvent {
+            code: $code,
+            modifiers: $mods,
+            ..
+        }
+    };
+    ($code:pat) => {
+        $crate::KeyEvent {
+            code: $code,
+            modifiers: $crate::KeyModifiers::NONE,
+            ..
+        }
+    };
+}
+
+/// Macro for combining key modifiers in a way that's valid in `const` contexts. Useful for match
+/// expressions.
+///
+/// # Example
+///
+/// ```
+/// use terminput::{ALT, CTRL, KeyModifiers, modifiers};
+///
+/// const mods: KeyModifiers = modifiers!(CTRL, ALT);
+/// assert_eq!(mods, CTRL | ALT);
+/// ```
+#[macro_export]
+macro_rules! modifiers {
+    ($($key_mod:tt),+) => {
+        $crate::KeyModifiers::from_bits_retain($($key_mod.bits())|+)
+    };
+}
+
+/// Macro for combining key states together in a way that's valid in `const` contexts. Useful for
+/// match expressions.
+///
+/// # Example
+///
+/// ```
+/// use terminput::{CAPS_LOCK, KeyEventState, NUM_LOCK, states};
+///
+/// const key_state: KeyEventState = states!(CAPS_LOCK, NUM_LOCK);
+/// assert_eq!(key_state, CAPS_LOCK | NUM_LOCK);
+/// ```
+#[macro_export]
+macro_rules! states {
+    ($($state:tt),+) => {
+        $crate::KeyEventState::from_bits_retain($($state.bits())|+)
+    };
 }

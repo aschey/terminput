@@ -44,6 +44,11 @@ fn main() -> io::Result<()> {
 }
 ```
 
+## Event Matching
+
+Some helpers for matching on events are included. See the
+[`match_event` example](https://github.com/aschey/terminput/blob/main/examples/match_event.rs).
+
 ## Backends
 
 The following backends are currently supported. All backends are disabled by
