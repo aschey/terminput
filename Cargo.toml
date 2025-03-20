@@ -1,6 +1,8 @@
-[package]
-name = "terminput"
-version = "0.3.1"
+[workspace]
+members = ["./crates/*", "examples"]
+resolver = "2"
+
+[workspace.package]
 edition = "2021"
 rust-version = "1.81"
 authors = ["Austin Schey <aschey13@gmail.com>"]
@@ -8,47 +10,18 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/aschey/terminput"
 homepage = "https://github.com/aschey/terminput"
-description = "TUI input parser/encoder and abstraction over input backends"
 include = ["/src", "/examples", "/tests"]
 categories = ["command-line-interface", "encoding"]
 keywords = ["tui", "terminal", "input", "ratatui"]
 
-[dependencies]
-bitflags = "2.4"
-crossterm = { version = ">=0.27,<0.29", optional = true }
-egui = { version = "0.31", default-features = false, optional = true }
-serde = { version = "1.0.134", optional = true, features = ["derive"] }
-termion = { version = "4", optional = true }
-termwiz = { version = ">=0.22,<0.24", optional = true }
+[workspace.lints.rustdoc]
+broken_intra_doc_links = "deny"
 
-[features]
-crossterm = ["dep:crossterm"]
-termion = ["dep:termion"]
-termwiz = ["dep:termwiz"]
-egui = ["dep:egui"]
-serde = ["dep:serde", "bitflags/serde"]
-
-[[example]]
-name = "crossterm"
-required-features = ["crossterm"]
-doc-scrape-examples = true
-
-[[example]]
-name = "termion"
-required-features = ["termion"]
-doc-scrape-examples = true
-
-[[example]]
-name = "termwiz"
-required-features = ["termwiz"]
-doc-scrape-examples = true
-
-[[example]]
-name = "match_event"
-required-features = ["crossterm"]
-doc-scrape-examples = true
-
-[package.metadata.docs.rs]
-all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
-cargo-args = ["-Zunstable-options", "-Zrustdoc-scrape-examples"]
+[workspace.lints.clippy]
+unwrap_used = "deny"
+doc_markdown = "warn"
+default_trait_access = "warn"
+ignored_unit_patterns = "warn"
+semicolon_if_nothing_returned = "warn"
+missing_fields_in_debug = "warn"
+use_self = "warn"

@@ -28,15 +28,16 @@ Use `try_into` to convert to and from `terminput`'s event types.
 use crossterm::event::read;
 use std::io;
 use terminput::Event;
+use terminput_crossterm::{to_crossterm, to_terminput};
 
 fn main() -> io::Result<()> {
     let crossterm_event = read()?;
-    let event: Result<Event, _> = crossterm_event.try_into();
+    let event: Result<Event, _> = to_terminput(crossterm_event);
     println!("{event:?}");
 
     if let Ok(event) = event {
         // Conversions work both ways
-        let event2: Result<crossterm::event::Event, _> = event.try_into();
+        let event2: Result<crossterm::event::Event, _> = to_crossterm(event);
         println!("{event2:?}");
     }
 
