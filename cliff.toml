@@ -27,12 +27,7 @@ body = """
 {% endmacro -%}
 
 {% if version %}\
-    {% if previous.version %}\
-        ## {{ package }} - [{{ version | trim_start_matches(pat="v") }}]\
-          ({{ self::remote_url() }}/compare/{{ previous.version }}..{{ version }}) - {{ timestamp | date(format="%Y-%m-%d") }}
-    {% else %}\
-        ## {{ package }} - [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
-    {% endif %}\
+    ## {{ package }} - [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
 {% else %}\
     ## [unreleased]
 {% endif %}\
