@@ -14,7 +14,7 @@ categories.workspace = true
 keywords.workspace = true
 
 [dependencies]
-termwiz = { version = "0.22" }
+termwiz = { version = "0.23" }
 terminput = { path = "../terminput", version = "0.4.0" }
 
 [lints]
