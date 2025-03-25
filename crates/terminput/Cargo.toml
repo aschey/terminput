@@ -11,7 +11,7 @@ description = "TUI input parser/encoder and abstraction over input backends"
 include.workspace = true
 categories.workspace = true
 keywords.workspace = true
-readme = "../README.md"
+readme = "./README.md"
 
 [dependencies]
 bitflags = "2.6"
