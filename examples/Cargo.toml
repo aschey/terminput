@@ -7,11 +7,13 @@ license.workspace = true
 [dev-dependencies]
 terminput = { path = "../crates/terminput" }
 terminput-crossterm = { path = "../crates/terminput-crossterm" }
-terminput-termion = { path = "../crates/terminput-termion" }
 terminput-termwiz = { path = "../crates/terminput-termwiz" }
 crossterm = "0.28"
-termion = "4"
 termwiz = "0.23"
+
+[target.'cfg(not(windows))'.dev-dependencies]
+terminput-termion = { path = "../crates/terminput-termion" }
+termion = "4"
 
 [[example]]
 name = "crossterm"

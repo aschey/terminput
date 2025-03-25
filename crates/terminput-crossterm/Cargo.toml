@@ -17,6 +17,7 @@ readme = "./README.md"
 crossterm = { version = "0.28", default-features = false, features = [
   "events",
   "bracketed-paste",
+  "windows",
 ] }
 terminput = { path = "../terminput", version = "0.4.1" }
 
