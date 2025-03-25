@@ -60,7 +60,9 @@ body = """
       [#{{ contributor.pr_number }}]({{ self::remote_url() }}/pull/{{ contributor.pr_number }}) \
     {%- endif %}
 {%- endfor -%}
-{%- endif %}"""
+{%- endif %}
+
+"""
 # remove the leading and trailing whitespace from the template
 trim = true
 
