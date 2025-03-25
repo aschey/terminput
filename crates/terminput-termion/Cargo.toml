@@ -5,13 +5,13 @@ edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 license.workspace = true
-readme.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "termion adapter for terminput"
 include.workspace = true
 categories.workspace = true
 keywords.workspace = true
+readme = "../README.md"
 
 [dependencies]
 termion = { version = "4" }
