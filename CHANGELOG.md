@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## terminput-termwiz - [0.2.1] - 2025-03-25
+
+### Documentation
+
+- Use correct readme paths ([#25](https://github.com/aschey/terminput/issues/25)) - ([ac93b8a](https://github.com/aschey/terminput/commit/ac93b8ac5611af6642cee47be58ec528412a3653))
+
+## terminput-termion - [0.1.1] - 2025-03-25
+
+### Documentation
+
+- Use correct readme paths ([#25](https://github.com/aschey/terminput/issues/25)) - ([ac93b8a](https://github.com/aschey/terminput/commit/ac93b8ac5611af6642cee47be58ec528412a3653))
+
+## terminput-egui - [0.1.1] - 2025-03-25
+
+### Documentation
+
+- Use correct readme paths ([#25](https://github.com/aschey/terminput/issues/25)) - ([ac93b8a](https://github.com/aschey/terminput/commit/ac93b8ac5611af6642cee47be58ec528412a3653))
+
+## terminput-crossterm - [0.1.1] - 2025-03-25
+
+### Documentation
+
+- Use correct readme paths ([#25](https://github.com/aschey/terminput/issues/25)) - ([ac93b8a](https://github.com/aschey/terminput/commit/ac93b8ac5611af6642cee47be58ec528412a3653))
+
+## terminput - [0.4.1] - 2025-03-25
+
+### Documentation
+
+- Use correct readme paths ([#25](https://github.com/aschey/terminput/issues/25)) - ([ac93b8a](https://github.com/aschey/terminput/commit/ac93b8ac5611af6642cee47be58ec528412a3653))
+
 ## terminput-termwiz - [0.2.0] - 2025-03-25
 
 ### Dependencies
