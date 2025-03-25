@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## terminput-termwiz - [0.1.1] - 2025-03-25
+
+### Dependencies
+
+- *(deps)* Update termwiz requirement from 0.22 to 0.23 ([#22](https://github.com/aschey/terminput/issues/22)) - ([6b4e691](https://github.com/aschey/terminput/commit/6b4e6916a261bd853605f8cc534e4083c1ab142e))
+
 ## terminput-termwiz - [0.1.0] - 2025-03-25
 ### Refactor
 
