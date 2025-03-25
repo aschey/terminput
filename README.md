@@ -22,7 +22,8 @@ for events.
 
 ## Usage
 
-Use `try_into` to convert to and from `terminput`'s event types.
+Use the conversion methods provided by the integration crates to convert to and
+from from `terminput`'s event types.
 
 ```rust,no_run
 use crossterm::event::read;
@@ -48,7 +49,7 @@ fn main() -> io::Result<()> {
 ## Event Matching
 
 Some helpers for matching on events are included. See the
-[`match_event` example](https://github.com/aschey/terminput/blob/main/examples/match_event.rs).
+[`match_event` example](https://github.com/aschey/terminput/blob/main/examples/examples/match_event.rs).
 
 ## Backends
 
