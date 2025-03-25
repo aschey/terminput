@@ -11,7 +11,7 @@ description = "crossterm adapter for terminput"
 include.workspace = true
 categories.workspace = true
 keywords.workspace = true
-readme = "../README.md"
+readme = "./README.md"
 
 [dependencies]
 crossterm = { version = "0.28", default-features = false, features = [

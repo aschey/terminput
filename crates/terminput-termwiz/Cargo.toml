@@ -11,7 +11,7 @@ description = "termwiz adapter for terminput"
 include.workspace = true
 categories.workspace = true
 keywords.workspace = true
-readme = "../README.md"
+readme = "./README.md"
 
 [dependencies]
 termwiz = { version = "0.23" }
