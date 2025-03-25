@@ -13,7 +13,7 @@ categories.workspace = true
 keywords.workspace = true
 readme = "./README.md"
 
-[dependencies]
+[target.'cfg(not(windows))'.dependencies]
 termion = { version = "4" }
 terminput = { path = "../terminput", version = "0.4.1" }
 
