@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## terminput-termwiz - [0.1.0] - 2025-03-25
+### Refactor
+
+- [**breaking**] Break adapters into separate crates ([#17](https://github.com/aschey/terminput/issues/17)) - ([78d098c](https://github.com/aschey/terminput/commit/78d098cf9629a53cab25cd16a488351e95497f69))
+
+## terminput-termion - [0.1.0] - 2025-03-25
+
+### Refactor
+
+- [**breaking**] Break adapters into separate crates ([#17](https://github.com/aschey/terminput/issues/17)) - ([78d098c](https://github.com/aschey/terminput/commit/78d098cf9629a53cab25cd16a488351e95497f69))
+
+## terminput-egui - [0.1.0] - 2025-03-25
+
+### Refactor
+
+- [**breaking**] Break adapters into separate crates ([#17](https://github.com/aschey/terminput/issues/17)) - ([78d098c](https://github.com/aschey/terminput/commit/78d098cf9629a53cab25cd16a488351e95497f69))
+
+## terminput-crossterm - [0.1.0] - 2025-03-25
+
+### Refactor
+
+- [**breaking**] Break adapters into separate crates ([#17](https://github.com/aschey/terminput/issues/17)) - ([78d098c](https://github.com/aschey/terminput/commit/78d098cf9629a53cab25cd16a488351e95497f69))
+
+## terminput - [0.4.0](https://github.com/aschey/terminput/compare/0.3.1..0.4.0) - 2025-03-25
+
+### Refactor
+
+- [**breaking**] Break adapters into separate crates ([#17](https://github.com/aschey/terminput/issues/17)) - ([78d098c](https://github.com/aschey/terminput/commit/78d098cf9629a53cab25cd16a488351e95497f69))
+
 ## [0.3.1](https://github.com/aschey/terminput/compare/0.3.0..0.3.1) - 2025-02-14
 
 ### Dependencies
