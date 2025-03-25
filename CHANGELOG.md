@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## terminput - [0.4.2] - 2025-03-25
+
+### Documentation
+
+- Fix incorrect readme text ([#30](https://github.com/aschey/terminput/issues/30)) -([0fe1928](https://github.com/aschey/terminput/commit/0fe19285ca31dcf91d6b250361a4320f7c3ccaf8))
+
 ## terminput-termion - [0.1.2] - 2025-03-25
 
 ### Bug Fixes
