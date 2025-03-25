@@ -52,13 +52,16 @@ Some helpers for matching on events are included. See the
 
 ## Backends
 
-The following backends are currently supported. All backends are disabled by
-default and each can be enabled with a feature flag of the same name.
+The following backends are currently supported via separate integration crates:
 
-- [`crossterm`](https://crates.io/crates/crossterm)
-- [`termion`](https://crates.io/crates/termion)
-- [`termwiz`](https://crates.io/crates/termwiz)
-- [`egui`](https://crates.io/crates/egui)
+- [`crossterm`](https://crates.io/crates/crossterm) -
+  [`terminput-crossterm`](https://crates.io/crates/terminput-crossterm)
+- [`termion`](https://crates.io/crates/termion) -
+  [`terminput-termion`](https://crates.io/crates/terminput-termion)
+- [`termwiz`](https://crates.io/crates/termwiz) -
+  [`terminput-termwiz`](https://crates.io/crates/terminput-termwiz)
+- [`egui`](https://crates.io/crates/egui) -
+  [`terminput-egui`](https://crates.io/crates/terminput-egui)
 
 The [`Event`](https://docs.rs/terminput/latest/terminput/enum.Event.html) struct
 provided by this library is an attempt to create a superset of all supported
