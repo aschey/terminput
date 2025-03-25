@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## terminput-termion - [0.1.2] - 2025-03-25
+
+### Bug Fixes
+
+- Windows build issues ([#28](https://github.com/aschey/terminput/issues/28)) - ([2e571f2](https://github.com/aschey/terminput/commit/2e571f28e0409efb4d6a1d7ba2cc05cd7e8ec79e))
+
+## terminput-crossterm - [0.1.2] - 2025-03-25
+
+### Bug Fixes
+
+- Windows build issues ([#28](https://github.com/aschey/terminput/issues/28)) - ([2e571f2](https://github.com/aschey/terminput/commit/2e571f28e0409efb4d6a1d7ba2cc05cd7e8ec79e))
+
 ## terminput-termwiz - [0.2.1] - 2025-03-25
 
 ### Documentation
