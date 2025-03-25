@@ -1,6 +1,7 @@
 use std::io;
 
 use terminput::{Encoding, Event, KeyCode};
+use terminput_termion::to_terminput;
 use termion::input::{MouseTerminal, TermRead};
 use termion::raw::IntoRawMode;
 
@@ -9,7 +10,7 @@ fn print_events() -> io::Result<()> {
     let mut buf = [0; 16];
 
     for event in stdin.events() {
-        let event: Result<Event, _> = event?.try_into();
+        let event: Result<Event, _> = to_terminput(event?);
 
         if let Ok(event) = event {
             println!("Event:   {:?}\r", event);

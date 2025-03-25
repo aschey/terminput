@@ -196,7 +196,7 @@ fn test_alt_shift() {
     )
     .encode(&mut buf, Encoding::Xterm)
     .unwrap();
-    assert_eq!(buf[..written], *b"\x1BH")
+    assert_eq!(buf[..written], *b"\x1BH");
 }
 
 #[test]

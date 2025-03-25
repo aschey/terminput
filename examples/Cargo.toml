@@ -1,0 +1,30 @@
+[package]
+name = "terminput-examples"
+publish = false
+edition = "2021"
+license.workspace = true
+
+[dev-dependencies]
+terminput = { path = "../crates/terminput" }
+terminput-crossterm = { path = "../crates/terminput-crossterm" }
+terminput-termion = { path = "../crates/terminput-termion" }
+terminput-termwiz = { path = "../crates/terminput-termwiz" }
+crossterm = "0.28"
+termion = "4"
+termwiz = "0.22"
+
+[[example]]
+name = "crossterm"
+doc-scrape-examples = true
+
+[[example]]
+name = "termion"
+doc-scrape-examples = true
+
+[[example]]
+name = "termwiz"
+doc-scrape-examples = true
+
+[[example]]
+name = "match_event"
+doc-scrape-examples = true

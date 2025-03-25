@@ -1,28 +1,11 @@
 #![deny(missing_docs)]
-#![forbid(clippy::unwrap_used)]
-#![deny(rustdoc::broken_intra_doc_links)]
-#![warn(clippy::semicolon_if_nothing_returned)]
-#![warn(clippy::doc_markdown)]
-#![warn(clippy::default_trait_access)]
-#![warn(clippy::ignored_unit_patterns)]
-#![warn(clippy::semicolon_if_nothing_returned)]
-#![warn(clippy::missing_fields_in_debug)]
-#![warn(clippy::use_self)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![doc = include_str!("../README.md")]
 
-#[cfg(feature = "crossterm")]
-mod crossterm;
-#[cfg(feature = "egui")]
-mod egui;
 mod encoder;
 mod key;
 mod mouse;
 mod parser;
-#[cfg(feature = "termion")]
-mod termion;
-#[cfg(feature = "termwiz")]
-mod termwiz;
 
 use core::fmt;
 use std::error::Error;
@@ -33,7 +16,7 @@ pub use mouse::*;
 
 /// The supplied event could not be converted into the requested type.
 #[derive(Debug)]
-pub struct UnsupportedEvent(String);
+pub struct UnsupportedEvent(pub String);
 
 impl fmt::Display for UnsupportedEvent {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

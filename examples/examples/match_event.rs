@@ -9,12 +9,13 @@ use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use crossterm::{execute, queue};
 use terminput::KeyCode::*;
 use terminput::{ALT, CAPS_LOCK, CTRL, Event, KeyModifiers, MouseButton, Repeats, key, modifiers};
+use terminput_crossterm::to_terminput;
 
 fn print_events() -> io::Result<()> {
     const CTRL_ALT: KeyModifiers = modifiers!(CTRL, ALT);
 
     loop {
-        let event: Result<Event, _> = read()?.try_into();
+        let event: Result<Event, _> = to_terminput(read()?);
 
         let Ok(event) = event else {
             continue;
