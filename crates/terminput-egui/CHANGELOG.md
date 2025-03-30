@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.1] - 2025-03-25
+## [0.1.1](https://github.com/aschey/terminput/compare/terminput-egui-v0.1.0..terminput-egui-v0.1.1) - 2025-03-25
 
 ### Documentation
 

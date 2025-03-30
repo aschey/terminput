@@ -2,13 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.1] - 2025-03-25
+## [0.2.1](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.2.0..terminput-crossterm-v0.2.1) - 2025-03-25
 
 ### Documentation
 
 - Use correct readme paths([#25](https://github.com/aschey/terminput/issues/25)) -([ac93b8a](https://github.com/aschey/terminput/commit/ac93b8ac5611af6642cee47be58ec528412a3653))
 
-## [0.2.0] - 2025-03-25
+## [0.2.0](https://github.com/aschey/terminput/compare/terminput-termwiz-v0.1.0..terminput-termwiz-v0.2.0) - 2025-03-25
 
 ### Dependencies
 
