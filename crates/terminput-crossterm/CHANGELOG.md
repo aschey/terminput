@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.1.2..terminput-crossterm-v0.2.0) - 2025-04-05
+
+### Dependencies
+
+- *(deps)* [**breaking**] Update crossterm requirement from 0.28 to 0.29 ([#34](https://github.com/aschey/terminput/issues/34)) - ([db9c309](https://github.com/aschey/terminput/commit/db9c309b65c262d4bbe9e5f587344b85a01a3be6))
+
+### Documentation
+
+- Add missing doc_auto_cfg ([#36](https://github.com/aschey/terminput/issues/36)) - ([04d6748](https://github.com/aschey/terminput/commit/04d67484b85b73e58b16e9c8ebbb40b53b2a17c3))
+
 ## [0.1.2](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.1.1..terminput-crossterm-v0.1.2) - 2025-03-25
 
 ### Bug Fixes

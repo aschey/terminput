@@ -1,6 +1,6 @@
 [package]
 name = "terminput-termwiz"
-version = "0.2.1"
+version = "0.2.2"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -15,7 +15,7 @@ readme = "./README.md"
 
 [dependencies]
 termwiz = { version = "0.23" }
-terminput = { path = "../terminput", version = "0.4.1" }
+terminput = { path = "../terminput", version = "0.4.3" }
 
 [lints]
 workspace = true

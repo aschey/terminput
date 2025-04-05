@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.3](https://github.com/aschey/terminput/compare/terminput-v0.4.2..terminput-v0.4.3) - 2025-04-05
+
+### Dependencies
+
+- *(deps)* Update crossterm requirement from 0.28 to 0.29 ([#34](https://github.com/aschey/terminput/issues/34)) - ([db9c309](https://github.com/aschey/terminput/commit/db9c309b65c262d4bbe9e5f587344b85a01a3be6))
+
 ## [0.4.2](https://github.com/aschey/terminput/compare/terminput-v0.4.1..terminput-v0.4.2) - 2025-03-25
 
 ### Documentation
