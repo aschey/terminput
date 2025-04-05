@@ -14,11 +14,11 @@ keywords.workspace = true
 readme = "./README.md"
 
 [dependencies]
-bitflags = "2.6"
+bitflags = "2.9"
 serde = { version = "1.0.134", optional = true, features = ["derive"] }
 
 [dev-dependencies]
-crossterm = "0.28"
+crossterm = "0.29"
 terminput-crossterm = { path = "../terminput-crossterm" }
 
 [features]
