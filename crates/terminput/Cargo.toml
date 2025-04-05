@@ -18,7 +18,7 @@ bitflags = "2.6"
 serde = { version = "1.0.134", optional = true, features = ["derive"] }
 
 [dev-dependencies]
-crossterm = "0.28"
+crossterm = "0.29"
 terminput-crossterm = { path = "../terminput-crossterm" }
 
 [features]
