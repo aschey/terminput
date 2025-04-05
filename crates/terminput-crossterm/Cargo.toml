@@ -1,6 +1,6 @@
 [package]
 name = "terminput-crossterm"
-version = "0.1.2"
+version = "0.1.3"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -19,7 +19,7 @@ crossterm = { version = "0.29", default-features = false, features = [
   "bracketed-paste",
   "windows",
 ] }
-terminput = { path = "../terminput", version = "0.4.1" }
+terminput = { path = "../terminput", version = "0.4.3" }
 
 [lints]
 workspace = true

@@ -1,6 +1,6 @@
 [package]
 name = "terminput-termion"
-version = "0.1.2"
+version = "0.1.3"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -15,7 +15,7 @@ readme = "./README.md"
 
 [target.'cfg(not(windows))'.dependencies]
 termion = { version = "4" }
-terminput = { path = "../terminput", version = "0.4.1" }
+terminput = { path = "../terminput", version = "0.4.3" }
 
 [lints]
 workspace = true
