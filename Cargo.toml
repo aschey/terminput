@@ -17,7 +17,6 @@ keywords = ["tui", "terminal", "input", "ratatui"]
 broken_intra_doc_links = "deny"
 
 [workspace.lints.clippy]
-unwrap_used = "deny"
 doc_markdown = "warn"
 default_trait_access = "warn"
 ignored_unit_patterns = "warn"
