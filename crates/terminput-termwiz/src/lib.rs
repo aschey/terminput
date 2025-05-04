@@ -8,14 +8,12 @@ use terminput::{
     UnsupportedEvent,
 };
 
-/// Converts the termwiz [event](termwiz::input::InputEvent) to a terminput [event](Event).
+/// Converts the termwiz [`InputEvent`](termwiz::input::InputEvent) to a terminput [`Event`].
 pub fn to_terminput(value: termwiz::input::InputEvent) -> Result<Event, UnsupportedEvent> {
     Ok(match value {
-        termwiz::input::InputEvent::Key(key_event) => {
-            Event::Key(key_event_to_terminput(key_event)?)
-        }
+        termwiz::input::InputEvent::Key(key_event) => Event::Key(to_terminput_key(key_event)?),
         termwiz::input::InputEvent::Mouse(mouse_event) => {
-            Event::Mouse(mouse_event_to_terminput(mouse_event)?)
+            Event::Mouse(to_terminput_mouse(mouse_event)?)
         }
         termwiz::input::InputEvent::Resized { cols, rows } => Event::Resize {
             cols: cols as u32,
@@ -28,12 +26,12 @@ pub fn to_terminput(value: termwiz::input::InputEvent) -> Result<Event, Unsuppor
     })
 }
 
-/// Converts the terminput [event](Event) to a termwiz [event](termwiz::input::InputEvent).
+/// Converts the terminput [`Event`] to a termwiz [`InputEvent`](termwiz::input::InputEvent).
 pub fn to_termwiz(value: Event) -> Result<termwiz::input::InputEvent, UnsupportedEvent> {
     Ok(match value {
-        Event::Key(key_event) => termwiz::input::InputEvent::Key(key_event_to_termwiz(key_event)?),
+        Event::Key(key_event) => termwiz::input::InputEvent::Key(to_termwiz_key(key_event)?),
         Event::Mouse(mouse_event) => {
-            termwiz::input::InputEvent::Mouse(mouse_event_to_termwiz(mouse_event)?)
+            termwiz::input::InputEvent::Mouse(mouse_to_termwiz(mouse_event)?)
         }
         Event::Paste(val) => termwiz::input::InputEvent::Paste(val),
         Event::Resize { cols, rows } => termwiz::input::InputEvent::Resized {
@@ -44,7 +42,8 @@ pub fn to_termwiz(value: Event) -> Result<termwiz::input::InputEvent, Unsupporte
     })
 }
 
-fn key_event_to_terminput(value: termwiz::input::KeyEvent) -> Result<KeyEvent, UnsupportedEvent> {
+/// Converts the termwiz [`KeyEvent`](termwiz::input::KeyEvent) to a terminput [`KeyEvent`].
+pub fn to_terminput_key(value: termwiz::input::KeyEvent) -> Result<KeyEvent, UnsupportedEvent> {
     let (code, state) = match value.key {
         termwiz::input::KeyCode::Char(c) => (KeyCode::Char(c), KeyEventState::empty()),
         termwiz::input::KeyCode::Hyper => (
@@ -182,13 +181,14 @@ fn key_event_to_terminput(value: termwiz::input::KeyEvent) -> Result<KeyEvent, U
     };
     Ok(KeyEvent {
         code,
-        modifiers: key_modifiers_to_terminput(value.modifiers),
+        modifiers: to_terminput_key_modifiers(value.modifiers),
         kind: KeyEventKind::Press,
         state,
     })
 }
 
-fn key_event_to_termwiz(value: KeyEvent) -> Result<termwiz::input::KeyEvent, UnsupportedEvent> {
+/// Converts the terminput [`KeyEvent`] to a termwiz [`KeyEvent`](termwiz::input::KeyEvent).
+pub fn to_termwiz_key(value: KeyEvent) -> Result<termwiz::input::KeyEvent, UnsupportedEvent> {
     let is_keypad = value.state.intersects(KeyEventState::KEYPAD);
     let key = match value.code {
         KeyCode::Backspace => termwiz::input::KeyCode::Backspace,
@@ -282,11 +282,11 @@ fn key_event_to_termwiz(value: KeyEvent) -> Result<termwiz::input::KeyEvent, Uns
 
     Ok(termwiz::input::KeyEvent {
         key,
-        modifiers: key_modifiers_to_termwiz(value.modifiers),
+        modifiers: to_termwiz_key_modifiers(value.modifiers),
     })
 }
 
-fn key_modifiers_to_terminput(value: termwiz::input::Modifiers) -> KeyModifiers {
+fn to_terminput_key_modifiers(value: termwiz::input::Modifiers) -> KeyModifiers {
     let mut res = KeyModifiers::empty();
     if value.intersects(
         termwiz::input::Modifiers::ALT
@@ -317,7 +317,7 @@ fn key_modifiers_to_terminput(value: termwiz::input::Modifiers) -> KeyModifiers 
     res
 }
 
-fn key_modifiers_to_termwiz(value: KeyModifiers) -> termwiz::input::Modifiers {
+fn to_termwiz_key_modifiers(value: KeyModifiers) -> termwiz::input::Modifiers {
     let mut res = termwiz::input::Modifiers::empty();
     if value.intersects(KeyModifiers::ALT) {
         res |= termwiz::input::Modifiers::ALT;
@@ -334,8 +334,8 @@ fn key_modifiers_to_termwiz(value: KeyModifiers) -> termwiz::input::Modifiers {
 
     res
 }
-
-fn mouse_event_to_terminput(
+/// Converts the termwiz [`MouseEvent`](termwiz::input::MouseEvent) to a terminput [`MouseEvent`].
+pub fn to_terminput_mouse(
     value: termwiz::input::MouseEvent,
 ) -> Result<MouseEvent, UnsupportedEvent> {
     if value
@@ -346,7 +346,7 @@ fn mouse_event_to_terminput(
             kind: MouseEventKind::Down(MouseButton::Left),
             column: value.x - 1,
             row: value.y - 1,
-            modifiers: key_modifiers_to_terminput(value.modifiers),
+            modifiers: to_terminput_key_modifiers(value.modifiers),
         });
     }
     if value
@@ -357,7 +357,7 @@ fn mouse_event_to_terminput(
             kind: MouseEventKind::Down(MouseButton::Right),
             column: value.x - 1,
             row: value.y - 1,
-            modifiers: key_modifiers_to_terminput(value.modifiers),
+            modifiers: to_terminput_key_modifiers(value.modifiers),
         });
     }
     if value
@@ -368,7 +368,7 @@ fn mouse_event_to_terminput(
             kind: MouseEventKind::Down(MouseButton::Middle),
             column: value.x - 1,
             row: value.y - 1,
-            modifiers: key_modifiers_to_terminput(value.modifiers),
+            modifiers: to_terminput_key_modifiers(value.modifiers),
         });
     }
 
@@ -379,7 +379,7 @@ fn mouse_event_to_terminput(
             kind: MouseEventKind::Scroll(ScrollDirection::Up),
             column: value.x - 1,
             row: value.y - 1,
-            modifiers: key_modifiers_to_terminput(value.modifiers),
+            modifiers: to_terminput_key_modifiers(value.modifiers),
         });
     }
     if value
@@ -390,7 +390,7 @@ fn mouse_event_to_terminput(
             kind: MouseEventKind::Scroll(ScrollDirection::Down),
             column: value.x - 1,
             row: value.y - 1,
-            modifiers: key_modifiers_to_terminput(value.modifiers),
+            modifiers: to_terminput_key_modifiers(value.modifiers),
         });
     }
     if value.mouse_buttons.contains(
@@ -400,7 +400,7 @@ fn mouse_event_to_terminput(
             kind: MouseEventKind::Scroll(ScrollDirection::Left),
             column: value.x - 1,
             row: value.y - 1,
-            modifiers: key_modifiers_to_terminput(value.modifiers),
+            modifiers: to_terminput_key_modifiers(value.modifiers),
         });
     }
     if value
@@ -411,7 +411,7 @@ fn mouse_event_to_terminput(
             kind: MouseEventKind::Scroll(ScrollDirection::Right),
             column: value.x - 1,
             row: value.y - 1,
-            modifiers: key_modifiers_to_terminput(value.modifiers),
+            modifiers: to_terminput_key_modifiers(value.modifiers),
         });
     }
     if value.mouse_buttons == termwiz::input::MouseButtons::NONE {
@@ -419,36 +419,35 @@ fn mouse_event_to_terminput(
             kind: MouseEventKind::Moved,
             column: value.x - 1,
             row: value.y - 1,
-            modifiers: key_modifiers_to_terminput(value.modifiers),
+            modifiers: to_terminput_key_modifiers(value.modifiers),
         });
     }
 
     Err(UnsupportedEvent(format!("{value:?}")))
 }
 
-fn mouse_event_to_termwiz(
-    value: MouseEvent,
-) -> Result<termwiz::input::MouseEvent, UnsupportedEvent> {
+/// Converts the terminput [`MouseEvent`] to a termwiz [`MouseEvent`](termwiz::input::MouseEvent).
+pub fn mouse_to_termwiz(value: MouseEvent) -> Result<termwiz::input::MouseEvent, UnsupportedEvent> {
     Ok(match value.kind {
         MouseEventKind::Down(MouseButton::Left | MouseButton::Unknown) => {
             termwiz::input::MouseEvent {
                 mouse_buttons: termwiz::input::MouseButtons::LEFT,
                 x: value.column + 1,
                 y: value.row + 1,
-                modifiers: key_modifiers_to_termwiz(value.modifiers),
+                modifiers: to_termwiz_key_modifiers(value.modifiers),
             }
         }
         MouseEventKind::Down(MouseButton::Right) => termwiz::input::MouseEvent {
             mouse_buttons: termwiz::input::MouseButtons::RIGHT,
             x: value.column + 1,
             y: value.row + 1,
-            modifiers: key_modifiers_to_termwiz(value.modifiers),
+            modifiers: to_termwiz_key_modifiers(value.modifiers),
         },
         MouseEventKind::Down(MouseButton::Middle) => termwiz::input::MouseEvent {
             mouse_buttons: termwiz::input::MouseButtons::MIDDLE,
             x: value.column + 1,
             y: value.row + 1,
-            modifiers: key_modifiers_to_termwiz(value.modifiers),
+            modifiers: to_termwiz_key_modifiers(value.modifiers),
         },
         MouseEventKind::Up(_) | MouseEventKind::Drag(_) => {
             Err(UnsupportedEvent(format!("{value:?}")))?
@@ -457,33 +456,33 @@ fn mouse_event_to_termwiz(
             mouse_buttons: termwiz::input::MouseButtons::NONE,
             x: value.column + 1,
             y: value.row + 1,
-            modifiers: key_modifiers_to_termwiz(value.modifiers),
+            modifiers: to_termwiz_key_modifiers(value.modifiers),
         },
         MouseEventKind::Scroll(ScrollDirection::Down) => termwiz::input::MouseEvent {
             mouse_buttons: termwiz::input::MouseButtons::VERT_WHEEL,
             x: value.column + 1,
             y: value.row + 1,
-            modifiers: key_modifiers_to_termwiz(value.modifiers),
+            modifiers: to_termwiz_key_modifiers(value.modifiers),
         },
         MouseEventKind::Scroll(ScrollDirection::Up) => termwiz::input::MouseEvent {
             mouse_buttons: termwiz::input::MouseButtons::VERT_WHEEL
                 | termwiz::input::MouseButtons::WHEEL_POSITIVE,
             x: value.column + 1,
             y: value.row + 1,
-            modifiers: key_modifiers_to_termwiz(value.modifiers),
+            modifiers: to_termwiz_key_modifiers(value.modifiers),
         },
         MouseEventKind::Scroll(ScrollDirection::Left) => termwiz::input::MouseEvent {
             mouse_buttons: termwiz::input::MouseButtons::HORZ_WHEEL,
             x: value.column + 1,
             y: value.row + 1,
-            modifiers: key_modifiers_to_termwiz(value.modifiers),
+            modifiers: to_termwiz_key_modifiers(value.modifiers),
         },
         MouseEventKind::Scroll(ScrollDirection::Right) => termwiz::input::MouseEvent {
             mouse_buttons: termwiz::input::MouseButtons::HORZ_WHEEL
                 | termwiz::input::MouseButtons::WHEEL_POSITIVE,
             x: value.column + 1,
             y: value.row + 1,
-            modifiers: key_modifiers_to_termwiz(value.modifiers),
+            modifiers: to_termwiz_key_modifiers(value.modifiers),
         },
     })
 }

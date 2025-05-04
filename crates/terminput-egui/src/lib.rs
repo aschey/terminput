@@ -7,7 +7,7 @@ use terminput::{
     MouseEventKind, ScrollDirection, UnsupportedEvent,
 };
 
-/// Converts the egui [event](egui::Event) to a terminput [event](Event).
+/// Converts the egui [`Event`](egui::Event) to a terminput [`Event`].
 pub fn to_terminput(value: egui::Event) -> Result<Event, UnsupportedEvent> {
     match value {
         egui::Event::Paste(text) => Ok(Event::Paste(text)),
@@ -83,7 +83,7 @@ pub fn to_terminput(value: egui::Event) -> Result<Event, UnsupportedEvent> {
     }
 }
 
-/// Converts the terminput [event](Event) to an egui [event](egui::Event).
+/// Converts the terminput [`Event`] to an egui [`Event`](egui::Event).
 pub fn to_egui(value: Event) -> Result<egui::Event, UnsupportedEvent> {
     Ok(match value {
         Event::Key(key_event) => egui::Event::Key {

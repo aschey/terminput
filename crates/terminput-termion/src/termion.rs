@@ -6,31 +6,28 @@ use terminput::{
     MouseEventKind, ScrollDirection, UnsupportedEvent,
 };
 
-/// Converts the termion [event](termion::event::Event) to a terminput [event](Event).
+/// Converts the termion [`Event`](termion::event::Event) to a terminput [`Event`].
 pub fn to_terminput(value: termion::event::Event) -> Result<Event, UnsupportedEvent> {
     Ok(match value {
-        termion::event::Event::Key(key_event) => Event::Key(key_event_to_terminput(key_event)?),
-        termion::event::Event::Mouse(mouse_event) => {
-            Event::Mouse(mouse_event_to_terminput(mouse_event))
-        }
+        termion::event::Event::Key(key_event) => Event::Key(to_terminput_key(key_event)?),
+        termion::event::Event::Mouse(mouse_event) => Event::Mouse(to_terminput_mouse(mouse_event)),
         termion::event::Event::Unsupported(val) => Err(UnsupportedEvent(format!("{val:?}")))?,
     })
 }
 
-/// Converts the terminput [event](Event) to a termion [event](termion::event::Event).
+/// Converts the terminput [`Event`] to a termion [`Event`](termion::event::Event).
 pub fn to_termion(value: Event) -> Result<termion::event::Event, UnsupportedEvent> {
     Ok(match value {
-        Event::Key(key_event) => termion::event::Event::Key(key_event_to_termion(key_event)?),
-        Event::Mouse(mouse_event) => {
-            termion::event::Event::Mouse(mouse_event_to_termion(mouse_event)?)
-        }
+        Event::Key(key_event) => termion::event::Event::Key(key_to_termion(key_event)?),
+        Event::Mouse(mouse_event) => termion::event::Event::Mouse(to_termion_mouse(mouse_event)?),
         Event::FocusGained | Event::FocusLost | Event::Paste(_) | Event::Resize { .. } => {
             Err(UnsupportedEvent(format!("{value:?}")))?
         }
     })
 }
 
-fn key_event_to_terminput(value: termion::event::Key) -> Result<KeyEvent, UnsupportedEvent> {
+/// Converts the termion [`Key`](termion::event::Key) to a terminput [`KeyEvent`].
+pub fn to_terminput_key(value: termion::event::Key) -> Result<KeyEvent, UnsupportedEvent> {
     Ok(match value {
         termion::event::Key::Backspace => KeyEvent {
             code: KeyCode::Backspace,
@@ -258,7 +255,8 @@ fn key_event_to_terminput(value: termion::event::Key) -> Result<KeyEvent, Unsupp
     })
 }
 
-fn key_event_to_termion(value: KeyEvent) -> Result<termion::event::Key, UnsupportedEvent> {
+/// Converts the terminput [`KeyEvent`] to a termion [`Key`](termion::event::Key).
+pub fn key_to_termion(value: KeyEvent) -> Result<termion::event::Key, UnsupportedEvent> {
     if value.kind != KeyEventKind::Press {
         return Err(UnsupportedEvent(format!("{value:?}")));
     }
@@ -324,7 +322,8 @@ fn key_event_to_termion(value: KeyEvent) -> Result<termion::event::Key, Unsuppor
     })
 }
 
-fn mouse_event_to_terminput(value: termion::event::MouseEvent) -> MouseEvent {
+/// Converts the termion [`MouseEvent`](termion::event::MouseEvent) to a terminput [`MouseEvent`].
+pub fn to_terminput_mouse(value: termion::event::MouseEvent) -> MouseEvent {
     match value {
         termion::event::MouseEvent::Press(termion::event::MouseButton::Left, column, row) => {
             MouseEvent {
@@ -397,9 +396,8 @@ fn mouse_event_to_terminput(value: termion::event::MouseEvent) -> MouseEvent {
     }
 }
 
-fn mouse_event_to_termion(
-    value: MouseEvent,
-) -> Result<termion::event::MouseEvent, UnsupportedEvent> {
+/// Converts the terminput [`MouseEvent`] to a termion [`MouseEvent`](termion::event::MouseEvent).
+pub fn to_termion_mouse(value: MouseEvent) -> Result<termion::event::MouseEvent, UnsupportedEvent> {
     let column = value.column + 1;
     let row = value.row + 1;
     Ok(match value.kind {
