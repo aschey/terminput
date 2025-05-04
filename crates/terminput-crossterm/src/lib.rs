@@ -8,14 +8,14 @@ use terminput::{
     UnsupportedEvent,
 };
 
-/// Converts the crossterm [event](crossterm::event::Event) to a terminput [event](Event).
+/// Converts the crossterm [`Event`](crossterm::event::Event) to a terminput [`Event`].
 pub fn to_terminput(value: crossterm::event::Event) -> Result<Event, UnsupportedEvent> {
     Ok(match value {
         crossterm::event::Event::FocusGained => Event::FocusGained,
         crossterm::event::Event::FocusLost => Event::FocusLost,
-        crossterm::event::Event::Key(key_event) => Event::Key(key_event_to_terminput(key_event)?),
+        crossterm::event::Event::Key(key_event) => Event::Key(to_terminput_key(key_event)?),
         crossterm::event::Event::Mouse(mouse_event) => {
-            Event::Mouse(mouse_to_terminput(mouse_event))
+            Event::Mouse(to_terminput_mouse(mouse_event))
         }
         crossterm::event::Event::Paste(value) => Event::Paste(value),
         crossterm::event::Event::Resize(cols, rows) => Event::Resize {
@@ -25,14 +25,14 @@ pub fn to_terminput(value: crossterm::event::Event) -> Result<Event, Unsupported
     })
 }
 
-/// Converts the terminput [event](Event) to a crossterm [event](crossterm::event::Event).
+/// Converts the terminput [`Event`] to a crossterm [`Event`](crossterm::event::Event).
 pub fn to_crossterm(value: Event) -> Result<crossterm::event::Event, UnsupportedEvent> {
     Ok(match value {
         Event::FocusGained => crossterm::event::Event::FocusGained,
         Event::FocusLost => crossterm::event::Event::FocusLost,
-        Event::Key(key_event) => crossterm::event::Event::Key(key_event_to_crossterm(key_event)),
+        Event::Key(key_event) => crossterm::event::Event::Key(to_crossterm_key(key_event)),
         Event::Mouse(mouse_event) => {
-            crossterm::event::Event::Mouse(mouse_to_crossterm(mouse_event)?)
+            crossterm::event::Event::Mouse(to_crossterm_mouse(mouse_event)?)
         }
         Event::Paste(value) => crossterm::event::Event::Paste(value),
         Event::Resize { cols, rows } => crossterm::event::Event::Resize(
@@ -44,34 +44,40 @@ pub fn to_crossterm(value: Event) -> Result<crossterm::event::Event, Unsupported
     })
 }
 
-fn mouse_to_terminput(value: crossterm::event::MouseEvent) -> MouseEvent {
+/// Converts the crossterm [`MouseEvent`](crossterm::event::MouseEvent) to a terminput
+/// [`MouseEvent`].
+pub fn to_terminput_mouse(value: crossterm::event::MouseEvent) -> MouseEvent {
     MouseEvent {
-        kind: mouse_kind_to_terminput(value.kind),
+        kind: to_terminput_mouse_kind(value.kind),
         column: value.column,
         row: value.row,
-        modifiers: key_modifiers_to_terminput(value.modifiers),
+        modifiers: to_terminput_key_modifiers(value.modifiers),
     }
 }
 
-fn mouse_to_crossterm(value: MouseEvent) -> Result<crossterm::event::MouseEvent, UnsupportedEvent> {
+/// Converts the terminput [`MouseEvent`] to a crossterm
+/// [`MouseEvent`](crossterm::event::MouseEvent).
+pub fn to_crossterm_mouse(
+    value: MouseEvent,
+) -> Result<crossterm::event::MouseEvent, UnsupportedEvent> {
     Ok(crossterm::event::MouseEvent {
-        kind: mouse_kind_to_crossterm(value.kind)?,
+        kind: to_crossterm_mouse_kind(value.kind)?,
         column: value.column,
         row: value.row,
-        modifiers: key_modifiers_to_crossterm(value.modifiers),
+        modifiers: to_crossterm_key_modifiers(value.modifiers),
     })
 }
 
-fn mouse_kind_to_terminput(value: crossterm::event::MouseEventKind) -> MouseEventKind {
+fn to_terminput_mouse_kind(value: crossterm::event::MouseEventKind) -> MouseEventKind {
     match value {
         crossterm::event::MouseEventKind::Down(button) => {
-            MouseEventKind::Down(mouse_button_to_terminput(button))
+            MouseEventKind::Down(to_terminput_mouse_button(button))
         }
         crossterm::event::MouseEventKind::Up(button) => {
-            MouseEventKind::Up(mouse_button_to_terminput(button))
+            MouseEventKind::Up(to_terminput_mouse_button(button))
         }
         crossterm::event::MouseEventKind::Drag(button) => {
-            MouseEventKind::Drag(mouse_button_to_terminput(button))
+            MouseEventKind::Drag(to_terminput_mouse_button(button))
         }
         crossterm::event::MouseEventKind::Moved => MouseEventKind::Moved,
         crossterm::event::MouseEventKind::ScrollDown => {
@@ -87,18 +93,18 @@ fn mouse_kind_to_terminput(value: crossterm::event::MouseEventKind) -> MouseEven
     }
 }
 
-fn mouse_kind_to_crossterm(
+fn to_crossterm_mouse_kind(
     value: MouseEventKind,
 ) -> Result<crossterm::event::MouseEventKind, UnsupportedEvent> {
     Ok(match value {
         MouseEventKind::Down(button) => {
-            crossterm::event::MouseEventKind::Down(mouse_button_to_crossterm(button)?)
+            crossterm::event::MouseEventKind::Down(to_crossterm_mouse_button(button)?)
         }
         MouseEventKind::Up(button) => {
-            crossterm::event::MouseEventKind::Up(mouse_button_to_crossterm(button)?)
+            crossterm::event::MouseEventKind::Up(to_crossterm_mouse_button(button)?)
         }
         MouseEventKind::Drag(button) => {
-            crossterm::event::MouseEventKind::Drag(mouse_button_to_crossterm(button)?)
+            crossterm::event::MouseEventKind::Drag(to_crossterm_mouse_button(button)?)
         }
         MouseEventKind::Moved => crossterm::event::MouseEventKind::Moved,
         MouseEventKind::Scroll(ScrollDirection::Down) => {
@@ -114,7 +120,7 @@ fn mouse_kind_to_crossterm(
     })
 }
 
-fn mouse_button_to_terminput(value: crossterm::event::MouseButton) -> MouseButton {
+fn to_terminput_mouse_button(value: crossterm::event::MouseButton) -> MouseButton {
     match value {
         crossterm::event::MouseButton::Left => MouseButton::Left,
         crossterm::event::MouseButton::Right => MouseButton::Right,
@@ -122,7 +128,7 @@ fn mouse_button_to_terminput(value: crossterm::event::MouseButton) -> MouseButto
     }
 }
 
-fn mouse_button_to_crossterm(
+fn to_crossterm_mouse_button(
     value: MouseButton,
 ) -> Result<crossterm::event::MouseButton, UnsupportedEvent> {
     Ok(match value {
@@ -133,28 +139,27 @@ fn mouse_button_to_crossterm(
     })
 }
 
-fn key_event_to_terminput(value: crossterm::event::KeyEvent) -> Result<KeyEvent, UnsupportedEvent> {
+/// Converts the crossterm [`KeyEvent`](crossterm::event::KeyEvent) to a terminput [`KeyEvent`].
+pub fn to_terminput_key(value: crossterm::event::KeyEvent) -> Result<KeyEvent, UnsupportedEvent> {
     Ok(KeyEvent {
-        code: key_code_to_terminput(value.code)?,
-        modifiers: key_modifiers_to_terminput(value.modifiers),
-        kind: key_kind_to_terminput(value.kind),
-        state: key_state_to_terminput(value.state),
+        code: to_terminput_key_code(value.code)?,
+        modifiers: to_terminput_key_modifiers(value.modifiers),
+        kind: to_terminput_key_kind(value.kind),
+        state: to_terminput_key_state(value.state),
     })
 }
 
-fn key_event_to_crossterm(value: KeyEvent) -> crossterm::event::KeyEvent {
+/// Converts the terminput [`KeyEvent`] to a crossterm [`KeyEvent`](crossterm::event::KeyEvent).
+pub fn to_crossterm_key(value: KeyEvent) -> crossterm::event::KeyEvent {
     crossterm::event::KeyEvent {
-        code: convert_crossterm_key_code(
-            value.code,
-            value.modifiers.intersects(KeyModifiers::SHIFT),
-        ),
-        modifiers: key_modifiers_to_crossterm(value.modifiers),
-        kind: key_kind_to_crossterm(value.kind),
-        state: key_state_to_crossterm(value.state),
+        code: to_crossterm_key_code(value.code, value.modifiers.intersects(KeyModifiers::SHIFT)),
+        modifiers: to_crossterm_key_modifiers(value.modifiers),
+        kind: to_crossterm_key_kind(value.kind),
+        state: to_crossterm_key_state(value.state),
     }
 }
 
-fn key_code_to_terminput(value: crossterm::event::KeyCode) -> Result<KeyCode, UnsupportedEvent> {
+fn to_terminput_key_code(value: crossterm::event::KeyCode) -> Result<KeyCode, UnsupportedEvent> {
     Ok(match value {
         crossterm::event::KeyCode::Backspace => KeyCode::Backspace,
         crossterm::event::KeyCode::Enter => KeyCode::Enter,
@@ -180,16 +185,16 @@ fn key_code_to_terminput(value: crossterm::event::KeyCode) -> Result<KeyCode, Un
         crossterm::event::KeyCode::Pause => KeyCode::Pause,
         crossterm::event::KeyCode::Menu => KeyCode::Menu,
         crossterm::event::KeyCode::KeypadBegin => KeyCode::KeypadBegin,
-        crossterm::event::KeyCode::Media(m) => KeyCode::Media(media_code_to_terminput(m)),
+        crossterm::event::KeyCode::Media(m) => KeyCode::Media(to_terminput_media_code(m)),
         crossterm::event::KeyCode::Modifier(m) => {
-            let (code, direction) = convert_modifier_key_code(m);
+            let (code, direction) = to_terminput_modifier_key_code(m);
             KeyCode::Modifier(code, direction)
         }
         crossterm::event::KeyCode::Null => Err(UnsupportedEvent(format!("{value:?}")))?,
     })
 }
 
-fn convert_crossterm_key_code(value: KeyCode, shift: bool) -> crossterm::event::KeyCode {
+fn to_crossterm_key_code(value: KeyCode, shift: bool) -> crossterm::event::KeyCode {
     match value {
         KeyCode::Backspace => crossterm::event::KeyCode::Backspace,
         KeyCode::Enter => crossterm::event::KeyCode::Enter,
@@ -215,14 +220,14 @@ fn convert_crossterm_key_code(value: KeyCode, shift: bool) -> crossterm::event::
         KeyCode::Pause => crossterm::event::KeyCode::Pause,
         KeyCode::Menu => crossterm::event::KeyCode::Menu,
         KeyCode::KeypadBegin => crossterm::event::KeyCode::KeypadBegin,
-        KeyCode::Media(m) => crossterm::event::KeyCode::Media(media_code_to_crossterm(m)),
-        KeyCode::Modifier(code, direction) => crossterm::event::KeyCode::Modifier(
-            convert_crossterm_modifier_key_code(code, direction),
-        ),
+        KeyCode::Media(m) => crossterm::event::KeyCode::Media(to_crossterm_media_code(m)),
+        KeyCode::Modifier(code, direction) => {
+            crossterm::event::KeyCode::Modifier(to_crossterm_modifier_key_code(code, direction))
+        }
     }
 }
 
-fn key_modifiers_to_terminput(value: crossterm::event::KeyModifiers) -> KeyModifiers {
+fn to_terminput_key_modifiers(value: crossterm::event::KeyModifiers) -> KeyModifiers {
     let mut res = KeyModifiers::empty();
     if value.intersects(crossterm::event::KeyModifiers::ALT) {
         res |= KeyModifiers::ALT;
@@ -240,7 +245,7 @@ fn key_modifiers_to_terminput(value: crossterm::event::KeyModifiers) -> KeyModif
     res
 }
 
-fn key_modifiers_to_crossterm(value: KeyModifiers) -> crossterm::event::KeyModifiers {
+fn to_crossterm_key_modifiers(value: KeyModifiers) -> crossterm::event::KeyModifiers {
     let mut res = crossterm::event::KeyModifiers::empty();
     if value.intersects(KeyModifiers::ALT) {
         res |= crossterm::event::KeyModifiers::ALT;
@@ -258,7 +263,7 @@ fn key_modifiers_to_crossterm(value: KeyModifiers) -> crossterm::event::KeyModif
     res
 }
 
-fn key_kind_to_terminput(value: crossterm::event::KeyEventKind) -> KeyEventKind {
+fn to_terminput_key_kind(value: crossterm::event::KeyEventKind) -> KeyEventKind {
     match value {
         crossterm::event::KeyEventKind::Press => KeyEventKind::Press,
         crossterm::event::KeyEventKind::Repeat => KeyEventKind::Repeat,
@@ -266,7 +271,7 @@ fn key_kind_to_terminput(value: crossterm::event::KeyEventKind) -> KeyEventKind 
     }
 }
 
-fn key_kind_to_crossterm(value: KeyEventKind) -> crossterm::event::KeyEventKind {
+fn to_crossterm_key_kind(value: KeyEventKind) -> crossterm::event::KeyEventKind {
     match value {
         KeyEventKind::Press => crossterm::event::KeyEventKind::Press,
         KeyEventKind::Repeat => crossterm::event::KeyEventKind::Repeat,
@@ -274,7 +279,7 @@ fn key_kind_to_crossterm(value: KeyEventKind) -> crossterm::event::KeyEventKind 
     }
 }
 
-fn media_code_to_terminput(value: crossterm::event::MediaKeyCode) -> MediaKeyCode {
+fn to_terminput_media_code(value: crossterm::event::MediaKeyCode) -> MediaKeyCode {
     match value {
         crossterm::event::MediaKeyCode::Play => MediaKeyCode::Play,
         crossterm::event::MediaKeyCode::Pause => MediaKeyCode::Pause,
@@ -292,7 +297,7 @@ fn media_code_to_terminput(value: crossterm::event::MediaKeyCode) -> MediaKeyCod
     }
 }
 
-fn media_code_to_crossterm(value: MediaKeyCode) -> crossterm::event::MediaKeyCode {
+fn to_crossterm_media_code(value: MediaKeyCode) -> crossterm::event::MediaKeyCode {
     match value {
         MediaKeyCode::Play => crossterm::event::MediaKeyCode::Play,
         MediaKeyCode::Pause => crossterm::event::MediaKeyCode::Pause,
@@ -310,7 +315,7 @@ fn media_code_to_crossterm(value: MediaKeyCode) -> crossterm::event::MediaKeyCod
     }
 }
 
-fn convert_modifier_key_code(
+fn to_terminput_modifier_key_code(
     value: crossterm::event::ModifierKeyCode,
 ) -> (ModifierKeyCode, ModifierDirection) {
     match value {
@@ -359,7 +364,7 @@ fn convert_modifier_key_code(
     }
 }
 
-fn convert_crossterm_modifier_key_code(
+fn to_crossterm_modifier_key_code(
     code: ModifierKeyCode,
     direction: ModifierDirection,
 ) -> crossterm::event::ModifierKeyCode {
@@ -405,10 +410,10 @@ fn convert_crossterm_modifier_key_code(
     }
 }
 
-fn key_state_to_terminput(value: crossterm::event::KeyEventState) -> KeyEventState {
+fn to_terminput_key_state(value: crossterm::event::KeyEventState) -> KeyEventState {
     KeyEventState::from_bits_retain(value.bits())
 }
 
-fn key_state_to_crossterm(value: KeyEventState) -> crossterm::event::KeyEventState {
+fn to_crossterm_key_state(value: KeyEventState) -> crossterm::event::KeyEventState {
     crossterm::event::KeyEventState::from_bits_retain(value.bits())
 }
