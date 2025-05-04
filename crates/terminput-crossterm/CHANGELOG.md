@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.2.0..terminput-crossterm-v0.2.1) - 2025-05-04
+
+### Features
+
+- Expose conversion methods for key and mouse events ([#37](https://github.com/aschey/terminput/issues/37)) - ([44f612b](https://github.com/aschey/terminput/commit/44f612bd825563894bae5d9b2a6bd4a1165b43a7))
+
 ## [0.2.0](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.1.2..terminput-crossterm-v0.2.0) - 2025-04-05
 
 ### Dependencies
