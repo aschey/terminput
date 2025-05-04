@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3](https://github.com/aschey/terminput/compare/terminput-termwiz-v0.2.2..terminput-termwiz-v0.2.3) - 2025-05-04
+
+### Features
+
+- Expose conversion methods for key and mouse events ([#37](https://github.com/aschey/terminput/issues/37)) - ([44f612b](https://github.com/aschey/terminput/commit/44f612bd825563894bae5d9b2a6bd4a1165b43a7))
+
 ## [0.2.2](https://github.com/aschey/terminput/compare/terminput-termwiz-v0.2.1..terminput-termwiz-v0.2.2) - 2025-04-05
 
 ### Documentation
