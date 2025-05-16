@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0](https://github.com/aschey/terminput/compare/terminput-v0.4.3..terminput-v0.5.0) - 2025-05-16
+
+### Miscellaneous Tasks
+
+- [**breaking**] Bump MSRV to 1.85 ([#39](https://github.com/aschey/terminput/issues/39)) - ([2cd9e18](https://github.com/aschey/terminput/commit/2cd9e1806223f4c288b6cd3ab5377c810465e5a4))
+
 ## [0.4.3](https://github.com/aschey/terminput/compare/terminput-v0.4.2..terminput-v0.4.3) - 2025-04-05
 
 ### Dependencies
