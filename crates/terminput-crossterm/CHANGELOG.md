@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.2](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.2.1..terminput-crossterm-v0.2.2) - 2025-05-16
+## [0.3.0](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.2.1..terminput-crossterm-v0.3.0) - 2025-05-16
 
 ### Miscellaneous Tasks
 
