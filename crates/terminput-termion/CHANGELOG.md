@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.5](https://github.com/aschey/terminput/compare/terminput-termion-v0.1.4..terminput-termion-v0.1.5) - 2025-05-16
+## [0.2.0](https://github.com/aschey/terminput/compare/terminput-termion-v0.1.4..terminput-termion-v0.2.0) - 2025-05-16
 
 ### Miscellaneous Tasks
 
