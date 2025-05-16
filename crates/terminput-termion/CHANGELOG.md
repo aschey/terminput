@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0](https://github.com/aschey/terminput/compare/terminput-termion-v0.1.4..terminput-termion-v0.2.0) - 2025-05-16
+
+### Miscellaneous Tasks
+
+- Updated the following local packages: terminput - ([0000000](https://github.com/aschey/terminput/commit/0000000))
+
 ## [0.1.4](https://github.com/aschey/terminput/compare/terminput-termion-v0.1.3..terminput-termion-v0.1.4) - 2025-05-04
 
 ### Features
