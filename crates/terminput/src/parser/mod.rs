@@ -9,7 +9,7 @@ use crate::{
 };
 
 fn could_not_parse_event_error() -> io::Error {
-    io::Error::new(io::ErrorKind::Other, "Could not parse event.")
+    io::Error::other("Could not parse event.")
 }
 
 impl Event {
