@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1](https://github.com/aschey/terminput/compare/terminput-v0.5.0..terminput-v0.5.1) - 2025-07-01
+
+### Documentation
+
+- Document feature flags ([#43](https://github.com/aschey/terminput/issues/43)) - ([a12a415](https://github.com/aschey/terminput/commit/a12a415f78156f400d197de68e8d6698348b5479))
+
+### Terminput
+
+- Add support for `no_std` ([#41](https://github.com/aschey/terminput/issues/41)) - ([f309625](https://github.com/aschey/terminput/commit/f3096259526ceee8a42b4c5814b77e23725cf9a9))
+
 ## [0.5.0](https://github.com/aschey/terminput/compare/terminput-v0.4.3..terminput-v0.5.0) - 2025-05-16
 
 ### Miscellaneous Tasks
