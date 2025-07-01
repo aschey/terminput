@@ -16,12 +16,12 @@ fn print_events(encoding: Encoding) -> io::Result<()> {
         let event: Result<Event, _> = to_terminput(read()?);
 
         if let Ok(event) = event {
-            println!("Event:   {:?}\r", event);
+            println!("Event:   {event:?}\r");
             let written = event.encode(&mut buf, encoding);
             if let Ok(written) = written {
                 println!("Encoded: {:?}\r", &buf[..written]);
                 if let Ok(Some(decoded)) = Event::parse_from(&buf[..written]) {
-                    println!("Decoded: {:?}\r", decoded);
+                    println!("Decoded: {decoded:?}\r");
                 }
             }
 

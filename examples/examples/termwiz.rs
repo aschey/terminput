@@ -29,14 +29,14 @@ fn print_events(mut terminal: BufferedTerminal<SystemTerminal>) {
             let event: Result<Event, _> = to_terminput(event);
 
             if let Ok(event) = event {
-                println!("Event:   {:?}\r", event);
+                println!("Event:   {event:?}\r");
                 // Note: termwiz enables xterm's modifyOtherKeys setting which isn't supported by
                 // the encoder
                 let written = event.encode(&mut buf, Encoding::Xterm);
                 if let Ok(written) = written {
                     println!("Encoded: {:?}\r", &buf[..written]);
                     if let Ok(Some(decoded)) = Event::parse_from(&buf[..written]) {
-                        println!("Decoded: {:?}\r", decoded);
+                        println!("Decoded: {decoded:?}\r");
                     }
                 }
 
