@@ -2,6 +2,7 @@
 // https://github.com/crossterm-rs/crossterm/blob/master/src/event/sys/unix/parse.rs
 
 use std::io;
+use std::string::{String, ToString};
 
 use crate::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,

@@ -22,7 +22,9 @@ crossterm = "0.29"
 terminput-crossterm = { path = "../terminput-crossterm" }
 
 [features]
+default = ["std"]
 serde = ["dep:serde", "bitflags/serde"]
+std = []
 
 [lints]
 workspace = true

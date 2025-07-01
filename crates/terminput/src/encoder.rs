@@ -1,5 +1,7 @@
 use std::fmt::Debug;
+use std::format;
 use std::io::{self, Cursor, Seek, Write};
+use std::string::{String, ToString};
 
 use bitflags::bitflags;
 

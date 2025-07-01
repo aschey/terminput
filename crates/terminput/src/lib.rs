@@ -1,15 +1,24 @@
+#![no_std]
 #![deny(missing_docs)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![doc = include_str!("../README.md")]
 
+extern crate alloc;
+#[cfg(feature = "std")]
+extern crate std;
+
+#[cfg(feature = "std")]
 mod encoder;
 mod key;
 mod mouse;
+#[cfg(feature = "std")]
 mod parser;
 
+use alloc::string::String;
+use core::error::Error;
 use core::fmt;
-use std::error::Error;
 
+#[cfg(feature = "std")]
 pub use encoder::*;
 pub use key::*;
 pub use mouse::*;
