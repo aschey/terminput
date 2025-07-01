@@ -20,6 +20,12 @@ library aims to provide a uniform interface to these types.
 Additionally, we supply methods for parsing and encoding ANSI escape sequences
 for events.
 
+## Feature Flags
+
+- `std` - Adds a dependency on the standard library, required for the encoder
+  and parser modules (enabled by default).
+- `serde` - Adds serde serialization for event types (not enabled by default).
+
 ## Usage
 
 Use the conversion methods provided by the integration crates to convert to and
