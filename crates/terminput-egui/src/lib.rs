@@ -240,7 +240,7 @@ fn key_code_to_terminput(value: egui::Key) -> Result<KeyCode, UnsupportedEvent> 
         egui::Key::F33 => Ok(KeyCode::F(33)),
         egui::Key::F34 => Ok(KeyCode::F(34)),
         egui::Key::F35 => Ok(KeyCode::F(35)),
-        egui::Key::Copy | egui::Key::Cut | egui::Key::Paste => {
+        egui::Key::Copy | egui::Key::Cut | egui::Key::Paste | egui::Key::BrowserBack => {
             Err(UnsupportedEvent(format!("{value:?}")))
         }
     }
