@@ -54,7 +54,10 @@ jobs:
           toolchain: stable
       - uses: Swatinem/rust-cache@v2
       - name: Build all
-        run: cargo build --release --all-features --examples
+        run: |
+          cargo build --release --all-features --examples
+          cd examples/web
+          cargo build --release
 
   min-versions:
     name: Check min dependency versions
