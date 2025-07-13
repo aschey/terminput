@@ -70,7 +70,7 @@ The following backends are currently supported via separate integration crates:
 - [`egui`](https://crates.io/crates/egui) -
   [`terminput-egui`](https://crates.io/crates/terminput-egui)
 - [`web-sys`](https://crates.io/crates/web-sys) -
-  [`terminput-web-sys`](https://crates.io/creates/terminput-web-sys)
+  [`terminput-web-sys`](https://crates.io/crates/terminput-web-sys)
 
 The [`Event`](https://docs.rs/terminput/latest/terminput/enum.Event.html) struct
 provided by this library is an attempt to create a superset of all supported
