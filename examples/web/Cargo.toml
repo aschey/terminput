@@ -1,0 +1,17 @@
+[package]
+name = "web"
+version = "0.1.0"
+edition = "2024"
+license.workspace = true
+
+[dependencies]
+console_error_panic_hook = "0.1.7"
+terminput = { path = "../../crates/terminput" }
+terminput-web-sys = { path = "../../crates/terminput-web-sys" }
+wasm-bindgen = "0.2.100"
+web-sys = { version = "0.3.77", features = [
+  "Window",
+  "Document",
+  "HtmlElement",
+  "Text",
+] }

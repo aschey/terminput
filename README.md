@@ -69,6 +69,8 @@ The following backends are currently supported via separate integration crates:
   [`terminput-termwiz`](https://crates.io/crates/terminput-termwiz)
 - [`egui`](https://crates.io/crates/egui) -
   [`terminput-egui`](https://crates.io/crates/terminput-egui)
+- [`web-sys`](https://crates.io/crates/web-sys) -
+  [`terminput-web-sys`](https://crates.io/creates/terminput-web-sys)
 
 The [`Event`](https://docs.rs/terminput/latest/terminput/enum.Event.html) struct
 provided by this library is an attempt to create a superset of all supported
@@ -76,17 +78,21 @@ backend functionality that TUI apps may be interested in.
 
 The following table shows the matrix of supported features:
 
-|                        | crossterm | termion | termwiz | egui |
-| ---------------------- | --------- | ------- | ------- | ---- |
-| **key press**          | ✓         | ✓       | ✓       | ✓    |
-| **key release/repeat** | ✓         |         |         | ✓    |
-| **mouse down**         | ✓         | ✓       | ✓       | ✓    |
-| **mouse up**           | ✓         | ✓       |         | ✓    |
-| **mouse move**         | ✓         |         | ✓       | ✓    |
-| **mouse drag**         | ✓         | ✓       |         |      |
-| **focus**              | ✓         |         |         | ✓    |
-| **paste**              | ✓         |         | ✓       | ✓    |
-| **resize**             | ✓         |         | ✓       |      |
+|                        | crossterm | termion | termwiz | egui | web-sys |
+| ---------------------- | --------- | ------- | ------- | ---- | ------- |
+| **key press**          | ✓         | ✓       | ✓       | ✓    | ✓       |
+| **key release/repeat** | ✓         |         |         | ✓    | ✓       |
+| **mouse down**         | ✓         | ✓       | ✓       | ✓    | ✓       |
+| **mouse up**           | ✓         | ✓       |         | ✓    | ✓       |
+| **mouse move**         | ✓         |         | ✓       | ✓    | ✓       |
+| **mouse drag**         | ✓         | ✓       |         |      | ✓       |
+| **focus**              | ✓         |         |         | ✓    | ✓       |
+| **paste**              | ✓         |         | ✓       | ✓    | ✓       |
+| **resize**             | ✓         |         | ✓       |      | ✓       |
+
+Conversions for web-sys are only implemented in one direction (web-sys to
+terminput) because conversions in the other direction don't seem particularly
+useful. If you require this functionality, feel free to make a feature request.
 
 ## Parsing
 
