@@ -25,7 +25,7 @@ web-sys = { version = "0.3.77", features = [
   "Window",
   "Element",
 ] }
-terminput = { path = "../terminput", version = "0.5.1" }
+terminput = { path = "../terminput", version = "0.5.2" }
 
 [lints]
 workspace = true
