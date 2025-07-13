@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2](https://github.com/aschey/terminput/compare/terminput-web-sys-v0.1.1..terminput-web-sys-v0.1.2) - 2025-07-13
+
+### Documentation
+
+- Fix event type in paste docs ([#52](https://github.com/aschey/terminput/issues/52)) - ([fbfda7c](https://github.com/aschey/terminput/commit/fbfda7cd5e762dd28f9cc5de40be638f755f09c5))
+
 ## [0.1.1](https://github.com/aschey/terminput/compare/terminput-web-sys-v0.1.0..terminput-web-sys-v0.1.1) - 2025-07-13
 
 ### Miscellaneous Tasks
