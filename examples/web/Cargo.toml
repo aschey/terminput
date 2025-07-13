@@ -3,6 +3,7 @@ name = "web"
 version = "0.1.0"
 edition = "2024"
 license.workspace = true
+publish = false
 
 [dependencies]
 console_error_panic_hook = "0.1.7"
