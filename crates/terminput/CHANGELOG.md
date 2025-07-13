@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.3](https://github.com/aschey/terminput/compare/terminput-v0.5.2..terminput-v0.5.3) - 2025-07-13
+
+### Miscellaneous Tasks
+
+- Fix readme typo ([#50](https://github.com/aschey/terminput/issues/50)) - ([ca6a995](https://github.com/aschey/terminput/commit/ca6a995821ec9b9461ba9d58d58574941f001e39))
+
 ## [0.5.2](https://github.com/aschey/terminput/compare/terminput-v0.5.1..terminput-v0.5.2) - 2025-07-13
 
 ### Features
