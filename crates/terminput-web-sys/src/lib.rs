@@ -63,8 +63,8 @@ pub fn to_terminput_key(key_event: web_sys::KeyboardEvent) -> Result<KeyEvent, U
     })
 }
 
-/// Converts the [`web_sys`] [`ClipboardEvent`](`web_sys::ClipboardEvent`) to a terminput
-/// [`MouseEvent`].
+/// Converts the [`web_sys`] [`ClipboardEvent`](`web_sys::ClipboardEvent`) to a terminput paste
+/// [`Event`].
 pub fn to_terminput_paste(
     clipboard_event: web_sys::ClipboardEvent,
 ) -> Result<Event, UnsupportedEvent> {
