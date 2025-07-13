@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.2](https://github.com/aschey/terminput/compare/terminput-v0.5.1..terminput-v0.5.2) - 2025-07-13
+
+### Features
+
+- Add web-sys backend ([#47](https://github.com/aschey/terminput/issues/47)) - ([8d7d055](https://github.com/aschey/terminput/commit/8d7d055917424fecc5167b6d03cf6267c7d46830))
+
 ## [0.5.1](https://github.com/aschey/terminput/compare/terminput-v0.5.0..terminput-v0.5.1) - 2025-07-01
 
 ### Documentation
