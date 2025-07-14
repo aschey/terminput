@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.4](https://github.com/aschey/terminput/compare/terminput-termwiz-v0.3.3..terminput-termwiz-v0.3.4) - 2025-07-14
+
+### Miscellaneous Tasks
+
+- Allow unwrap in tests ([#54](https://github.com/aschey/terminput/issues/54)) - ([409d335](https://github.com/aschey/terminput/commit/409d335c51af05f6fa53b7ac6b748d3e60df28ad))
+
 ## [0.3.3](https://github.com/aschey/terminput/compare/terminput-termwiz-v0.3.2..terminput-termwiz-v0.3.3) - 2025-07-13
 
 ### Miscellaneous Tasks
