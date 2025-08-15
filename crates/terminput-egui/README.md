@@ -12,3 +12,7 @@
 `terminput-egui` provides helper functions for converting between
 [`terminput`](https://crates.io/crates/terminput) and
 [`egui`](https://crates/io/crates/egui) types.
+
+## Feature Flags
+
+- `egui_0_32` - uses egui 0.32 (default)

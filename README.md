@@ -59,18 +59,21 @@ Some helpers for matching on events are included. See the
 
 ## Backends
 
-The following backends are currently supported via separate integration crates:
+The following backends are currently supported via separate integration crates.
+Different versions of each backend can be used by activating a feature flag that
+matches the desired version. For example, crossterm 0.28 can be activated using
+the `crossterm_0_28` feature. The latest version of each backend will be enabled
+by default.
 
-- [`crossterm`](https://crates.io/crates/crossterm) -
-  [`terminput-crossterm`](https://crates.io/crates/terminput-crossterm)
-- [`termion`](https://crates.io/crates/termion) -
-  [`terminput-termion`](https://crates.io/crates/terminput-termion)
-- [`termwiz`](https://crates.io/crates/termwiz) -
-  [`terminput-termwiz`](https://crates.io/crates/terminput-termwiz)
-- [`egui`](https://crates.io/crates/egui) -
-  [`terminput-egui`](https://crates.io/crates/terminput-egui)
-- [`web-sys`](https://crates.io/crates/web-sys) -
-  [`terminput-web-sys`](https://crates.io/crates/terminput-web-sys)
+See the docs for each integration crate for more details.
+
+| backend                                           | integration crate                                                     | supported versions |
+| ------------------------------------------------- | --------------------------------------------------------------------- | ------------------ |
+| [`crossterm`](https://crates.io/crates/crossterm) | [`terminput-crossterm`](https://crates.io/crates/terminput-crossterm) | 0.28, 0.29         |
+| [`termion`](https://crates.io/crates/termion)     | [`terminput-termion`](https://crates.io/crates/terminput-termion)     | 4                  |
+| [`termwiz`](https://crates.io/crates/termwiz)     | [`terminput-termwiz`](https://crates.io/crates/terminput-termwiz)     | 0.22, 0.23         |
+| [`egui`](https://crates.io/crates/egui)           | [`terminput-egui`](https://crates.io/crates/terminput-egui)           | 0.32               |
+| [`web-sys`](https://crates.io/crates/web-sys)     | [`terminput-web-sys`](https://crates.io/crates/terminput-web-sys)     | 0.3                |
 
 The [`Event`](https://docs.rs/terminput/latest/terminput/enum.Event.html) struct
 provided by this library is an attempt to create a superset of all supported
@@ -78,7 +81,7 @@ backend functionality that TUI apps may be interested in.
 
 The following table shows the matrix of supported features:
 
-|                        | crossterm | termion | termwiz | egui | web-sys |
+| feature                | crossterm | termion | termwiz | egui | web-sys |
 | ---------------------- | --------- | ------- | ------- | ---- | ------- |
 | **key press**          | ✓         | ✓       | ✓       | ✓    | ✓       |
 | **key release/repeat** | ✓         |         |         | ✓    | ✓       |

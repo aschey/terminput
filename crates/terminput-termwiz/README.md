@@ -12,3 +12,8 @@
 `terminput-termwiz` provides helper functions for converting between
 [`terminput`](https://crates.io/crates/terminput) and
 [`termwiz`](https://crates.io/crates/termwiz) types.
+
+## Feature Flags
+
+- `termwiz_0_23` - uses termwiz 0.23 (default)
+- `termwiz_0_22` - uses termwiz 0.22

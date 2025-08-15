@@ -12,3 +12,7 @@
 `terminput-termion` provides helper functions for converting between
 [`terminput`](https://crates.io/crates/terminput) and
 [`termion`](https://crates.io/crates/termion) types.
+
+## Feature Flags
+
+- `termion_4` - uses termion 4 (default)

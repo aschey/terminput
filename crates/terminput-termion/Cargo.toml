@@ -14,8 +14,12 @@ keywords.workspace = true
 readme = "./README.md"
 
 [target.'cfg(not(windows))'.dependencies]
-termion = { version = "4" }
+termion_4 = { package = "termion", version = "4", optional = true }
 terminput = { path = "../terminput", version = "0.5.3" }
+
+[features]
+termion_4 = ["dep:termion_4"]
+default = ["termion_4"]
 
 [lints]
 workspace = true

@@ -13,8 +13,11 @@ categories.workspace = true
 keywords.workspace = true
 readme = "./README.md"
 
-[dependencies]
-web-sys = { version = "0.3.77", features = [
+[dependencies.web_sys_0_3]
+version = "0.3.77"
+package = "web-sys"
+optional = true
+features = [
   "KeyboardEvent",
   "MouseEvent",
   "DragEvent",
@@ -24,8 +27,14 @@ web-sys = { version = "0.3.77", features = [
   "Document",
   "Window",
   "Element",
-] }
+]
+
+[dependencies]
 terminput = { path = "../terminput", version = "0.5.3" }
+
+[features]
+web_sys_0_3 = ["dep:web_sys_0_3"]
+default = ["web_sys_0_3"]
 
 [lints]
 workspace = true

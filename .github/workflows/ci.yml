@@ -46,6 +46,29 @@ jobs:
           verbose: true
           fail_ci_if_error: true
           files: ./codecov.json
+  check-backend-versions:
+    strategy:
+      matrix:
+        feature:
+          [
+            crossterm_0_28,
+            crossterm_0_29,
+            egui_0_32,
+            termion_4,
+            termwiz_0_22,
+            termwiz_0_23,
+            web_sys_0_3,
+          ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+      - name: Build
+        run: cargo build --no-default-features --features=${{ matrix.feature }}
+
   release-build:
     runs-on: ubuntu-latest
     steps:
