@@ -13,15 +13,15 @@ line_length = 0
 subject_length = 0
 # default allowed_types [ "chore", "docs", "feat", "fix", "perf", "refactor", "style", "test" ]
 allowed_types = [
-    "build",
-    "chore",
-    "ci",
-    "docs",
-    "feat",
-    "fix",
-    "perf",
-    "refactor",
-    "revert",
-    "style",
-    "test",
+  "build",
+  "chore",
+  "ci",
+  "docs",
+  "feat",
+  "fix",
+  "perf",
+  "refactor",
+  "revert",
+  "style",
+  "test",
 ]

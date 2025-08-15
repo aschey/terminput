@@ -12,3 +12,7 @@
 `terminput-web-sys` provides helper functions for converting between
 [`terminput`](https://crates.io/crates/terminput) and
 [`web-sys`](https://crates.io/crates/web-sys) types.
+
+## Feature Flags
+
+- `web_sys_0_3` uses web_sys 0.3 (default)

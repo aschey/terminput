@@ -12,3 +12,8 @@
 `terminput-crossterm` provides helper functions for converting between
 [`terminput`](https://crates.io/crates/terminput) and
 [`crossterm`](https://crates.io/crates/crossterm) types.
+
+## Feature Flags
+
+- `crossterm_0_29` - uses crossterm 0.29 (default)
+- `crossterm_0_28` - uses crossterm 0.28

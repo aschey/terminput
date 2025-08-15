@@ -5,6 +5,8 @@ use terminput::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseButton, MouseEvent,
     MouseEventKind, ScrollDirection, UnsupportedEvent,
 };
+#[cfg(feature = "termion_4")]
+use termion_4 as termion;
 
 /// Converts the termion [`Event`](termion::event::Event) to a terminput [`Event`].
 pub fn to_terminput(value: termion::event::Event) -> Result<Event, UnsupportedEvent> {

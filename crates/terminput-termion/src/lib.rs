@@ -2,7 +2,7 @@
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 #![doc = include_str!("../README.md")]
 
-#[cfg(not(windows))]
-mod termion;
-#[cfg(not(windows))]
-pub use termion::*;
+#[cfg(all(not(windows), feature = "termion_4"))]
+mod mapping;
+#[cfg(all(not(windows), feature = "termion_4"))]
+pub use mapping::*;

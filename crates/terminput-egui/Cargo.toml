@@ -14,8 +14,12 @@ keywords.workspace = true
 readme = "./README.md"
 
 [dependencies]
-egui = { version = "0.32", default-features = false }
+egui_0_32 = { package = "egui", version = "0.32", default-features = false, optional = true }
 terminput = { path = "../terminput", version = "0.5.3" }
+
+[features]
+egui_0_32 = ["dep:egui_0_32"]
+default = ["egui_0_32"]
 
 [lints]
 workspace = true
