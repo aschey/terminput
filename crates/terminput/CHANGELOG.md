@@ -2,11 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.6.0](https://github.com/aschey/terminput/compare/terminput-v0.5.3..terminput-v0.6.0) - 2025-08-15
+## [0.5.4](https://github.com/aschey/terminput/compare/terminput-v0.5.3..terminput-v0.5.4) - 2025-08-15
 
 ### Features
 
-- [**breaking**] Support multiple backend versions ([#57](https://github.com/aschey/terminput/issues/57)) - ([42f49de](https://github.com/aschey/terminput/commit/42f49ded1cd86f91cbb9560c8036cea01a827ea9))
+- Support multiple backend versions ([#57](https://github.com/aschey/terminput/issues/57)) - ([42f49de](https://github.com/aschey/terminput/commit/42f49ded1cd86f91cbb9560c8036cea01a827ea9))
 
 ### Miscellaneous Tasks
 

@@ -30,7 +30,7 @@ features = [
 ]
 
 [dependencies]
-terminput = { path = "../terminput", version = "0.6.0" }
+terminput = { path = "../terminput", version = "0.5.4" }
 
 [features]
 web_sys_0_3 = ["dep:web_sys_0_3"]
