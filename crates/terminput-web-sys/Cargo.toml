@@ -1,6 +1,6 @@
 [package]
 name = "terminput-web-sys"
-version = "0.1.2"
+version = "0.2.0"
 description = "web-sys adapter for terminput"
 edition.workspace = true
 rust-version.workspace = true
@@ -30,7 +30,7 @@ features = [
 ]
 
 [dependencies]
-terminput = { path = "../terminput", version = "0.5.3" }
+terminput = { path = "../terminput", version = "0.5.4" }
 
 [features]
 web_sys_0_3 = ["dep:web_sys_0_3"]

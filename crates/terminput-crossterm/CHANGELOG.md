@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.3.3..terminput-crossterm-v0.4.0) - 2025-08-15
+
+### Features
+
+- [**breaking**] Support multiple backend versions ([#57](https://github.com/aschey/terminput/issues/57)) - ([42f49de](https://github.com/aschey/terminput/commit/42f49ded1cd86f91cbb9560c8036cea01a827ea9))
+
+### Miscellaneous Tasks
+
+- Allow unwrap in tests ([#54](https://github.com/aschey/terminput/issues/54)) - ([409d335](https://github.com/aschey/terminput/commit/409d335c51af05f6fa53b7ac6b748d3e60df28ad))
+
 ## [0.3.3](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.3.2..terminput-crossterm-v0.3.3) - 2025-07-13
 
 ### Miscellaneous Tasks
