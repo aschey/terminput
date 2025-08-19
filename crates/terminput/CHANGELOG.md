@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.5](https://github.com/aschey/terminput/compare/terminput-v0.5.4..terminput-v0.5.5) - 2025-08-19
+
+### Miscellaneous Tasks
+
+- Include license in build ([#59](https://github.com/aschey/terminput/issues/59)) - ([eb9fadc](https://github.com/aschey/terminput/commit/eb9fadc58bb9d8f1ddef2e1d44738257e9c519f0))
+
 ## [0.5.4](https://github.com/aschey/terminput/compare/terminput-v0.5.3..terminput-v0.5.4) - 2025-08-15
 
 ### Features

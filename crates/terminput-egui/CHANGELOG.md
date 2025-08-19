@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1](https://github.com/aschey/terminput/compare/terminput-egui-v0.4.0..terminput-egui-v0.4.1) - 2025-08-19
+
+### Miscellaneous Tasks
+
+- Include license in build ([#59](https://github.com/aschey/terminput/issues/59)) - ([eb9fadc](https://github.com/aschey/terminput/commit/eb9fadc58bb9d8f1ddef2e1d44738257e9c519f0))
+
 ## [0.4.0](https://github.com/aschey/terminput/compare/terminput-egui-v0.3.2..terminput-egui-v0.4.0) - 2025-08-15
 
 ### Features
