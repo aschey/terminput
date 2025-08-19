@@ -9,7 +9,7 @@ authors = ["Austin Schey <aschey13@gmail.com>"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/aschey/terminput"
 homepage = "https://github.com/aschey/terminput"
-include = ["/src", "/examples", "/tests"]
+include = ["/src", "/examples", "/tests", "LICENSE-MIT", "LICENSE-APACHE"]
 categories = ["command-line-interface", "encoding"]
 keywords = ["tui", "terminal", "input", "ratatui"]
 
