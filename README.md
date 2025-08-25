@@ -2,7 +2,6 @@
 
 [![crates.io](https://img.shields.io/crates/v/terminput.svg?logo=rust)](https://crates.io/crates/terminput)
 [![docs.rs](https://img.shields.io/docsrs/terminput?logo=rust)](https://docs.rs/terminput)
-[![Dependency Status](https://deps.rs/repo/github/aschey/terminput/status.svg?style=flat-square)](https://deps.rs/repo/github/aschey/terminput)
 ![license](https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg)
 [![CI](https://github.com/aschey/terminput/actions/workflows/ci.yml/badge.svg)](https://github.com/aschey/terminput/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/aschey/terminput/graph/badge.svg?token=Q0tOXGhWPY)](https://codecov.io/gh/aschey/terminput)
@@ -13,9 +12,12 @@ A library to abstract over various backends that provide input events, such as
 key presses and mouse clicks. This was mainly created as a common interface to
 the terminal backends that [Ratatui](https://crates.io/crates/ratatui) supports.
 
-Many TUI libraries want to support input from multiple backends, but mapping
-each backend's input structure into a common interface can be tedious. This
-library aims to provide a uniform interface to these types.
+Many TUI libraries with some kind of input handling mechanism want to support
+multiple backends, but mapping each backend's input structure into a common
+interface is tedious, and it can be difficult to keep up with all the new
+backends being added. This library aims to provide a uniform interface to these
+input types and prevent crates from having to manually add support for each
+backend.
 
 Additionally, we supply methods for parsing and encoding ANSI escape sequences
 for events.
