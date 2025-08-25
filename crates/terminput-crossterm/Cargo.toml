@@ -1,6 +1,6 @@
 [package]
 name = "terminput-crossterm"
-version = "0.4.1"
+version = "0.4.2"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -28,7 +28,7 @@ default-features = false
 features = ["events", "bracketed-paste", "windows"]
 
 [dependencies]
-terminput = { path = "../terminput", version = "0.5.5" }
+terminput = { path = "../terminput", version = "0.5.6" }
 
 [features]
 crossterm_0_28 = ["dep:crossterm_0_28"]
