@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.6](https://github.com/aschey/terminput/compare/terminput-v0.5.5..terminput-v0.5.6) - 2025-08-25
+
+### Miscellaneous Tasks
+
+- Update docs on use cases ([#62](https://github.com/aschey/terminput/issues/62)) - ([47d54c4](https://github.com/aschey/terminput/commit/47d54c40d3a315ad0dd42f475ac4b24d7d826328))
+
 ## [0.5.5](https://github.com/aschey/terminput/compare/terminput-v0.5.4..terminput-v0.5.5) - 2025-08-19
 
 ### Miscellaneous Tasks
