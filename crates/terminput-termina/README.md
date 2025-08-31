@@ -2,7 +2,6 @@
 
 [![crates.io](https://img.shields.io/crates/v/terminput-termina.svg?logo=rust)](https://crates.io/crates/terminput-termina)
 [![docs.rs](https://img.shields.io/docsrs/terminput-termina?logo=rust)](https://docs.rs/terminput-termina)
-[![Dependency Status](https://deps.rs/repo/github/aschey/terminput/status.svg?style=flat-square)](https://deps.rs/repo/github/aschey/terminput)
 ![license](https://img.shields.io/badge/License-MIT%20or%20Apache%202-green.svg)
 [![CI](https://github.com/aschey/terminput/actions/workflows/ci.yml/badge.svg)](https://github.com/aschey/terminput/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/aschey/terminput/graph/badge.svg?token=Q0tOXGhWPY)](https://codecov.io/gh/aschey/terminput)
