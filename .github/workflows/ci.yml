@@ -58,6 +58,7 @@ jobs:
             termwiz_0_22,
             termwiz_0_23,
             web_sys_0_3,
+            termina_0_1,
           ]
     runs-on: ubuntu-latest
     steps:
