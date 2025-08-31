@@ -1,15 +1,17 @@
 [package]
 name = "terminput-examples"
 publish = false
-edition = "2021"
+edition = "2024"
 license.workspace = true
 
 [dev-dependencies]
 terminput = { path = "../crates/terminput" }
 terminput-crossterm = { path = "../crates/terminput-crossterm" }
 terminput-termwiz = { path = "../crates/terminput-termwiz" }
+terminput-termina = { path = "../crates/terminput-termina" }
 crossterm = "0.29"
 termwiz = "0.23"
+termina = "0.1"
 
 [target.'cfg(not(windows))'.dev-dependencies]
 terminput-termion = { path = "../crates/terminput-termion" }
@@ -25,6 +27,10 @@ doc-scrape-examples = true
 
 [[example]]
 name = "termwiz"
+doc-scrape-examples = true
+
+[[example]]
+name = "termina"
 doc-scrape-examples = true
 
 [[example]]
