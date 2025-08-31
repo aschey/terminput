@@ -1,4 +1,4 @@
-use crate::KeyModifiers;
+use crate::{Event, KeyModifiers};
 
 /// A mouse event.
 #[derive(Debug, PartialOrd, PartialEq, Eq, Clone, Copy, Hash)]
@@ -79,4 +79,10 @@ pub enum MouseButton {
     Middle,
     /// Mouse button could not be determined.
     Unknown,
+}
+
+impl From<MouseEvent> for Event {
+    fn from(value: MouseEvent) -> Self {
+        Self::Mouse(value)
+    }
 }

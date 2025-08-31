@@ -2,6 +2,8 @@ use core::hash::{Hash, Hasher};
 
 use bitflags::bitflags;
 
+use crate::Event;
+
 /// A key input event.
 #[derive(Debug, PartialOrd, Ord, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -306,6 +308,12 @@ impl From<KeyCode> for KeyEvent {
             kind: KeyEventKind::Press,
             state: KeyEventState::empty(),
         }
+    }
+}
+
+impl From<KeyEvent> for Event {
+    fn from(value: KeyEvent) -> Self {
+        Self::Key(value)
     }
 }
 
