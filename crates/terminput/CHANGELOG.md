@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.8](https://github.com/aschey/terminput/compare/terminput-v0.5.7..terminput-v0.5.8) - 2025-08-31
+
+### Features
+
+- Implement conversions from mouse and key events ([#68](https://github.com/aschey/terminput/issues/68)) - ([3a90265](https://github.com/aschey/terminput/commit/3a90265f42a5535a6a176ead9b5d2c9dadb1c0ed))
+
 ## [0.5.7](https://github.com/aschey/terminput/compare/terminput-v0.5.6..terminput-v0.5.7) - 2025-08-31
 
 ### Features
