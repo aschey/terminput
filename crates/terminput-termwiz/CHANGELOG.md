@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.3](https://github.com/aschey/terminput/compare/terminput-termwiz-v0.4.2..terminput-termwiz-v0.4.3) - 2025-08-31
+
+### Miscellaneous Tasks
+
+- Remove dependency status ([#66](https://github.com/aschey/terminput/issues/66)) - ([0326a5a](https://github.com/aschey/terminput/commit/0326a5a0c0249a07ec226bfcbb007c00b43db489))
+
 ## [0.4.2](https://github.com/aschey/terminput/compare/terminput-termwiz-v0.4.1..terminput-termwiz-v0.4.2) - 2025-08-25
 
 ### Miscellaneous Tasks
