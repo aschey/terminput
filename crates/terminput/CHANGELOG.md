@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.7](https://github.com/aschey/terminput/compare/terminput-v0.5.6..terminput-v0.5.7) - 2025-08-31
+
+### Features
+
+- Termina adapter ([#64](https://github.com/aschey/terminput/issues/64)) - ([5ca8d69](https://github.com/aschey/terminput/commit/5ca8d69ededfa25bef8184dd4f9f11e5fc6fd248))
+
 ## [0.5.6](https://github.com/aschey/terminput/compare/terminput-v0.5.5..terminput-v0.5.6) - 2025-08-25
 
 ### Miscellaneous Tasks
