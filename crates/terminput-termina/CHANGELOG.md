@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1](https://github.com/aschey/terminput/compare/terminput-termina-v0.1.0..terminput-termina-v0.1.1) - 2025-08-31
+
+### Miscellaneous Tasks
+
+- Updated the following local packages: terminput - ([0000000](https://github.com/aschey/terminput/commit/0000000))
+
 ## [0.1.0] - 2025-08-31
 
 ### Features
