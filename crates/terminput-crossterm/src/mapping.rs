@@ -411,9 +411,29 @@ fn to_crossterm_modifier_key_code(
 }
 
 fn to_terminput_key_state(value: crossterm::event::KeyEventState) -> KeyEventState {
-    KeyEventState::from_bits_retain(value.bits())
+    let mut state = KeyEventState::empty();
+    if value.intersects(crossterm::event::KeyEventState::KEYPAD) {
+        state |= KeyEventState::KEYPAD;
+    }
+    if value.intersects(crossterm::event::KeyEventState::CAPS_LOCK) {
+        state |= KeyEventState::CAPS_LOCK;
+    }
+    if value.intersects(crossterm::event::KeyEventState::NUM_LOCK) {
+        state |= KeyEventState::NUM_LOCK;
+    }
+    state
 }
 
 fn to_crossterm_key_state(value: KeyEventState) -> crossterm::event::KeyEventState {
-    crossterm::event::KeyEventState::from_bits_retain(value.bits())
+    let mut state = crossterm::event::KeyEventState::empty();
+    if value.intersects(KeyEventState::KEYPAD) {
+        state |= crossterm::event::KeyEventState::KEYPAD;
+    }
+    if value.intersects(KeyEventState::CAPS_LOCK) {
+        state |= crossterm::event::KeyEventState::CAPS_LOCK;
+    }
+    if value.intersects(KeyEventState::NUM_LOCK) {
+        state |= crossterm::event::KeyEventState::NUM_LOCK;
+    }
+    state
 }
