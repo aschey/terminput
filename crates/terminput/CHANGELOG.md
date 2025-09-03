@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.9](https://github.com/aschey/terminput/compare/terminput-v0.5.8..terminput-v0.5.9) - 2025-09-03
+
+### Bug Fixes
+
+- Prevent subtraction with overflow on invalid mouse coordinates ([#70](https://github.com/aschey/terminput/issues/70)) - ([9a10ac9](https://github.com/aschey/terminput/commit/9a10ac9cdec2ff87aacf08915503a58dd9c15c3f))
+
 ## [0.5.8](https://github.com/aschey/terminput/compare/terminput-v0.5.7..terminput-v0.5.8) - 2025-08-31
 
 ### Features
