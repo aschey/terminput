@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.5](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.4.4..terminput-crossterm-v0.4.5) - 2025-09-03
+
+### Miscellaneous Tasks
+
+- Updated the following local packages: terminput - ([0000000](https://github.com/aschey/terminput/commit/0000000))
+
 ## [0.4.4](https://github.com/aschey/terminput/compare/terminput-crossterm-v0.4.3..terminput-crossterm-v0.4.4) - 2025-08-31
 
 ### Miscellaneous Tasks
