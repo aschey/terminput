@@ -1585,6 +1585,16 @@ fn test_parse_from_subsequent_calls() {
             modifiers: KeyModifiers::CTRL,
         }))
     );
+    // mouse with invalid coordinates (should return 0 and not panic)
+    assert_eq!(
+        Event::parse_from(b"\x1B[M0\x00\x00").unwrap(),
+        Some(Event::Mouse(MouseEvent {
+            kind: MouseEventKind::Down(MouseButton::Left),
+            column: 0,
+            row: 0,
+            modifiers: KeyModifiers::CTRL,
+        }))
+    );
 
     // parse_csi_sgr_mouse
     assert_eq!(
