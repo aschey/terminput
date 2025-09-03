@@ -668,8 +668,8 @@ pub(crate) fn parse_csi_normal_mouse(buffer: &[u8]) -> io::Result<Option<Event>>
     // See http://www.xfree86.org/current/ctlseqs.html#Mouse%20Tracking
     // The upper left character position on the terminal is denoted as 1,1.
     // Subtract 1 to keep it synced with cursor
-    let cx = u16::from(buffer[4].saturating_sub(32)) - 1;
-    let cy = u16::from(buffer[5].saturating_sub(32)) - 1;
+    let cx = u16::from(buffer[4].saturating_sub(33));
+    let cy = u16::from(buffer[5].saturating_sub(33));
 
     Ok(Some(Event::Mouse(MouseEvent {
         kind,
