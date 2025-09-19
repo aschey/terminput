@@ -13,6 +13,13 @@ updates:
       # ignore minor updates for stable crates that have reached 1.0
       - dependency-name: "bitflags"
         update-types: ["version-update:semver-minor"]
+  - package-ecosystem: "rust-toolchain"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+    commit-message:
+      prefix: "chore"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
