@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.6](https://github.com/aschey/terminput/compare/terminput-termwiz-v0.4.5..terminput-termwiz-v0.4.6) - 2025-10-03
+
+### Miscellaneous Tasks
+
+- Remove doc_auto_cfg ([#75](https://github.com/aschey/terminput/issues/75)) - ([d41e741](https://github.com/aschey/terminput/commit/d41e7414f322dbc04550c9b6b4abdeeb4b0ac8ec))
+
+
 ## [0.4.5](https://github.com/aschey/terminput/compare/terminput-termwiz-v0.4.4..terminput-termwiz-v0.4.5) - 2025-09-03
 
 ### Miscellaneous Tasks
