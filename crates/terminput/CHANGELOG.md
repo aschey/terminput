@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.10](https://github.com/aschey/terminput/compare/terminput-v0.5.9..terminput-v0.5.10) - 2025-10-03
+
+### Miscellaneous Tasks
+
+- Remove doc_auto_cfg ([#75](https://github.com/aschey/terminput/issues/75)) - ([d41e741](https://github.com/aschey/terminput/commit/d41e7414f322dbc04550c9b6b4abdeeb4b0ac8ec))
+
+
 ## [0.5.9](https://github.com/aschey/terminput/compare/terminput-v0.5.8..terminput-v0.5.9) - 2025-09-03
 
 ### Bug Fixes

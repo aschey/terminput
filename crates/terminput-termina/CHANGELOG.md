@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3](https://github.com/aschey/terminput/compare/terminput-termina-v0.1.2..terminput-termina-v0.1.3) - 2025-10-03
+
+### Miscellaneous Tasks
+
+- Remove doc_auto_cfg ([#75](https://github.com/aschey/terminput/issues/75)) - ([d41e741](https://github.com/aschey/terminput/commit/d41e7414f322dbc04550c9b6b4abdeeb4b0ac8ec))
+
+
 ## [0.1.2](https://github.com/aschey/terminput/compare/terminput-termina-v0.1.1..terminput-termina-v0.1.2) - 2025-09-03
 
 ### Miscellaneous Tasks
