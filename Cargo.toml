@@ -3,7 +3,7 @@ members = ["./crates/*", "examples", "examples/web"]
 resolver = "2"
 
 [workspace.package]
-edition = "2021"
+edition = "2024"
 rust-version = "1.85"
 authors = ["Austin Schey <aschey13@gmail.com>"]
 license = "MIT OR Apache-2.0"
