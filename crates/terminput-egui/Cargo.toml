@@ -15,11 +15,13 @@ readme = "./README.md"
 
 [dependencies]
 egui_0_32 = { package = "egui", version = "0.32", default-features = false, optional = true }
+egui_0_33 = { package = "egui", version = "0.33", default-features = false, optional = true }
 terminput = { path = "../terminput", version = "0.5.10" }
 
 [features]
 egui_0_32 = ["dep:egui_0_32"]
-default = ["egui_0_32"]
+egui_0_33 = ["dep:egui_0_33"]
+default = ["egui_0_33"]
 
 [lints]
 workspace = true
