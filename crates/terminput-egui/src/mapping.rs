@@ -1,5 +1,7 @@
-#[cfg(feature = "egui_0_32")]
+#[cfg(all(feature = "egui_0_32", not(feature = "egui_0_33")))]
 use egui_0_32 as egui;
+#[cfg(feature = "egui_0_33")]
+use egui_0_33 as egui;
 use terminput::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseButton, MouseEvent,
     MouseEventKind, ScrollDirection, UnsupportedEvent,
@@ -78,6 +80,8 @@ pub fn to_terminput(value: egui::Event) -> Result<Event, UnsupportedEvent> {
         | egui::Event::Zoom(_)
         | egui::Event::Touch { .. }
         | egui::Event::Screenshot { .. } => Err(UnsupportedEvent(format!("{value:?}"))),
+        #[cfg(feature = "egui_0_33")]
+        egui::Event::Rotate(_) => Err(UnsupportedEvent(format!("{value:?}"))),
     }
 }
 

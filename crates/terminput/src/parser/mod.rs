@@ -556,15 +556,14 @@ pub(crate) fn parse_csi_u_encoded_key_code(buffer: &[u8]) -> io::Result<Option<E
     // and the terminal sends a keyboard event containing shift, the sequence will
     // contain an additional codepoint separated by a ':' character which contains
     // the shifted character according to the keyboard layout.
-    if modifiers.contains(KeyModifiers::SHIFT) {
-        if let Some(shifted_c) = codepoints
+    if modifiers.contains(KeyModifiers::SHIFT)
+        && let Some(shifted_c) = codepoints
             .next()
             .and_then(|codepoint| codepoint.parse::<u32>().ok())
             .and_then(char::from_u32)
-        {
-            keycode = KeyCode::Char(shifted_c);
-            modifiers.set(KeyModifiers::SHIFT, false);
-        }
+    {
+        keycode = KeyCode::Char(shifted_c);
+        modifiers.set(KeyModifiers::SHIFT, false);
     }
 
     let input_event = Event::Key(
