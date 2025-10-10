@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.7](https://github.com/aschey/terminput/compare/terminput-web-sys-v0.2.6..terminput-web-sys-v0.2.7) - 2025-10-10
+
+### Miscellaneous Tasks
+
+- Updated the following local packages: terminput - ([0000000](https://github.com/aschey/terminput/commit/0000000))
+
+
 ## [0.2.6](https://github.com/aschey/terminput/compare/terminput-web-sys-v0.2.5..terminput-web-sys-v0.2.6) - 2025-10-03
 
 ### Miscellaneous Tasks
