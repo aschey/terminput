@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.11](https://github.com/aschey/terminput/compare/terminput-v0.5.10..terminput-v0.5.11) - 2025-10-10
+
+### Dependencies
+
+- *(deps)* Egui 0.33 support ([#79](https://github.com/aschey/terminput/issues/79)) - ([3b8d700](https://github.com/aschey/terminput/commit/3b8d700d8a371ae45001dee79d6f23764b790c83))
+
+
 ## [0.5.10](https://github.com/aschey/terminput/compare/terminput-v0.5.9..terminput-v0.5.10) - 2025-10-03
 
 ### Miscellaneous Tasks
