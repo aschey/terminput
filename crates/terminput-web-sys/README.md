@@ -14,4 +14,4 @@
 
 ## Feature Flags
 
-- `web_sys_0_3` uses web_sys 0.3 (default)
+- `web_sys_0_3` - uses `web_sys` 0.3 (default)

@@ -14,4 +14,4 @@
 
 ## Feature Flags
 
-- `termion_4` - uses termion 4 (default)
+- `termion_4` - uses `termion` 4 (default)

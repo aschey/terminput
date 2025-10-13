@@ -14,5 +14,5 @@
 
 ## Feature Flags
 
-- `crossterm_0_29` - uses crossterm 0.29 (default)
-- `crossterm_0_28` - uses crossterm 0.28
+- `crossterm_0_29` - uses `crossterm` 0.29 (default)
+- `crossterm_0_28` - uses `crossterm` 0.28

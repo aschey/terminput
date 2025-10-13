@@ -14,5 +14,5 @@
 
 ## Feature Flags
 
-- `termwiz_0_23` - uses termwiz 0.23 (default)
-- `termwiz_0_22` - uses termwiz 0.22
+- `termwiz_0_23` - uses `termwiz` 0.23 (default)
+- `termwiz_0_22` - uses `termwiz` 0.22

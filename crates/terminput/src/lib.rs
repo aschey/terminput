@@ -1,5 +1,6 @@
 #![no_std]
-#![deny(missing_docs, clippy::unwrap_used)]
+#![deny(clippy::unwrap_used)]
+#![warn(missing_docs, missing_debug_implementations)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc = include_str!("../README.md")]
 

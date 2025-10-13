@@ -29,7 +29,11 @@ jobs:
       - name: Minimal build
         run: cargo build --no-default-features
       - name: Clippy
-        run: cargo clippy --all-features --examples -- -D warnings
+        run: |
+          # Using "--examples" causes warnings in README files to be ignored for some reason
+          # so we have to run this twice to include both README and example warnings
+          cargo clippy --all-features -- -D warnings
+          cargo clippy --all-features --examples -- -D warnings
       - name: Build all
         run: cargo build --all-features --examples
       - name: Install cargo-llvm-cov
