@@ -14,4 +14,4 @@
 
 ## Feature Flags
 
-- `termina_0_1` - uses termina 0.1 (default)
+- `termina_0_1` - uses `termina` 0.1 (default)
