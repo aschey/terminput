@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.1](https://github.com/aschey/terminput/compare/terminput-egui-v0.5.0..terminput-egui-v0.5.1) - 2025-11-14
+
+### Documentation
+
+- Fix clippy warning about backticks ([#82](https://github.com/aschey/terminput/issues/82)) - ([054c010](https://github.com/aschey/terminput/commit/054c0103ae761fd45d0c20f5228c237c2dd92acf))
+
+
 ## [0.5.0](https://github.com/aschey/terminput/compare/terminput-egui-v0.4.6..terminput-egui-v0.5.0) - 2025-10-10
 
 ### Dependencies

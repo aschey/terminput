@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5](https://github.com/aschey/terminput/compare/terminput-termina-v0.1.4..terminput-termina-v0.1.5) - 2025-11-14
+
+### Documentation
+
+- Fix clippy warning about backticks ([#82](https://github.com/aschey/terminput/issues/82)) - ([054c010](https://github.com/aschey/terminput/commit/054c0103ae761fd45d0c20f5228c237c2dd92acf))
+
+
 ## [0.1.4](https://github.com/aschey/terminput/compare/terminput-termina-v0.1.3..terminput-termina-v0.1.4) - 2025-10-10
 
 ### Miscellaneous Tasks
