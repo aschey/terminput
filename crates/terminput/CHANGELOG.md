@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.12](https://github.com/aschey/terminput/compare/terminput-v0.5.11..terminput-v0.5.12) - 2025-11-14
+
+### Documentation
+
+- Fix clippy warning about backticks ([#82](https://github.com/aschey/terminput/issues/82)) - ([054c010](https://github.com/aschey/terminput/commit/054c0103ae761fd45d0c20f5228c237c2dd92acf))
+
+
 ## [0.5.11](https://github.com/aschey/terminput/compare/terminput-v0.5.10..terminput-v0.5.11) - 2025-10-10
 
 ### Dependencies
