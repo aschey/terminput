@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.2](https://github.com/aschey/terminput/compare/terminput-egui-v0.5.1..terminput-egui-v0.5.2) - 2026-03-21
+
+### Miscellaneous Tasks
+
+- Updated the following local packages: terminput - ([0000000](https://github.com/aschey/terminput/commit/0000000))
+
+
 ## [0.5.1](https://github.com/aschey/terminput/compare/terminput-egui-v0.5.0..terminput-egui-v0.5.1) - 2025-12-13
 
 ### Documentation
