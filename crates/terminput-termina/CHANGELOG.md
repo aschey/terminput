@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0](https://github.com/aschey/terminput/compare/terminput-termina-v0.1.5..terminput-termina-v0.2.0) - 2026-03-21
+
+### Dependencies
+
+- *(deps)* Update to termina 0.2 ([#92](https://github.com/aschey/terminput/issues/92)) - ([3bb34a6](https://github.com/aschey/terminput/commit/3bb34a6214402b4f33ea2b58e1920cfacf1e5026))
+
+
 ## [0.1.5](https://github.com/aschey/terminput/compare/terminput-termina-v0.1.4..terminput-termina-v0.1.5) - 2025-12-13
 
 ### Documentation

@@ -1,6 +1,6 @@
 [package]
 name = "terminput-termina"
-version = "0.1.5"
+version = "0.2.0"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -15,7 +15,7 @@ readme = "./README.md"
 
 [dependencies]
 termina_0_2 = { package = "termina", version = "0.2", optional = true }
-terminput = { path = "../terminput", version = "0.5.12" }
+terminput = { path = "../terminput", version = "0.5.13" }
 
 [features]
 termina_0_2 = ["dep:termina_0_2"]
