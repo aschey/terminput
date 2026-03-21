@@ -11,7 +11,7 @@ terminput-termwiz = { path = "../crates/terminput-termwiz" }
 terminput-termina = { path = "../crates/terminput-termina" }
 crossterm = "0.29"
 termwiz = "0.23"
-termina = "0.1"
+termina = "0.2"
 
 [target.'cfg(not(windows))'.dev-dependencies]
 terminput-termion = { path = "../crates/terminput-termion" }
