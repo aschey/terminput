@@ -1,5 +1,5 @@
-#[cfg(feature = "termina_0_1")]
-use termina_0_1 as termina;
+#[cfg(feature = "termina_0_2")]
+use termina_0_2 as termina;
 use terminput::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
     ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, ScrollDirection,
@@ -18,7 +18,7 @@ pub fn to_terminput(value: termina::Event) -> Result<Event, UnsupportedEvent> {
             cols: window_size.cols as u32,
             rows: window_size.rows as u32,
         },
-        event @ (termina::Event::Dcs(_) | termina::Event::Csi(_)) => {
+        event @ (termina::Event::Dcs(_) | termina::Event::Csi(_) | termina::Event::Osc(_)) => {
             Err(UnsupportedEvent(format!("{event:?}")))?
         }
     })

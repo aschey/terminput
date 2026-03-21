@@ -14,12 +14,12 @@ keywords.workspace = true
 readme = "./README.md"
 
 [dependencies]
-termina_0_1 = { package = "termina", version = "0.1", optional = true }
+termina_0_2 = { package = "termina", version = "0.2", optional = true }
 terminput = { path = "../terminput", version = "0.5.12" }
 
 [features]
-termina_0_1 = ["dep:termina_0_1"]
-default = ["termina_0_1"]
+termina_0_2 = ["dep:termina_0_2"]
+default = ["termina_0_2"]
 
 [lints]
 workspace = true

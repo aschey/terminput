@@ -74,7 +74,7 @@ See the docs for each integration crate for more details.
 | [`crossterm`](https://crates.io/crates/crossterm) | [`terminput-crossterm`](https://crates.io/crates/terminput-crossterm) | 0.28, 0.29         |
 | [`termion`](https://crates.io/crates/termion)     | [`terminput-termion`](https://crates.io/crates/terminput-termion)     | 4                  |
 | [`termwiz`](https://crates.io/crates/termwiz)     | [`terminput-termwiz`](https://crates.io/crates/terminput-termwiz)     | 0.22, 0.23         |
-| [`termina`](https://crates.io/crates/termina)     | [`terminput-termina`](https://crates.io/crates/terminput-termina)     | 0.1                |
+| [`termina`](https://crates.io/crates/termina)     | [`terminput-termina`](https://crates.io/crates/terminput-termina)     | 0.2                |
 | [`egui`](https://crates.io/crates/egui)           | [`terminput-egui`](https://crates.io/crates/terminput-egui)           | 0.32, 0.33         |
 | [`web-sys`](https://crates.io/crates/web-sys)     | [`terminput-web-sys`](https://crates.io/crates/terminput-web-sys)     | 0.3                |
 
