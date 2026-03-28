@@ -1,5 +1,5 @@
-#[cfg(feature = "termina_0_2")]
-use termina_0_2 as termina;
+#[cfg(feature = "termina_0_3")]
+use termina_0_3 as termina;
 use terminput::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MediaKeyCode,
     ModifierDirection, ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, ScrollDirection,
