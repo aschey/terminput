@@ -3,7 +3,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![doc = include_str!("../README.md")]
 
-#[cfg(any(feature = "egui_0_32", feature = "egui_0_33"))]
+#[cfg(any(feature = "egui_0_32", feature = "egui_0_33", feature = "egui_0_34"))]
 mod mapping;
-#[cfg(any(feature = "egui_0_32", feature = "egui_0_33"))]
+#[cfg(any(feature = "egui_0_32", feature = "egui_0_33", feature = "egui_0_34"))]
 pub use mapping::*;

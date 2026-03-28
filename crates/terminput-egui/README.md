@@ -14,4 +14,6 @@
 
 ## Feature Flags
 
-- `egui_0_32` - uses `egui` 0.32 (default)
+- `egui_0_32` - uses `egui` 0.32
+- `egui_0_33` - uses `egui` 0.33
+- `egui_0_34` - uses `egui` 0.34 (default)

@@ -75,7 +75,7 @@ See the docs for each integration crate for more details.
 | [`termion`](https://crates.io/crates/termion)     | [`terminput-termion`](https://crates.io/crates/terminput-termion)     | 4                  |
 | [`termwiz`](https://crates.io/crates/termwiz)     | [`terminput-termwiz`](https://crates.io/crates/terminput-termwiz)     | 0.22, 0.23         |
 | [`termina`](https://crates.io/crates/termina)     | [`terminput-termina`](https://crates.io/crates/terminput-termina)     | 0.3                |
-| [`egui`](https://crates.io/crates/egui)           | [`terminput-egui`](https://crates.io/crates/terminput-egui)           | 0.32, 0.33         |
+| [`egui`](https://crates.io/crates/egui)           | [`terminput-egui`](https://crates.io/crates/terminput-egui)           | 0.32, 0.33, 0.34   |
 | [`web-sys`](https://crates.io/crates/web-sys)     | [`terminput-web-sys`](https://crates.io/crates/terminput-web-sys)     | 0.3                |
 
 The [`Event`](https://docs.rs/terminput/latest/terminput/enum.Event.html) struct
@@ -163,5 +163,6 @@ if let Ok(written) = written {
 
 ## Supported Rust Versions
 
-The MSRV is currently `1.88.0`. Since Cargo's V3 resolver supports MSRV-aware
-dependencies, we do not treat an MSRV bump as a breaking change.
+The MSRV is currently `1.92.0` (required by dependencies). Since Cargo's V3
+resolver supports MSRV-aware dependencies, we do not treat an MSRV bump as a
+breaking change.
