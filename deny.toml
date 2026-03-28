@@ -11,6 +11,7 @@ allow = [
   "MPL-2.0",
   "OpenSSL",
   "WTFPL",
+  "Zlib",
 ]
 
 [[licenses.clarify]]
