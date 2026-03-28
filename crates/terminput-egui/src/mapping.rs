@@ -1,7 +1,13 @@
-#[cfg(all(feature = "egui_0_32", not(feature = "egui_0_33")))]
+#[cfg(all(
+    feature = "egui_0_32",
+    not(feature = "egui_0_33"),
+    not(feature = "egui_0_34")
+))]
 use egui_0_32 as egui;
-#[cfg(feature = "egui_0_33")]
+#[cfg(all(feature = "egui_0_33", not(feature = "egui_0_34")))]
 use egui_0_33 as egui;
+#[cfg(feature = "egui_0_34")]
+use egui_0_34 as egui;
 use terminput::{
     Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseButton, MouseEvent,
     MouseEventKind, ScrollDirection, UnsupportedEvent,
@@ -56,6 +62,8 @@ pub fn to_terminput(value: egui::Event) -> Result<Event, UnsupportedEvent> {
             unit: _,
             delta,
             modifiers,
+            #[cfg(feature = "egui_0_34")]
+                phase: _,
         } => Ok(Event::Mouse(MouseEvent {
             kind: MouseEventKind::Scroll(if delta.y < 0.0 {
                 ScrollDirection::Down
@@ -80,8 +88,10 @@ pub fn to_terminput(value: egui::Event) -> Result<Event, UnsupportedEvent> {
         | egui::Event::Zoom(_)
         | egui::Event::Touch { .. }
         | egui::Event::Screenshot { .. } => Err(UnsupportedEvent(format!("{value:?}"))),
-        #[cfg(feature = "egui_0_33")]
+        #[cfg(any(feature = "egui_0_33", feature = "egui_0_34"))]
         egui::Event::Rotate(_) => Err(UnsupportedEvent(format!("{value:?}"))),
+        #[cfg(feature = "egui_0_34")]
+        egui::Event::AccessKitActionRequest(_) => Err(UnsupportedEvent(format!("{value:?}"))),
     }
 }
 
@@ -126,6 +136,8 @@ pub fn to_egui(value: Event) -> Result<egui::Event, UnsupportedEvent> {
                     x: scroll_direction.delta().x as f32,
                     y: scroll_direction.delta().y as f32,
                 },
+                #[cfg(feature = "egui_0_34")]
+                phase: egui::TouchPhase::Move,
                 modifiers: key_modifiers_to_egui(mouse_event.modifiers),
             },
         },
