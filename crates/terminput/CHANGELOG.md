@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.14](https://github.com/aschey/terminput/compare/terminput-v0.5.13..terminput-v0.5.14) - 2026-03-29
+
+### Dependencies
+
+- *(deps)* Update termina to 0.3 ([#95](https://github.com/aschey/terminput/issues/95)) - ([ee9e841](https://github.com/aschey/terminput/commit/ee9e8418bebc92feacbb4294592c7bbb68f06f17))
+- *(deps)* Update egui to 0.34 ([#97](https://github.com/aschey/terminput/issues/97)) - ([1328a24](https://github.com/aschey/terminput/commit/1328a243a75262c75bf459f1ac02fa913c560c54))
+
+
 ## [0.5.13](https://github.com/aschey/terminput/compare/terminput-v0.5.12..terminput-v0.5.13) - 2026-03-21
 
 ### Dependencies

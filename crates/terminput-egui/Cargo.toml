@@ -1,6 +1,6 @@
 [package]
 name = "terminput-egui"
-version = "0.5.2"
+version = "0.6.0"
 edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
@@ -17,7 +17,7 @@ readme = "./README.md"
 egui_0_32 = { package = "egui", version = "0.32", default-features = false, optional = true }
 egui_0_33 = { package = "egui", version = "0.33", default-features = false, optional = true }
 egui_0_34 = { package = "egui", version = "0.34", default-features = false, optional = true }
-terminput = { path = "../terminput", version = "0.5.13" }
+terminput = { path = "../terminput", version = "0.5.14" }
 
 [features]
 egui_0_32 = ["dep:egui_0_32"]
