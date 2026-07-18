@@ -1,16 +1,23 @@
 #[cfg(all(
     feature = "egui_0_32",
     not(feature = "egui_0_33"),
-    not(feature = "egui_0_34")
+    not(feature = "egui_0_34"),
+    not(feature = "egui_0_35")
 ))]
 use egui_0_32 as egui;
-#[cfg(all(feature = "egui_0_33", not(feature = "egui_0_34")))]
+#[cfg(all(
+    feature = "egui_0_33",
+    not(feature = "egui_0_34"),
+    not(feature = "egui_0_35")
+))]
 use egui_0_33 as egui;
-#[cfg(feature = "egui_0_34")]
+#[cfg(all(feature = "egui_0_34", not(feature = "egui_0_35")))]
 use egui_0_34 as egui;
+#[cfg(feature = "egui_0_35")]
+use egui_0_35 as egui;
 use terminput::{
-    Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, MouseButton, MouseEvent,
-    MouseEventKind, ScrollDirection, UnsupportedEvent,
+    Event, KeyCode, KeyEvent, KeyEventKind, KeyEventState, KeyModifiers, ModifierDirection,
+    ModifierKeyCode, MouseButton, MouseEvent, MouseEventKind, ScrollDirection, UnsupportedEvent,
 };
 
 /// Converts the egui [`Event`](egui::Event) to a terminput [`Event`].
@@ -62,7 +69,7 @@ pub fn to_terminput(value: egui::Event) -> Result<Event, UnsupportedEvent> {
             unit: _,
             delta,
             modifiers,
-            #[cfg(feature = "egui_0_34")]
+            #[cfg(any(feature = "egui_0_34", feature = "egui_0_35"))]
                 phase: _,
         } => Ok(Event::Mouse(MouseEvent {
             kind: MouseEventKind::Scroll(if delta.y < 0.0 {
@@ -88,9 +95,9 @@ pub fn to_terminput(value: egui::Event) -> Result<Event, UnsupportedEvent> {
         | egui::Event::Zoom(_)
         | egui::Event::Touch { .. }
         | egui::Event::Screenshot { .. } => Err(UnsupportedEvent(format!("{value:?}"))),
-        #[cfg(any(feature = "egui_0_33", feature = "egui_0_34"))]
+        #[cfg(any(feature = "egui_0_33", feature = "egui_0_34", feature = "egui_0_35"))]
         egui::Event::Rotate(_) => Err(UnsupportedEvent(format!("{value:?}"))),
-        #[cfg(feature = "egui_0_34")]
+        #[cfg(any(feature = "egui_0_34", feature = "egui_0_35"))]
         egui::Event::AccessKitActionRequest(_) => Err(UnsupportedEvent(format!("{value:?}"))),
     }
 }
@@ -136,7 +143,7 @@ pub fn to_egui(value: Event) -> Result<egui::Event, UnsupportedEvent> {
                     x: scroll_direction.delta().x as f32,
                     y: scroll_direction.delta().y as f32,
                 },
-                #[cfg(feature = "egui_0_34")]
+                #[cfg(any(feature = "egui_0_34", feature = "egui_0_35"))]
                 phase: egui::TouchPhase::Move,
                 modifiers: key_modifiers_to_egui(mouse_event.modifiers),
             },
@@ -176,6 +183,46 @@ fn key_code_to_terminput(value: egui::Key) -> Result<KeyCode, UnsupportedEvent> 
         egui::Key::CloseBracket => Ok(KeyCode::Char(']')),
         egui::Key::OpenCurlyBracket => Ok(KeyCode::Char('{')),
         egui::Key::CloseCurlyBracket => Ok(KeyCode::Char('}')),
+        #[cfg(feature = "egui_0_35")]
+        egui::Key::ShiftLeft => Ok(KeyCode::Modifier(
+            ModifierKeyCode::Shift,
+            ModifierDirection::Left,
+        )),
+        #[cfg(feature = "egui_0_35")]
+        egui::Key::ShiftRight => Ok(KeyCode::Modifier(
+            ModifierKeyCode::Shift,
+            ModifierDirection::Right,
+        )),
+        #[cfg(feature = "egui_0_35")]
+        egui::Key::ControlLeft => Ok(KeyCode::Modifier(
+            ModifierKeyCode::Control,
+            ModifierDirection::Left,
+        )),
+        #[cfg(feature = "egui_0_35")]
+        egui::Key::ControlRight => Ok(KeyCode::Modifier(
+            ModifierKeyCode::Control,
+            ModifierDirection::Right,
+        )),
+        #[cfg(feature = "egui_0_35")]
+        egui::Key::AltLeft => Ok(KeyCode::Modifier(
+            ModifierKeyCode::Alt,
+            ModifierDirection::Left,
+        )),
+        #[cfg(feature = "egui_0_35")]
+        egui::Key::AltRight => Ok(KeyCode::Modifier(
+            ModifierKeyCode::Alt,
+            ModifierDirection::Right,
+        )),
+        #[cfg(feature = "egui_0_35")]
+        egui::Key::SuperLeft => Ok(KeyCode::Modifier(
+            ModifierKeyCode::Super,
+            ModifierDirection::Left,
+        )),
+        #[cfg(feature = "egui_0_35")]
+        egui::Key::SuperRight => Ok(KeyCode::Modifier(
+            ModifierKeyCode::Super,
+            ModifierDirection::Right,
+        )),
         egui::Key::Backtick => Ok(KeyCode::Char('`')),
         egui::Key::Minus => Ok(KeyCode::Char('-')),
         egui::Key::Period => Ok(KeyCode::Char('.')),
@@ -257,6 +304,8 @@ fn key_code_to_terminput(value: egui::Key) -> Result<KeyCode, UnsupportedEvent> 
         egui::Key::Copy | egui::Key::Cut | egui::Key::Paste | egui::Key::BrowserBack => {
             Err(UnsupportedEvent(format!("{value:?}")))
         }
+        #[cfg(feature = "egui_0_35")]
+        egui::Key::IntlBackslash => Err(UnsupportedEvent(format!("{value:?}"))),
     }
 }
 
