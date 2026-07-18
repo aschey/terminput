@@ -14,8 +14,8 @@ keywords.workspace = true
 readme = "./README.md"
 
 [dependencies]
-bitflags = "2.9.4"
-serde = { version = "1.0.134", optional = true, features = ["derive"] }
+bitflags = "2.13"
+serde = { version = "1.0.228", optional = true, features = ["derive"] }
 
 [dev-dependencies]
 crossterm = "0.29"
