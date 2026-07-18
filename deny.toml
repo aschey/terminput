@@ -30,5 +30,8 @@ license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
 version = 2
 yanked = "deny"
 
+# Transitive dependencies
+ignore = ["RUSTSEC-2026-0192"]
+
 [bans]
 multiple-versions = "allow"
