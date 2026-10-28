@@ -14,7 +14,7 @@ keywords.workspace = true
 readme = "./README.md"
 
 [dependencies.web_sys_0_3]
-version = "0.3.77"
+version = "0.3.103"
 package = "web-sys"
 optional = true
 features = [

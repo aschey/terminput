@@ -14,17 +14,16 @@ keywords.workspace = true
 readme = "./README.md"
 
 [dependencies]
-egui_0_32 = { package = "egui", version = "0.32", default-features = false, optional = true }
-egui_0_33 = { package = "egui", version = "0.33", default-features = false, optional = true }
-egui_0_34 = { package = "egui", version = "0.34", default-features = false, optional = true }
 egui_0_35 = { package = "egui", version = "0.35", default-features = false, optional = true }
+egui_0_36 = { package = "egui", version = "0.36", default-features = false, optional = true }
+egui_0_37 = { package = "egui", version = "0.37", default-features = false, optional = true }
 terminput = { path = "../terminput", version = "0.5.15" }
 
 [features]
-egui_0_32 = ["dep:egui_0_32"]
-egui_0_33 = ["dep:egui_0_33"]
-egui_0_34 = ["dep:egui_0_34"]
-default = ["egui_0_35"]
+egui_0_35 = ["dep:egui_0_35"]
+egui_0_36 = ["dep:egui_0_36"]
+egui_0_37 = ["dep:egui_0_37"]
+default = ["egui_0_37"]
 
 [lints]
 workspace = true
