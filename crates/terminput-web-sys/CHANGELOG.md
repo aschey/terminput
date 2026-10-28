@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.12](https://github.com/aschey/terminput/compare/terminput-web-sys-v0.2.11..terminput-web-sys-v0.2.12) - 2026-10-28
+
+### Features
+
+- Support egui 0.35-0.37 ([#114](https://github.com/aschey/terminput/issues/114)) - ([530ddef](https://github.com/aschey/terminput/commit/530ddef1cb326bfa5a1089ceac6dc8010d897695))
+
+
 ## [0.2.11](https://github.com/aschey/terminput/compare/terminput-web-sys-v0.2.10..terminput-web-sys-v0.2.11) - 2026-07-18
 
 ### Miscellaneous Tasks

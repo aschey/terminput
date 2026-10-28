@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.16](https://github.com/aschey/terminput/compare/terminput-v0.5.15..terminput-v0.5.16) - 2026-10-28
+
+### Features
+
+- Support egui 0.35-0.37 ([#114](https://github.com/aschey/terminput/issues/114)) - ([530ddef](https://github.com/aschey/terminput/commit/530ddef1cb326bfa5a1089ceac6dc8010d897695))
+- Support termina 0.4 ([#115](https://github.com/aschey/terminput/issues/115)) - ([3792b90](https://github.com/aschey/terminput/commit/3792b900f131c80f4a834cbdb8f3096bd619e992))
+
+
 ## [0.5.15](https://github.com/aschey/terminput/compare/terminput-v0.5.14..terminput-v0.5.15) - 2026-07-18
 
 ### Features
