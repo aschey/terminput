@@ -13,7 +13,7 @@ on:
   merge_group:
 
 env:
-  RUST_MIN: "1.92"
+  RUST_MIN: "1.95"
 
 jobs:
   test:
@@ -57,10 +57,9 @@ jobs:
           [
             crossterm_0_28,
             crossterm_0_29,
-            egui_0_32,
-            egui_0_33,
-            egui_0_34,
             egui_0_35,
+            egui_0_36,
+            egui_0_37,
             termion_4,
             termwiz_0_22,
             termwiz_0_23,
